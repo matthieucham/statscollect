@@ -1,0 +1,1 @@
+from .rating_serializers import RatingSourceSerializer
