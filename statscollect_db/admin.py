@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm
 from django_countries.widgets import CountrySelectWidget
 
-from statscollect_db.models import FootballPerson
+from statscollect_db.models import Person
 from statscollect_db.models.tournament_model import Tournament, TournamentInstance, \
     TournamentInstanceStep
 from statscollect_db.models.team_model import Team
@@ -11,7 +11,7 @@ from statscollect_db.models.meeting_model import TeamMeeting
 from statscollect_db.models.football_stats_model import FootballPersonalStats
 
 # Register your models here.
-admin.site.register(FootballPerson)
+admin.site.register(Person)
 admin.site.register(RatingSource)
 admin.site.register(TeamMeeting)
 admin.site.register(FootballPersonalStats)

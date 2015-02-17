@@ -14,7 +14,8 @@ class Team(MetaModel):
     short_name = models.CharField(max_length=50)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES)
     country = CountryField(blank=True)
-    current_members = models.ManyToManyField(Person, related_name='current_teams')
+    current_members = models.ManyToManyField(Person, related_name='current_teams', blank=True)
+    migration_id = models.CharField(max_length=35, unique=True, null=True)
 
     # TODO : restreindre aux personnes de même field dans le formulaire.
 

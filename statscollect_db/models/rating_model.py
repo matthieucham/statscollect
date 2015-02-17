@@ -29,4 +29,3 @@ class Rating(models.Model):
     meeting = models.ForeignKey(Meeting)
     source = models.ForeignKey(RatingSource)
     original_rating = models.FloatField()
-    normalized_rating = models.FloatField()

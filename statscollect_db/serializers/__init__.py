@@ -1,1 +1,3 @@
 from .rating_serializers import RatingSourceSerializer
+from .team_serializers import FootballTeamSerializer
+from .person_serializers import PersonSerializer

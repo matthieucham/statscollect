@@ -24,16 +24,7 @@ class Person(MetaModel):
     rep_country = CountryField(blank=True)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    migration_id = models.CharField(max_length=35, unique=True, null=True)
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
-
-
-class FootballPerson(Person):
-    POSITION_CHOICES = (
-        ('G', 'Goalkeeper'),
-        ('D', 'Defender'),
-        ('M', 'Midfielder'),
-        ('A', 'Striker'),
-    )
-    position = models.CharField(max_length=2, choices=POSITION_CHOICES)

@@ -1,11 +1,11 @@
 from django.db import models
 
-from .person_model import FootballPerson
+from .person_model import Person
 from .meeting_model import TeamMeeting
 
 
 class FootballPersonalStats(models.Model):
-    player = models.ForeignKey(FootballPerson)
+    player = models.ForeignKey(Person)
     meeting = models.ForeignKey(TeamMeeting)
     playtime = models.SmallIntegerField()
     goals_scored = models.SmallIntegerField()

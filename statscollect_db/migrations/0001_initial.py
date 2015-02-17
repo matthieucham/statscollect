@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django_countries.fields
 import django_extensions.db.fields
+import django_countries.fields
 
 
 class Migration(migrations.Migration):
@@ -57,6 +57,7 @@ class Migration(migrations.Migration):
                 ('rep_country', django_countries.fields.CountryField(blank=True, max_length=2)),
                 ('field', models.CharField(max_length=10, choices=[('FOOTBALL', 'Football')])),
                 ('status', models.CharField(max_length=10, choices=[('ACTIVE', 'Active'), ('INACTIVE', 'Inactive')])),
+                ('migration_id', models.CharField(max_length=35, null=True, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -64,22 +65,10 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='FootballPerson',
-            fields=[
-                ('person_ptr', models.OneToOneField(parent_link=True, auto_created=True, serialize=False, to='statscollect_db.Person', primary_key=True)),
-                ('position', models.CharField(max_length=2, choices=[('G', 'Goalkeeper'), ('D', 'Defender'), ('M', 'Midfielder'), ('A', 'Striker')])),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('statscollect_db.person',),
-        ),
-        migrations.CreateModel(
             name='Rating',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
                 ('original_rating', models.FloatField()),
-                ('normalized_rating', models.FloatField()),
             ],
             options={
             },
@@ -114,7 +103,8 @@ class Migration(migrations.Migration):
                 ('short_name', models.CharField(max_length=50)),
                 ('field', models.CharField(max_length=10, choices=[('FOOTBALL', 'Football')])),
                 ('country', django_countries.fields.CountryField(blank=True, max_length=2)),
-                ('current_members', models.ManyToManyField(to='statscollect_db.Person', related_name='current_teams')),
+                ('migration_id', models.CharField(max_length=35, null=True, unique=True)),
+                ('current_members', models.ManyToManyField(blank=True, related_name='current_teams', to='statscollect_db.Person')),
             ],
             options={
                 'abstract': False,
@@ -124,7 +114,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TeamMeeting',
             fields=[
-                ('meeting_ptr', models.OneToOneField(parent_link=True, auto_created=True, serialize=False, to='statscollect_db.Meeting', primary_key=True)),
+                ('meeting_ptr', models.OneToOneField(to='statscollect_db.Meeting', primary_key=True, serialize=False, parent_link=True, auto_created=True)),
                 ('home_result', models.PositiveSmallIntegerField(blank=True, null=True)),
                 ('away_result', models.PositiveSmallIntegerField(blank=True, null=True)),
                 ('away_team', models.ForeignKey(to='statscollect_db.Team', related_name='meetings_away')),
@@ -243,7 +233,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='footballpersonalstats',
             name='player',
-            field=models.ForeignKey(to='statscollect_db.FootballPerson'),
+            field=models.ForeignKey(to='statscollect_db.Person'),
             preserve_default=True,
         ),
     ]
