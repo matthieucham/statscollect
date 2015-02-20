@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from statscollect_db import views
-from statscollect_db.views import FootballTeamViewSet, RatingSourceViewSet, PersonViewSet
+from statscollect_db.views import FootballTeamViewSet, RatingSourceViewSet, PersonViewSet,TournamentViewSet
 
 ratingsource_list = RatingSourceViewSet.as_view({
     'get': 'list'
@@ -42,6 +42,16 @@ person_urls = patterns(
         name='person-currentteam-list-nested'),
 )
 
+tournament_urls = patterns(
+    '',
+    url(r'^/$',
+        TournamentViewSet.as_view({'get': 'list', }, suffix='List'),
+        name='tournament-list'),
+    url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
+        TournamentViewSet.as_view({'get': 'retrieve', }),
+        name='tournament-detail'),
+)
+
 urlpatterns = [
     url(r'^$', views.api_root),
     url(r'^rating_sources/$', ratingsource_list, name='ratingsource-list'),
@@ -51,6 +61,7 @@ urlpatterns = [
     url(r'^football_teams/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
         footballteam_detail, name='footballteam-detail'),
     url(r'^persons', include(person_urls)),
+    url(r'^tournaments', include(tournament_urls)),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

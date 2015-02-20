@@ -6,8 +6,8 @@ from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
 
-from statscollect_db.models import RatingSource, FootballTeam, Person
-from statscollect_db.serializers import RatingSourceSerializer, FootballTeamSerializer, PersonSerializer
+from statscollect_db.models import RatingSource, FootballTeam, Person, Tournament
+from statscollect_db.serializers import RatingSourceSerializer, FootballTeamSerializer, PersonSerializer, TournamentSerializer
 
 
 @api_view(('GET',))
@@ -15,6 +15,7 @@ def api_root(request, format=None):
     return Response({
         'rating_sources': reverse('ratingsource-list', request=request, format=format),
         'football_teams': reverse('footballteam-list', request=request, format=format),
+        'tournaments': reverse('tournament-list', request=request, format=format),
     })
 
 
@@ -22,6 +23,17 @@ class RatingSourceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = RatingSource.objects.all()
     serializer_class = RatingSourceSerializer
     lookup_field = 'uuid'
+
+
+class TournamentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentSerializer
+    lookup_field = 'uuid'
+    filter_fields = (
+        'uuid',
+        'field',
+        'type',
+    )
 
 
 class FootballTeamViewSet(viewsets.ModelViewSet):
