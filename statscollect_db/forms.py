@@ -3,7 +3,8 @@ from django.contrib import admin
 from django.db.models.fields.related import ManyToManyRel
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper, FilteredSelectMultiple
 
-from statscollect_db.models import Team, FootballTeam, FootballPerson
+from statscollect_db.models import Team, FootballTeam, FootballPerson, FootballMeeting, FootballPersonalStats, \
+    TeamMeetingPerson
 
 
 class FootballPersonForm(forms.ModelForm):
@@ -52,3 +53,15 @@ class FootballMeetingForm(forms.ModelForm):
         super(FootballMeetingForm, self).__init__(*args, **kwargs)
         self.fields['home_team'].queryset = FootballTeam.objects.all()
         self.fields['away_team'].queryset = FootballTeam.objects.all()
+
+
+class FootballTeamMeetingPersonInlineForm(forms.ModelForm):
+    class Meta:
+        model = TeamMeetingPerson
+        fields = ('person', 'played_for')
+
+    def __init__(self, *args, **kwargs):
+        super(FootballTeamMeetingPersonInlineForm, self).__init__(*args, **kwargs)
+        self.fields['played_for'].queryset = FootballTeam.objects.all()
+
+

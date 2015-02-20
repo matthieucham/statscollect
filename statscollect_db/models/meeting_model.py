@@ -27,7 +27,7 @@ class TeamMeeting(Meeting):
     home_result = models.PositiveSmallIntegerField(blank=True, null=True)
     away_team = models.ForeignKey(Team, related_name='meetings_away')
     away_result = models.PositiveSmallIntegerField(blank=True, null=True)
-    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True, null=True, symmetrical=False)
+    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True, null=True)
 
     def __str__(self):
         return self.home_team.__str__() + ' vs ' + self.away_team.__str__()

@@ -1,14 +1,15 @@
 from django.contrib import admin
 from merged_inlines.admin import MergedInlineAdmin
 
-from statscollect_db.forms import FootballPersonForm, FootballTeamForm,FootballMeetingForm
+from statscollect_db.forms import FootballPersonForm, FootballTeamForm, FootballMeetingForm, \
+    FootballTeamMeetingPersonInlineForm
 
 from statscollect_db.models import FootballPerson
 from statscollect_db.models.tournament_model import Tournament, TournamentInstance, \
     TournamentInstanceStep
 from statscollect_db.models.team_model import FootballTeam
 from statscollect_db.models.rating_model import RatingSource, Rating
-from statscollect_db.models.meeting_model import FootballMeeting
+from statscollect_db.models.meeting_model import FootballMeeting, TeamMeetingPerson
 from statscollect_db.models.football_stats_model import FootballPersonalStats
 
 
@@ -66,17 +67,20 @@ class FootballPersonAdmin(admin.ModelAdmin):
 
 class FootballStatsInline(admin.TabularInline):
     model = FootballPersonalStats
-    extra = 28
 
 
 class RatingsInline(admin.StackedInline):
     model = Rating
-    extra = 28
+
+
+class TeamMeetingPersonInline(admin.TabularInline):
+    model = TeamMeetingPerson
+    form = FootballTeamMeetingPersonInlineForm
 
 
 class FootballMeetingAdmin(admin.ModelAdmin):
-    #merged_inline_order = 'person_id'
-    inlines = [FootballStatsInline, RatingsInline]
+    # merged_inline_order = 'person_id'
+    inlines = [TeamMeetingPersonInline, FootballStatsInline, RatingsInline]
     form = FootballMeetingForm
 
 # Register your models here.
