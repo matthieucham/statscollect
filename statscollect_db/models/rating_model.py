@@ -28,4 +28,4 @@ class Rating(models.Model):
     person = models.ForeignKey(Person)
     meeting = models.ForeignKey(Meeting)
     source = models.ForeignKey(RatingSource)
-    original_rating = models.FloatField()
+    original_rating = models.FloatField(null=True)

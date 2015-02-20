@@ -42,12 +42,10 @@ INSTALLED_APPS = (
     # contrib
     'django_extensions',
     'django_countries',
+    'merged_inlines',
 
     # rest framework
     'rest_framework',
-
-    # tuto
-    'tuto_polls',
 
     # statscollect_db
     'statscollect_db',
@@ -97,6 +95,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+
+COUNTRIES_FIRST = {
+    'FR',
+}
+
+COUNTRIES_FIRST_REPEAT = True
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

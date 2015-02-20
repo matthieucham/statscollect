@@ -5,12 +5,13 @@ from .meeting_model import TeamMeeting
 
 
 class FootballPersonalStats(models.Model):
-    player = models.ForeignKey(Person)
+    person = models.ForeignKey(Person)
     meeting = models.ForeignKey(TeamMeeting)
-    playtime = models.SmallIntegerField()
-    goals_scored = models.SmallIntegerField()
-    goals_assists = models.SmallIntegerField()
-    penalties_scored = models.SmallIntegerField()
-    penalties_awarded = models.SmallIntegerField()
-    goals_saved = models.SmallIntegerField()
-    goals_conceded = models.SmallIntegerField()
+    playtime = models.SmallIntegerField(null=True)
+    goals_scored = models.SmallIntegerField(null=True)
+    goals_assists = models.SmallIntegerField(null=True)
+    penalties_scored = models.SmallIntegerField(null=True)
+    penalties_awarded = models.SmallIntegerField(null=True)
+    goals_saved = models.SmallIntegerField(null=True)
+    goals_conceded = models.SmallIntegerField(null=True)
+    own_goals = models.SmallIntegerField(null=True)

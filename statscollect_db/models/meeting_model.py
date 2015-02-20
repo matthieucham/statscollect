@@ -1,6 +1,8 @@
 from django.db import models
+from django.db.models import F
 
 from .meta_model import MetaModel
+from statscollect_db.models import tournament_model
 
 from .tournament_model import TournamentInstance, TournamentInstanceStep
 from .team_model import Team
@@ -25,10 +27,16 @@ class TeamMeeting(Meeting):
     home_result = models.PositiveSmallIntegerField(blank=True, null=True)
     away_team = models.ForeignKey(Team, related_name='meetings_away')
     away_result = models.PositiveSmallIntegerField(blank=True, null=True)
-    participants = models.ManyToManyField(Person, through='TeamMeetingPerson')
+    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True, null=True, symmetrical=False)
 
     def __str__(self):
         return self.home_team.__str__() + ' vs ' + self.away_team.__str__()
+
+
+class FootballMeeting(TeamMeeting):
+
+    class Meta:
+        proxy = True
 
 
 class TeamMeetingPerson(models.Model):
@@ -36,5 +44,5 @@ class TeamMeetingPerson(models.Model):
     person = models.ForeignKey(Person)
     played_for = models.ForeignKey(Team)
 
-    #TODO restriction du champ played_for aux Team home/away.
+    # TODO restriction du champ played_for aux Team home/away.
 

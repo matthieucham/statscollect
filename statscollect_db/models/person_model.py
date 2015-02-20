@@ -1,6 +1,7 @@
 from django.db import models
 
 from .meta_model import MetaModel
+from .managers import FootballPersonManager
 
 from django_countries.fields import CountryField
 
@@ -28,3 +29,14 @@ class Person(MetaModel):
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+
+
+class FootballPerson(Person):
+    class Meta:
+        proxy = True
+
+    objects = FootballPersonManager()
+
+    def save(self,  *args, **kwargs):
+        self.field = 'FOOTBALL'
+        super(FootballPerson,self).save(*args, **kwargs)
