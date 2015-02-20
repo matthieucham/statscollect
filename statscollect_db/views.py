@@ -6,8 +6,8 @@ from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
 
-from statscollect_db.models import RatingSource, Team
-from statscollect_db.serializers import RatingSourceSerializer, FootballTeamSerializer
+from statscollect_db.models import RatingSource, FootballTeam, Person
+from statscollect_db.serializers import RatingSourceSerializer, FootballTeamSerializer, PersonSerializer
 
 
 @api_view(('GET',))
@@ -25,7 +25,23 @@ class RatingSourceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class FootballTeamViewSet(viewsets.ModelViewSet):
-    queryset = Team.objects.filter(field__exact='FOOTBALL')
     serializer_class = FootballTeamSerializer
+    lookup_field = 'uuid'
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        person = self.kwargs.get('person', None)
+        if person is not None:
+            queryset = FootballTeam.objects.filter(
+                current_members__uuid__contains=person
+            )
+            return queryset
+        queryset = FootballTeam.objects.all()
+        return queryset
+
+
+class PersonViewSet(viewsets.ModelViewSet):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
     lookup_field = 'uuid'
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
