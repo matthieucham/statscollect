@@ -1,30 +1,30 @@
 from django.conf.urls import patterns, url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from statscollect_db import views
-from statscollect_db.views import FootballTeamViewSet, RatingSourceViewSet, PersonViewSet,TournamentViewSet
+from statscollect_db.views.apiroot_view import api_root
 
-ratingsource_list = RatingSourceViewSet.as_view({
+ratingsource_list = views.RatingSourceViewSet.as_view({
     'get': 'list'
 })
-ratingsource_detail = RatingSourceViewSet.as_view({
+ratingsource_detail = views.RatingSourceViewSet.as_view({
     'get': 'retrieve'
 })
-footballteam_list = FootballTeamViewSet.as_view({
+footballteam_list = views.FootballTeamViewSet.as_view({
     'get': 'list',
     'post': 'create'
 })
-footballteam_detail = FootballTeamViewSet.as_view({
+footballteam_detail = views.FootballTeamViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',
     'patch': 'partial_update',
     'delete': 'destroy'
 })
-person_list = PersonViewSet.as_view({
+person_list = views.PersonViewSet.as_view({
     'get': 'list',
     'post': 'create',
 })
 
-person_detail = PersonViewSet.as_view({
+person_detail = views.PersonViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',
     'patch': 'partial_update',
@@ -38,22 +38,32 @@ person_urls = patterns(
         name='person-detail'),
     url(
         r'^/(?P<person>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/current_teams$',
-        FootballTeamViewSet.as_view({'get': 'list', }, suffix='List'),
+        views.FootballTeamViewSet.as_view({'get': 'list', }, suffix='List'),
         name='person-currentteam-list-nested'),
 )
 
 tournament_urls = patterns(
     '',
     url(r'^/$',
-        TournamentViewSet.as_view({'get': 'list', }, suffix='List'),
+        views.TournamentViewSet.as_view({'get': 'list', }, suffix='List'),
         name='tournament-list'),
     url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
-        TournamentViewSet.as_view({'get': 'retrieve', }),
+        views.TournamentViewSet.as_view({'get': 'retrieve', }),
         name='tournament-detail'),
+    url(r'^/(?P<tournament>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/instances$',
+        views.TournamentInstanceViewSet.as_view({'get': 'list', }, suffix='List'),
+        name='tournament-instance-list-nested'),
+)
+
+tournament_instance_urls = patterns(
+    '',
+    url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
+        views.TournamentInstanceViewSet.as_view({'get': 'retrieve', }),
+        name='instance-detail'),
 )
 
 urlpatterns = [
-    url(r'^$', views.api_root),
+    url(r'^$', api_root),
     url(r'^rating_sources/$', ratingsource_list, name='ratingsource-list'),
     url(r'^rating_sources/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
         ratingsource_detail, name='ratingsource-detail'),
@@ -62,6 +72,7 @@ urlpatterns = [
         footballteam_detail, name='footballteam-detail'),
     url(r'^persons', include(person_urls)),
     url(r'^tournaments', include(tournament_urls)),
+    url(r'^tournament_instances', include(tournament_instance_urls)),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
