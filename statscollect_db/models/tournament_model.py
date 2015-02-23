@@ -32,7 +32,7 @@ class TournamentInstance(MetaModel):
 
 
 class TournamentInstanceStep(MetaModel):
-    tournament_instance = models.ForeignKey(TournamentInstance)
+    tournament_instance = models.ForeignKey(TournamentInstance, related_name='steps')
     name = models.CharField(max_length=50)
     start = models.DateField()
     end = models.DateField()

@@ -30,10 +30,28 @@ class TournamentSerializer(serializers.ModelSerializer):
         fields = ('uuid', 'href', 'name', 'field', 'type', 'country', 'links')
 
 
+class TournamentInstanceStepSerializer(serializers.ModelSerializer):
+    href = serializers.HyperlinkedIdentityField(view_name='step-detail', lookup_field='uuid')
+    tournament_instance = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+
+    class Meta:
+        model = TournamentInstanceStep
+        fields = ('uuid', 'href', 'tournament_instance', 'name', 'start', 'end')
+
+
 class TournamentInstanceSerializer(serializers.ModelSerializer):
     href = serializers.HyperlinkedIdentityField(view_name='instance-detail', lookup_field='uuid')
     tournament = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+    steps = TournamentInstanceStepSerializer(many=True, read_only=True)
 
     class Meta:
         model = TournamentInstance
-        fields = ('uuid', 'href', 'tournament', 'name', 'start', 'end')
+        fields = ('uuid', 'href', 'tournament', 'name', 'start', 'end', 'steps')
+
+class FullStepSerializer(serializers.ModelSerializer):
+    href = serializers.HyperlinkedIdentityField(view_name='step-detail', lookup_field='uuid')
+    tournament_instance = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+
+    class Meta:
+        model = TournamentInstanceStep
+        fields = ('uuid', 'href', 'tournament_instance', 'name', 'start', 'end')

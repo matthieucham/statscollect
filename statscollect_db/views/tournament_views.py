@@ -1,7 +1,8 @@
 from rest_framework import viewsets
 
-from statscollect_db.models import Tournament, TournamentInstance
-from statscollect_db.serializers import TournamentSerializer, TournamentInstanceSerializer
+from statscollect_db.models import Tournament, TournamentInstance, TournamentInstanceStep
+from statscollect_db.serializers import TournamentSerializer, TournamentInstanceSerializer, \
+    TournamentInstanceStepSerializer
 
 
 class TournamentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -27,4 +28,10 @@ class TournamentInstanceViewSet(viewsets.ModelViewSet):
             )
             return queryset
         return TournamentInstance.objects.all()
+
+
+class TournamentInstanceStepViewSet(viewsets.ModelViewSet):
+    serializer_class = TournamentInstanceStepSerializer
+    lookup_field = 'uuid'
+    queryset = TournamentInstanceStep.objects.all()
 
