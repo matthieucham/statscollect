@@ -33,6 +33,9 @@ person_detail = views.PersonViewSet.as_view({
 
 person_urls = patterns(
     '',
+    url(r'^/$',
+        person_list,
+        name='person-list'),
     url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
         person_detail,
         name='person-detail'),
