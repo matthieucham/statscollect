@@ -10,9 +10,9 @@ from .person_model import Person
 
 
 class Meeting(MetaModel):
-    tournament_instance = models.ForeignKey(TournamentInstance)
+    tournament_instance = models.ForeignKey(TournamentInstance, related_name='meetings')
     # Some meetings are not linked to a step (cf single-step tournaments like a one-day race)
-    tournament_step = models.ForeignKey(TournamentInstanceStep, null=True)
+    tournament_step = models.ForeignKey(TournamentInstanceStep, related_name='meetings', null=True)
     date = models.DateTimeField()
 
     def __str__(self):

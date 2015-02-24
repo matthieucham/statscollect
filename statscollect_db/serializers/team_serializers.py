@@ -1,13 +1,16 @@
 from rest_framework import serializers
 from statscollect_db.models import Team
 from .person_serializers import PersonSerializer
+from .expandable import ExpandableSerializer
 
 
-class FootballTeamSerializer(serializers.HyperlinkedModelSerializer):
+class FootballTeamSerializer(ExpandableSerializer):
     href = serializers.HyperlinkedIdentityField(view_name='footballteam-detail', lookup_field='uuid')
-    member_set = PersonSerializer(source='current_members', many=True, required=False)
+    members = PersonSerializer(source='current_members', many=True, required=False)
+
+    expand = ['members', ]
 
     class Meta:
         model = Team
         lookup_field = 'uuid',
-        fields = ('uuid', 'href', 'name', 'short_name', 'member_set')
+        fields = ('uuid', 'href', 'name', 'short_name', 'members')

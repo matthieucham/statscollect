@@ -72,6 +72,13 @@ tournament_instance_step_urls = patterns(
         name='step-detail'),
 )
 
+footballmeeting_urls = patterns(
+    '',
+    url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
+        views.FootballMeetingViewSet.as_view({'get': 'retrieve', }),
+        name='footballmeeting-detail'),
+)
+
 urlpatterns = [
     url(r'^$', api_root),
     url(r'^rating_sources/$', ratingsource_list, name='ratingsource-list'),
@@ -84,6 +91,7 @@ urlpatterns = [
     url(r'^tournaments', include(tournament_urls)),
     url(r'^tournament_instances', include(tournament_instance_urls)),
     url(r'^steps', include(tournament_instance_step_urls)),
+    url(r'^footballmeetings', include(footballmeeting_urls)),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
