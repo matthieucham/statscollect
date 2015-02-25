@@ -16,6 +16,7 @@ class RatingSource(MetaModel):
     )
     name = models.CharField(max_length=50)
     website = models.CharField(max_length=400)
+    code = models.CharField(max_length=8)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES, blank=True)
     country = CountryField(blank=True)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, blank=False, default='10CLASSIC')
@@ -28,4 +29,4 @@ class Rating(models.Model):
     person = models.ForeignKey(Person)
     meeting = models.ForeignKey(Meeting)
     source = models.ForeignKey(RatingSource)
-    original_rating = models.FloatField(null=True)
+    original_rating = models.DecimalField(null=True, max_digits=5, decimal_places=2)

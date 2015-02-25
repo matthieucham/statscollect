@@ -22,10 +22,15 @@ class Tournament(MetaModel):
 
 
 class TournamentInstance(MetaModel):
+    STATUS_CHOICES = (
+        ('ONGOING', 'Ongoing'),
+        ('ARCHIVED', 'Archived'),
+    )
     tournament = models.ForeignKey(Tournament)
     name = models.CharField(max_length=100)
     start = models.DateField()
     end = models.DateField()
+    status = models.CharField(max_length=8, choices=STATUS_CHOICES, blank=False, default='ARCHIVED')
 
     def __str__(self):
         return self.name
