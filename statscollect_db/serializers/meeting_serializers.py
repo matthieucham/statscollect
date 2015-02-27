@@ -3,12 +3,9 @@ from rest_framework import serializers
 
 from statscollect_db import models
 from .team_serializers import FootballTeamSerializer
-from .person_serializers import PersonSerializer
-from .expandable import ExpandableSerializer
 
 
 class MeetingSerializer(serializers.ModelSerializer):
-    # href = serializers.HyperlinkedIdentityField(view_name='meeting-detail', lookup_field='uuid')
     tournament_instance = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
     step = serializers.SlugRelatedField(slug_field='uuid', read_only=True, source='tournament_step',
                                         required=False)
@@ -28,7 +25,6 @@ class MeetingSerializer(serializers.ModelSerializer):
         model = models.Meeting
         fields = (
             'uuid',
-            # 'href',
             'tournament_instance', 'step', 'date', )
 
 
@@ -81,7 +77,7 @@ class RatingSerializer(serializers.ModelSerializer):
 
 
 class RosterPlayerIdSerializer(serializers.ModelSerializer):
-    href = serializers.HyperlinkedIdentityField(view_name='person-detail', lookup_field='uuid')
+    href = serializers.HyperlinkedIdentityField(view_name='footballplayer-detail', lookup_field='uuid')
 
     class Meta:
         model = models.Person
@@ -151,3 +147,30 @@ class FootballMeetingDetailedSerializer(serializers.ModelSerializer):
             'away_result',
             'roster',
         )
+#
+#
+# class PlayedTournamentInstanceSerializer(ExpandableSerializer):
+#     href = serializers.HyperlinkedIdentityField(view_name='instance-detail', lookup_field='uuid')
+#     tournament = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+#     #tournament_name = serializers.SlugRelatedField(slug_field='name', read_only=True)
+#     meetings = MeetingSerializer(many=True, read_only=True, required=False)
+#
+#     # def get_fields(self, *args, **kwargs):
+#     #     fields = super(PlayedTournamentInstanceSerializer, self).get_fields(*args, **kwargs)
+#     #     uuid_person = self.context['view'].kwargs['person']
+#     #     try:
+#     #         #player = FootballPerson.objects.select_related('teammeeting_set').get(uuid=uuid_person)
+#     #         fields['meetings'].queryset = FootballMeeting.objects.filter(participants__uuid__iexact=uuid_person)
+#     #     except ObjectDoesNotExist:
+#     #         pass
+#     #     return fields
+#
+#     class Meta:
+#         model = TournamentInstance
+#         fields = ('uuid',
+#                   'href',
+#                   'tournament',
+#                   #'tournament_name',
+#                   'name',
+#                   #'steps',
+#                   'meetings')

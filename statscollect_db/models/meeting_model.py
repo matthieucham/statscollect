@@ -14,6 +14,8 @@ class Meeting(MetaModel):
     # Some meetings are not linked to a step (cf single-step tournaments like a one-day race)
     tournament_step = models.ForeignKey(TournamentInstanceStep, related_name='meetings', null=True)
     date = models.DateTimeField()
+    # concurrents : will be part of PersonalMeetingModel, when defined.
+    # concurrents = models.ManyToManyField(Person, blank=True, null=True)
 
     def __str__(self):
         if self.teammeetingmodel:
@@ -43,6 +45,19 @@ class TeamMeetingPerson(models.Model):
     meeting = models.ForeignKey(TeamMeeting)
     person = models.ForeignKey(Person)
     played_for = models.ForeignKey(Team)
+
+    # def save(self, force_insert=False, force_update=False, using=None,
+    #          update_fields=None):
+    #     # First insert teammeetingperson
+    #     super(TeamMeetingPerson, self).save(force_insert, force_update, using, update_fields)
+    #     if self.person not in self.meeting.concurrents.all():
+    #         self.meeting.concurrents.add(self.person)
+    #         self.meeting.save()
+    #
+    # def delete(self, using=None):
+    #     self.meeting.concurrents.remove(self.person)
+    #     self.meeting.save()
+    #     super(TeamMeetingPerson, self).delete()
 
     # TODO restriction du champ played_for aux Team home/away.
 

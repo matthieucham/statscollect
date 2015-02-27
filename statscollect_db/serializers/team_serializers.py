@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from statscollect_db.models import Team
-from .person_serializers import PersonSerializer
+from .person_serializers import FootballPlayerSerializer
 from .expandable import ExpandableSerializer
 
 
 class FootballTeamSerializer(ExpandableSerializer):
     href = serializers.HyperlinkedIdentityField(view_name='footballteam-detail', lookup_field='uuid')
-    members = PersonSerializer(source='current_members', many=True, required=False)
+    members = FootballPlayerSerializer(source='current_members', many=True, required=False)
 
     expand = ['members', ]
 

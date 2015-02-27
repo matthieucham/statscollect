@@ -1,7 +1,9 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from statscollect_db.models import Tournament, TournamentInstance, TournamentInstanceStep, TeamMeeting, Meeting
+from statscollect_db.models import Tournament, TournamentInstance, TournamentInstanceStep, FootballMeeting, \
+    FootballPerson
 from .expandable import ExpandableSerializer
 from .meeting_serializers import FootballMeetingSummarySerializer, MeetingSerializer
 
@@ -54,4 +56,4 @@ class TournamentInstanceSerializer(ExpandableSerializer):
 
     class Meta:
         model = TournamentInstance
-        fields = ('uuid', 'href', 'tournament', 'name', 'start', 'end', 'steps', 'meetings')
+        fields = ('uuid', 'href', 'tournament', 'name', 'steps', 'meetings')
