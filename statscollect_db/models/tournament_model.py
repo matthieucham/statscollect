@@ -28,8 +28,6 @@ class TournamentInstance(MetaModel):
     )
     tournament = models.ForeignKey(Tournament)
     name = models.CharField(max_length=100)
-    start = models.DateField()
-    end = models.DateField()
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, blank=False, default='ARCHIVED')
 
     def __str__(self):
@@ -39,8 +37,6 @@ class TournamentInstance(MetaModel):
 class TournamentInstanceStep(MetaModel):
     tournament_instance = models.ForeignKey(TournamentInstance, related_name='steps')
     name = models.CharField(max_length=50)
-    start = models.DateField()
-    end = models.DateField()
 
     def __str__(self):
         return self.name

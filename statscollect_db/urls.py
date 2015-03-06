@@ -114,7 +114,7 @@ urlpatterns = [
     url(r'^tournament_instances', include(tournament_instance_urls)),
     url(r'^steps', include(tournament_instance_step_urls)),
     url(r'^footballmeetings', include(footballmeeting_urls)),
-    url(r'^person', include(person_urls)),
+    url(r'^persons', include(person_urls)),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

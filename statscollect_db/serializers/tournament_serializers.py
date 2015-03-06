@@ -31,7 +31,10 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = ('uuid', 'href', 'name', 'field', 'type', 'country', 'links')
+        fields = ('uuid',
+                  'href',
+                  'name', 'field', 'type', 'country',
+                  'links')
 
 
 class TournamentInstanceStepSerializer(ExpandableSerializer):
@@ -43,7 +46,7 @@ class TournamentInstanceStepSerializer(ExpandableSerializer):
 
     class Meta:
         model = TournamentInstanceStep
-        fields = ('uuid', 'href', 'tournament_instance', 'name', 'start', 'end', 'meetings')
+        fields = ('uuid', 'href', 'tournament_instance', 'name', 'meetings')
 
 
 class TournamentInstanceSerializer(ExpandableSerializer):

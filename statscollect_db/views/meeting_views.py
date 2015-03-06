@@ -12,7 +12,7 @@ class FootballMeetingViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        return models.FootballMeeting.objects.all()
+        return models.FootballMeeting.objects.all().order_by('date')
 
 
 class FootballMeetingSummaryViewSet(viewsets.ModelViewSet):
@@ -25,9 +25,9 @@ class FootballMeetingSummaryViewSet(viewsets.ModelViewSet):
         instance = self.kwargs.get('instance')
         if (person is not None) and (instance is not None):
             queryset = models.FootballMeeting.objects.filter(tournament_instance__uuid=instance).filter(
-                participants__uuid__contains=person)
+                participants__uuid__contains=person).order_by('date')
             return queryset
-        return models.FootballMeeting.objects.all()
+        return models.FootballMeeting.objects.all().order_by('date')
 
 
 class PlayerMeetingHistoryViewSet(viewsets.ModelViewSet):

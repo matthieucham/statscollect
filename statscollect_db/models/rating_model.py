@@ -14,9 +14,9 @@ class RatingSource(MetaModel):
         ('10CLASSIC', 'Classical 0-10'),
         ('6GERMAN', 'German 1-6'),
     )
+    code = models.CharField(primary_key=True, max_length=8)
     name = models.CharField(max_length=50)
-    website = models.CharField(max_length=400)
-    code = models.CharField(max_length=8)
+    website = models.CharField(max_length=400, blank=True)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES, blank=True)
     country = CountryField(blank=True)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, blank=False, default='10CLASSIC')
