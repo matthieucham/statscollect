@@ -49,6 +49,7 @@ INSTALLED_APPS = (
 
     # statscollect_db
     'statscollect_db',
+    'statscollect_scrap',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -1,7 +1,13 @@
 Django==1.7.4
-django-extensions==1.5.0
 Markdown==2.5.2
 django-countries==3.1.1
+django-extensions==1.5.0
 django-filter==0.9.2
 django-guardian==1.2.5
+django-merged-inlines==0.2
 djangorestframework==3.0.5
+fuzzywuzzy==0.5.0
+lxml==3.4.2
+psycopg2==2.5.5
+requests==2.5.3
+six==1.9.0

@@ -1,0 +1,9 @@
+{% if instance_list %}
+    <ul>
+    {% for inst in instance_list %}
+        <li><a href="{%  url 'scrap:instance_detail' inst.id %}">{{ inst }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No instance are available.</p>
+{% endif %}
