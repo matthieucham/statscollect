@@ -49,8 +49,20 @@ class LFPFootballStepScrapper(FootballStepScrapper):
         game_days = tree.xpath('//table')
         for gd in game_days:
             french_date = gd.xpath('preceding-sibling::h4[1]/text()')
-            game_date = time.strptime(french_date[0], '%A %d %B %Y')
             print(french_date)
+            scrapped_games = gd.xpath('tr')
+            for game in scrapped_games:
+                game_hour = game.xpath('td[@class="horaire"]/a/text()')[0].strip()
+                home = game.xpath('td[@class="domicile"]/a/text()')[0].strip()
+                away = game.xpath('td[@class="exterieur"]/a/text()')[0].strip()
+                score = game.xpath('td[@class="stats"]/a/text()')[0].strip()
+                game_date = time.strptime(french_date[0]+' '+game_hour, '%A %d %B %Y %H:%M')
+
+                print(game_hour)
+                print(home)
+                print(away)
+                print(score)
+
 
 
 
