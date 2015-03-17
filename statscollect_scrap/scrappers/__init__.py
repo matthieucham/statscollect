@@ -1,1 +1,2 @@
-from .football_step_scrappers import LFPFootballStepScrapper
+from .football_step_scrappers import LFPFootballStepScrapper, LEquipeFootballStepScrapper
+from .processors import FootballStepProcessor
