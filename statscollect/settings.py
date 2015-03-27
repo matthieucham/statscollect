@@ -44,6 +44,12 @@ INSTALLED_APPS = (
     'django_countries',
     'merged_inlines',
 
+    # django-selectable
+    'selectable',
+
+    # smart selects
+    'smart_selects',
+
     # rest framework
     'rest_framework',
 

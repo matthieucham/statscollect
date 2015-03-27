@@ -13,4 +13,6 @@ urlpatterns = patterns('',
     url(r'^scrap/', include('statscollect_scrap.urls', namespace='scrap')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^selectable/', include('selectable.urls')),
+    url(r'^chaining/', include('smart_selects.urls')),
 )

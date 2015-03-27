@@ -13,7 +13,7 @@ class FootballMeetingProcessingResult():
 
 
 class FootballStepProcessor():
-    CUTOFF_PREFERRED = 50
+    CUTOFF_PREFERRED = 70
     CUTOFF_SECONDARY = 90
 
     # Ensemble de recherche.
@@ -32,8 +32,6 @@ class FootballStepProcessor():
         results = self.scrap_and_match(url, scrapper)
         return results
 
-
-
     def scrap_and_match(self, scrap_url, scrapper):
         step_games = scrapper.scrap(scrap_url)
 
@@ -49,15 +47,15 @@ class FootballStepProcessor():
         process_result = FootballMeetingProcessingResult(game_pivot)
 
         # Search Home
-        found_id, ratio = self.search_team(game_pivot.home_team_name)
-        if found_id is not None:
-            process_result.matching_home_team = found_id
+        found, ratio = self.search_team(game_pivot.home_team_name)
+        if found is not None:
+            process_result.matching_home_team = found
             process_result.matching_home_ratio = ratio
 
         # Search Away
-        found_id, ratio = self.search_team(game_pivot.away_team_name)
-        if found_id is not None:
-            process_result.matching_away_team = found_id
+        found, ratio = self.search_team(game_pivot.away_team_name)
+        if found is not None:
+            process_result.matching_away_team = found
             process_result.matching_away_ratio = ratio
 
         return process_result
@@ -77,7 +75,8 @@ class FootballStepProcessor():
         if len(matching_results) > 0:
             home_result, ratio, team_id = matching_results[0]
             print('Found %s with ratio %s' % (home_result, ratio))
-            return team_id, ratio
+            matching_team = FootballTeam.objects.get(pk=team_id)
+            return matching_team, ratio
         else:
             print("Alert : no match for %s" % team_name)
             return None, 0.0

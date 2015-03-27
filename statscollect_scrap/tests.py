@@ -5,13 +5,13 @@ from statscollect_scrap import scrappers
 class FootballStepScrapper(TestCase):
 
     def test_LFP_scrapper(self):
-        my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=28&id=0'
+        my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=26&id=0'
         scrapper = scrappers.LFPFootballStepScrapper()
         scrapper.scrap(my_url)
         self.assertTrue(True)
 
     def test_LEquipe_scrapper(self):
-        my_url = 'http://www.lequipe.fr/Football/FootballResultat48019.html'
+        my_url = 'http://www.lequipe.fr/Football/FootballResultat48016.html'
         scrapper = scrappers.LEquipeFootballStepScrapper()
         scrapper.scrap(my_url)
         self.assertTrue(True)

@@ -3,6 +3,8 @@ from lxml import html
 import requests
 import time
 import locale
+from datetime import datetime
+from time import mktime
 
 
 class FootballGamePivot():
@@ -11,8 +13,8 @@ class FootballGamePivot():
     matching processor.
     """
 
-    def __init__(self, game_date, home_team, home_goals, away_team, away_goals):
-        self.game_date = game_date
+    def __init__(self, game_date_time, home_team, home_goals, away_team, away_goals):
+        self.game_date = datetime.fromtimestamp(mktime(game_date_time))
         self.home_team_name = home_team
         self.away_team_name = away_team
         self.home_team_goals = home_goals
@@ -27,6 +29,7 @@ class FootballStepScrapper():
             raise ValueError('Input url %s does not match the expected url pattern of this scrapper. Scrapper\'s url '
                              'pattern is %s' % (url, self.url_pattern))
         page = requests.get(url)
+        print("Page encoding= %s" % page.encoding)
         return self.scrap_games(page)
 
     def scrap_games(self, page):
@@ -63,6 +66,7 @@ class LFPFootballStepScrapper(FootballStepScrapper):
 
         return result
 
+
 class LEquipeFootballStepScrapper(FootballStepScrapper):
     def __init__(self):
         self.url_pattern = r'^http\:\/\/www\.lequipe\.fr\/Football' \
@@ -73,6 +77,7 @@ class LEquipeFootballStepScrapper(FootballStepScrapper):
             locale.setlocale(locale.LC_ALL, 'fr_FR')  # only on linux
 
     def scrap_games(self, page):
+        page.encoding = "UTF8"
         tree = html.fromstring(page.text)
         games = tree.xpath('//div[@idmatch]')
 
@@ -85,7 +90,8 @@ class LEquipeFootballStepScrapper(FootballStepScrapper):
             home = game.xpath('div[@class="equipeDom"]/a/text()')[0].strip()
             away = game.xpath('div[@class="equipeExt"]/a/text()')[0].strip()
             score = game.xpath('div[@class="score"]/a/text()')[0].strip().split('-')
-            game_date = time.strptime(french_date[0] + ' ' + game_hour, '%A %d %B %Y %Hh%M')
+            game_date = time.strptime(french_date[0] + ' ' + game_hour, '%A %d %B %Y '
+                                                                        '%Hh%M')
             score_dom = score[0]
             score_ext = score[1]
             result.append(FootballGamePivot(game_date, home, score_dom, away, score_ext))
