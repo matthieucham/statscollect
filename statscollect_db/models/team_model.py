@@ -18,11 +18,13 @@ class Team(MetaModel):
     country = CountryField(blank=True)
     current_members = models.ManyToManyField(Person, related_name='current_teams', blank=True)
     migration_id = models.CharField(max_length=35, unique=True, null=True)
-
     # TODO : restreindre aux personnes de même field dans le formulaire.
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ['-country', 'name']
 
 
 class FootballTeam(Team):

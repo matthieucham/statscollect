@@ -119,9 +119,19 @@ class FootballScrapperAdmin(admin.ModelAdmin):
     )
 
 
+class ParticipantAdminForm(forms.ModelForm):
+    actual_player = AutoCompleteSelectField(
+        lookup_class=lookups.ParticipantLookup
+    )
+
+    class Meta(object):
+        model = models.ScrappedGameSheetParticipant
+
+
 class ScrappedGameSheetParticipantInline(admin.StackedInline):
     model = models.ScrappedGameSheetParticipant
     extra = 0
+    form = ParticipantAdminForm
     readonly_fields = (
         'read_player',
         'read_team',
@@ -137,12 +147,20 @@ class ScrappedGameSheetParticipantInline(admin.StackedInline):
     )
 
 
+class ScrappedGamesheetForm(forms.ModelForm):
+    set_current_teams = forms.BooleanField(required=False)
+
+    class Meta:
+        model = models.ScrappedGameSheet
+
+
 class ScrappedGameSheetAdmin(admin.ModelAdmin):
-    model = models.ScrappedGameSheet
+    form = ScrappedGamesheetForm
     list_display = ('__str__', 'status')
     inlines = [ScrappedGameSheetParticipantInline, ]
 
-    fields = ('actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'scrapped_url',)
+    fields = ('actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'scrapped_url',
+              'set_current_teams')
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
@@ -153,6 +171,38 @@ class ScrappedGameSheetAdmin(admin.ModelAdmin):
         if db_field.name == 'scrapper':
             kwargs["queryset"] = models.FootballScrapper.objects.filter(category='SHEET')
         return super(ScrappedGameSheetAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        if obj.status == 'PENDING':
+            obj.status = 'COMPLETE'
+        elif obj.status == 'COMPLETE':
+            obj.status = 'AMENDED'
+        super(ScrappedGameSheetAdmin, self).save_model(request, obj, form, change)
+        if obj.status == 'CREATED':
+            # Scrap this new object !
+            scrapped_participants = scrappers.FootballGamesheetProcessor(obj.actual_meeting).process(obj.scrapped_url,
+                                                                                                     obj.scrapper.class_name)
+            if scrapped_participants and len(scrapped_participants) > 0:
+                for participant in scrapped_participants:
+                    part_obj = models.ScrappedGameSheetParticipant()
+                    part_obj.scrapped_game_sheet = obj
+                    part_obj.actual_player = participant.matching_player
+                    part_obj.actual_team = participant.matching_player_team
+                    part_obj.ratio_player = participant.matching_ratio
+                    part_obj.read_player = participant.participant.read_player
+                    part_obj.read_team = participant.participant.read_team
+                    part_obj.save()
+                obj.status = 'PENDING'
+                super(ScrappedGameSheetAdmin, self).save_model(request, obj, form, change)
+            else:
+                raise ValueError('The scrapping processor %s could not scrap any game participant from the URL %s' % (
+                    obj.scrapper.class_name, obj.scrapped_url))
+
+    def save_related(self, request, form, formsets, change):
+        super(ScrappedGameSheetAdmin, self).save_related(request, form, formsets, change)
+        if form.instance.status in ['COMPLETE', 'AMENDED']:
+            translators.ScrappedGamesheetTranslator().translate(form.instance, form.cleaned_data.get(
+                'set_current_teams', False))
 
 
 # Register your models here.

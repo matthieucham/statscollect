@@ -130,14 +130,10 @@ class FootballGamesheetProcessor(BaseProcessor):
         # Search Home
         if player.is_home:
             found, ratio = self.search_player(player.read_player, self.choices_home)
-            if found is not None:
-                process_result.matching_player = found
-                process_result.matching_ratio = ratio
-                process_result.matching_player_team = self.home_team
         else:
             found, ratio = self.search_player(player.read_player, self.choices_away)
-            if found is not None:
-                process_result.matching_player = found
-                process_result.matching_ratio = ratio
-                process_result.matching_player_team = self.away_team
+        if found is not None:
+            process_result.matching_player = found
+            process_result.matching_ratio = ratio
+        process_result.matching_player_team = self.home_team if player.is_home else self.away_team
         return process_result

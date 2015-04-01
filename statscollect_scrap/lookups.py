@@ -1,7 +1,7 @@
 from selectable.base import LookupBase, ModelLookup
 from selectable.registry import registry
 
-from statscollect_db.models import TournamentInstanceStep
+from statscollect_db.models import TournamentInstanceStep, Person
 
 
 class TournamentStepLookup(ModelLookup):
@@ -19,4 +19,9 @@ class TournamentStepLookup(ModelLookup):
         return "%s [%s]" % (item.name, item.tournament_instance.name)
 
 
+class ParticipantLookup(ModelLookup):
+    model = Person
+    search_fields = ('first_name__icontains', 'last_name__icontains', 'usual_name__icontains',)
+
 registry.register(TournamentStepLookup)
+registry.register(ParticipantLookup)

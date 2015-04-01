@@ -116,10 +116,15 @@ class LEquipeFootballStepScrapper(BaseScrapper):
 
 
 class GamesheetParticipantPivot():
-    def __init__(self, read_player, read_team, is_home):
+    def __init__(self, read_player, read_team, is_home=None):
         self.read_player = read_player
         self.read_team = read_team
         self.is_home = is_home
+        if (not read_team) and (is_home is not None):
+            if is_home:
+                self.read_team = 'HOME'
+            else:
+                self.read_team = 'AWAY'
 
 
 class LFPFootballGamesheetScrapper(BaseScrapper):
@@ -146,7 +151,7 @@ class LFPFootballGamesheetScrapper(BaseScrapper):
         return result
 
 
-class WhoscoredFootballGamesheetScrapper(BaseScrapper):
+class WhoscoredFGSScrapper(BaseScrapper):
     def __init__(self):
         self.url_pattern = r'^http\:\/\/www\.whoscored\.com\/Matches\/[0-9]{6}\/Live'
         try:

@@ -1,5 +1,5 @@
 from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet
-from statscollect_db.models import FootballMeeting, TournamentInstanceStep
+from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, Team
 
 
 class ScrappedFootballStepTranslator():
@@ -51,5 +51,33 @@ class ScrappedFootballStepTranslator():
                 else:
                     sgs = matching[0]
                 sgs.save()
+        else:
+            print('Not completed yet.')
+
+
+class ScrappedGamesheetTranslator():
+    def translate(self, scrapped, update_teams=False):
+        if not isinstance(scrapped, ScrappedGameSheet):
+            raise TypeError('ScrappedGamesheetTranslatorTranslator operates on ScrappedGamesheetTranslator '
+                            'instances.')
+        if scrapped.status in ['COMPLETE', 'AMENDED']:
+            for sg in scrapped.scrappedgamesheetparticipant_set.all():
+                # Find existing entity
+                matching = TeamMeetingPerson.objects.filter(meeting=scrapped.actual_meeting).filter(
+                    person=sg.actual_player)
+                if len(matching) == 0:
+                    tmp_obj = TeamMeetingPerson()
+                    tmp_obj.meeting = scrapped.actual_meeting
+                    tmp_obj.person = sg.actual_player
+                    tmp_obj.played_for_id = sg.actual_team_id
+                else:
+                    tmp_obj = matching[0]
+                tmp_obj.save()
+                # Update player current_team if requested
+                if update_teams:
+                    sg.actual_player.current_teams.clear()  # remove all
+                    sg.actual_player.current_teams.add(sg.actual_team_id)
+                    sg.save()
+            #self.prepare_related(scrapped.actual_step)
         else:
             print('Not completed yet.')

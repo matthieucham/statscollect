@@ -28,7 +28,10 @@ class Person(MetaModel):
     migration_id = models.CharField(max_length=35, unique=True, null=True)
 
     def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        if self.usual_name:
+            return "%s (%s %s)" % (self.usual_name, self.first_name, self.last_name)
+        else:
+            return "%s %s" % (self.first_name, self.last_name)
 
 
 class FootballPerson(Person):
@@ -37,6 +40,6 @@ class FootballPerson(Person):
 
     objects = FootballPersonManager()
 
-    def save(self,  *args, **kwargs):
+    def save(self, *args, **kwargs):
         self.field = 'FOOTBALL'
-        super(FootballPerson,self).save(*args, **kwargs)
+        super(FootballPerson, self).save(*args, **kwargs)

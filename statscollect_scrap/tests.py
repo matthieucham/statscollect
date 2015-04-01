@@ -35,7 +35,7 @@ class TestFootballScrapper(TestCase):
 
     def test_WhoscoreGamesheet(self):
         my_url = 'http://www.whoscored.com/Matches/824607/Live'
-        scrapper = scrappers.WhoscoredFootballGamesheetScrapper()
+        scrapper = scrappers.WhoscoredFGSScrapper()
         results = scrapper.scrap(my_url)
         self.assertTrue(len(results) == 26)
 

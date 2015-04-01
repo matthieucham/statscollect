@@ -2,8 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import ChainedForeignKey
-from statscollect_db.models import RatingSource, FootballTeam, Tournament, TournamentInstance, \
-    TournamentInstanceStep, TeamMeeting, FootballPerson
+from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
+    TournamentInstanceStep, TeamMeeting, Person
 
 
 class Scrapper(models.Model):
@@ -102,8 +102,8 @@ class ScrappedFootballGameResult(models.Model):
     read_home_score = models.SmallIntegerField()
     read_away_score = models.SmallIntegerField()
     actual_game_date = models.DateTimeField(null=True)
-    actual_home_team = models.ForeignKey(FootballTeam, null=True, related_name='scrapped_home_games')
-    actual_away_team = models.ForeignKey(FootballTeam, null=True, related_name='scrapped_away_games')
+    actual_home_team = models.ForeignKey(Team, null=True, related_name='scrapped_home_games')
+    actual_away_team = models.ForeignKey(Team, null=True, related_name='scrapped_away_games')
     actual_home_score = models.SmallIntegerField()
     actual_away_score = models.SmallIntegerField()
     ratio_home_team = models.DecimalField(max_digits=4, decimal_places=1)
@@ -145,7 +145,10 @@ class ScrappedGameSheet(FootballScrappedEntity):
 class ScrappedGameSheetParticipant(models.Model):
     scrapped_game_sheet = models.ForeignKey(ScrappedGameSheet)
     read_player = models.CharField(max_length=100)
-    actual_player = models.ForeignKey(FootballPerson, null=True)
+    actual_player = models.ForeignKey(Person, null=True)
     read_team = models.CharField(max_length=50)
-    actual_team = models.ForeignKey(FootballTeam, null=True)
+    actual_team = models.ForeignKey(Team, null=True)
     ratio_player = models.DecimalField(max_digits=4, decimal_places=1)
+
+    def __str__(self):
+        return self.read_player
