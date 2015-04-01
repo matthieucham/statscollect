@@ -6,6 +6,7 @@ from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget
 from statscollect_scrap import models
 from statscollect_scrap import lookups
 from statscollect_scrap import scrappers
+from statscollect_scrap import translators
 
 
 class ScrappedFootballGameResultInline(admin.StackedInline):
@@ -44,13 +45,13 @@ class ScrappedFootballStepForm(forms.ModelForm):
     # lookup_class=lookups.TournamentStepLookup,
     # allow_new=True,
     # required=True,
-    #     widget=AutoComboboxSelectWidget
+    # widget=AutoComboboxSelectWidget
     # )
     #
     # class Media:
-    #     js = (
-    #         '/static/statscollect_scrap/js/step_lookup.js',
-    #     )
+    # js = (
+    # '/static/statscollect_scrap/js/step_lookup.js',
+    # )
 
     class Meta(object):
         model = models.ScrappedFootballStep
@@ -63,10 +64,10 @@ class ScrappedFootballStepAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status')
     inlines = [ScrappedFootballGameResultInline, ]
 
-    class Meta(object):
-        show_save = False
-        show_save_and_add_another = False
-        show_save_as_new = False
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'scrapper':
+            kwargs["queryset"] = models.FootballScrapper.objects.filter(category='STEP')
+        return super(ScrappedFootballStepAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
         if not change:
@@ -95,13 +96,19 @@ class ScrappedFootballStepAdmin(admin.ModelAdmin):
                     game_obj.ratio_away_team = game.matching_away_ratio
                     game_obj.read_away_score = game.scrapped_game.away_team_goals
                     game_obj.read_away_team = game.scrapped_game.away_team_name
-                    game_obj.read_game_date = game.scrapped_game.game_date
+                    game_obj.read_game_date = game.scrapped_game.read_date
                     game_obj.read_home_score = game.scrapped_game.home_team_goals
                     game_obj.read_home_team = game.scrapped_game.home_team_name
                     game_obj.save()
             else:
                 raise ValueError('The scrapping processor %s could not scrap any game result from the URL %s' % (
                     obj.scrapper.class_name, obj.scrapped_url))
+
+    def save_related(self, request, form, formsets, change):
+        super(ScrappedFootballStepAdmin, self).save_related(request, form, formsets, change)
+        if change:
+            translators.ScrappedFootballStepTranslator().translate(form.instance)
+            # translators.ScrappedFootballStepTranslator().prepare_related(form.instance)
 
 
 class FootballScrapperAdmin(admin.ModelAdmin):
@@ -111,6 +118,44 @@ class FootballScrapperAdmin(admin.ModelAdmin):
         'category',
     )
 
+
+class ScrappedGameSheetParticipantInline(admin.StackedInline):
+    model = models.ScrappedGameSheetParticipant
+    extra = 0
+    readonly_fields = (
+        'read_player',
+        'read_team',
+        'ratio_player',
+    )
+    fieldsets = (
+        (None, {
+            'fields': (
+                ('read_player', 'actual_player', 'ratio_player'),
+                ('read_team', 'actual_team')
+            )
+        }),
+    )
+
+
+class ScrappedGameSheetAdmin(admin.ModelAdmin):
+    model = models.ScrappedGameSheet
+    list_display = ('__str__', 'status')
+    inlines = [ScrappedGameSheetParticipantInline, ]
+
+    fields = ('actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'scrapped_url',)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # editing an existing object
+            return self.readonly_fields + ('actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting')
+        return self.readonly_fields
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'scrapper':
+            kwargs["queryset"] = models.FootballScrapper.objects.filter(category='SHEET')
+        return super(ScrappedGameSheetAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 # Register your models here.
 admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
 admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
+admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)

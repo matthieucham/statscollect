@@ -126,3 +126,5 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+TEST_RUNNER = 'statscollect_scrap.testrunner.NoDbTestRunner'

@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from smart_selects.db_fields import ChainedForeignKey
-from statscollect_db.models import RatingSource, FootballTeam, Tournament, TournamentInstance, TournamentInstanceStep
+from statscollect_db.models import RatingSource, FootballTeam, Tournament, TournamentInstance, \
+    TournamentInstanceStep, TeamMeeting, FootballPerson
 
 
 class Scrapper(models.Model):
@@ -44,7 +46,7 @@ class ScrappedEntity(models.Model):
 
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField(editable=False)
-    scrapped_url = models.URLField(max_length=300)
+    scrapped_url = models.URLField(max_length=300, blank=True, null=True)
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default='CREATED', editable=False)
 
     def save(self, *args, **kwargs):
@@ -58,7 +60,14 @@ class ScrappedEntity(models.Model):
 
 
 class FootballScrappedEntity(ScrappedEntity):
-    scrapper = models.ForeignKey(FootballScrapper)
+    scrapper = models.ForeignKey(FootballScrapper, null=True)
+
+    def clean(self):
+        if self.status != 'CREATED':
+            if not self.scrapped_url:
+                raise ValidationError('Scrapped URL is required')
+            if not self.scrapper:
+                raise ValidationError('A scrapper is required')
 
     class Meta:
         abstract = True
@@ -73,7 +82,6 @@ class ScrappedFootballStep(FootballScrappedEntity):
         show_all=False,
         auto_choose=True
     )
-    #actual_step = models.ForeignKey(TournamentInstanceStep, )
     actual_step = ChainedForeignKey(
         TournamentInstanceStep,
         chained_field='actual_instance',
@@ -82,30 +90,18 @@ class ScrappedFootballStep(FootballScrappedEntity):
         auto_choose=True
     )
 
-    # def save(self, *args, **kwargs):
-    #     """
-    #     Check if step did not exist already
-    #     """
-    #     if self.actual_step is None:
-    #         existing = TournamentInstanceStep.objects.filter(tournament_instance=self.actual_instance).filter(
-    #             name__contains=self.name)
-    #         assert (existing is None), 'A step with the name %s has already been registered for this tournament '
-    #         'instance. Please enter a different name if you are scrapping a new step, '
-    #         'or set this existing step as the actual step' % self.name
-    #     super(ScrappedFootballStep, self).save(args, kwargs)
-
     def __str__(self):
         return "Step %s of %s" % (self.actual_step, self.actual_instance)
 
 
 class ScrappedFootballGameResult(models.Model):
     scrapped_step = models.ForeignKey(ScrappedFootballStep)
-    read_game_date = models.DateTimeField()
+    read_game_date = models.CharField(max_length=50)
     read_home_team = models.CharField(max_length=50)
     read_away_team = models.CharField(max_length=50)
     read_home_score = models.SmallIntegerField()
     read_away_score = models.SmallIntegerField()
-    actual_game_date = models.DateTimeField()
+    actual_game_date = models.DateTimeField(null=True)
     actual_home_team = models.ForeignKey(FootballTeam, null=True, related_name='scrapped_home_games')
     actual_away_team = models.ForeignKey(FootballTeam, null=True, related_name='scrapped_away_games')
     actual_home_score = models.SmallIntegerField()
@@ -116,3 +112,40 @@ class ScrappedFootballGameResult(models.Model):
     def __str__(self):
         return "[%s] %s %i - %i %s" % (self.read_game_date, self.read_home_team, self.read_home_score,
                                        self.read_away_score, self.read_away_team)
+
+
+class ScrappedGameSheet(FootballScrappedEntity):
+    actual_tournament = models.ForeignKey(Tournament)
+    actual_instance = ChainedForeignKey(
+        TournamentInstance,
+        chained_field='actual_tournament',
+        chained_model_field='tournament',
+        show_all=False,
+        auto_choose=True
+    )
+    actual_step = ChainedForeignKey(
+        TournamentInstanceStep,
+        chained_field='actual_instance',
+        chained_model_field='tournament_instance',
+        show_all=False,
+        auto_choose=True
+    )
+    actual_meeting = ChainedForeignKey(
+        TeamMeeting,
+        chained_field='actual_step',
+        chained_model_field='tournament_step',
+        show_all=False,
+        auto_choose=True
+    )
+
+    def __str__(self):
+        return self.actual_meeting.__str__()
+
+
+class ScrappedGameSheetParticipant(models.Model):
+    scrapped_game_sheet = models.ForeignKey(ScrappedGameSheet)
+    read_player = models.CharField(max_length=100)
+    actual_player = models.ForeignKey(FootballPerson, null=True)
+    read_team = models.CharField(max_length=50)
+    actual_team = models.ForeignKey(FootballTeam, null=True)
+    ratio_player = models.DecimalField(max_digits=4, decimal_places=1)

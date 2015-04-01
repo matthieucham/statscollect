@@ -1,2 +1,3 @@
-from .football_step_scrappers import LFPFootballStepScrapper, LEquipeFootballStepScrapper
-from .processors import FootballStepProcessor
+from .scrappers import LFPFootballStepScrapper, LEquipeFootballStepScrapper, LFPFootballGamesheetScrapper, \
+    WhoscoredFootballGamesheetScrapper
+from .processors import FootballStepProcessor, FootballGamesheetProcessor

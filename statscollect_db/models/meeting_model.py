@@ -32,7 +32,12 @@ class TeamMeeting(Meeting):
     participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True, null=True)
 
     def __str__(self):
-        return self.home_team.__str__() + ' vs ' + self.away_team.__str__()
+        if self.home_result is None or self.away_result is None:
+            return "%s vs %s [%s]" % (self.home_team.__str__(), self.away_team.__str__(), self.date)
+        else:
+            return "%s %i-%i %s [%s]" % (self.home_team.__str__(), self.home_result,
+                                         self.away_result, self.away_team.__str__(),
+                                         self.date)
 
 
 class FootballMeeting(TeamMeeting):
@@ -47,7 +52,7 @@ class TeamMeetingPerson(models.Model):
     played_for = models.ForeignKey(Team)
 
     # def save(self, force_insert=False, force_update=False, using=None,
-    #          update_fields=None):
+    # update_fields=None):
     #     # First insert teammeetingperson
     #     super(TeamMeetingPerson, self).save(force_insert, force_update, using, update_fields)
     #     if self.person not in self.meeting.concurrents.all():
