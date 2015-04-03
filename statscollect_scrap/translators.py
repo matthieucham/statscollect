@@ -1,5 +1,5 @@
-from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet
-from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, Team
+from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet, ScrappedTeamMeetingData
+from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, TeamMeeting
 
 
 class ScrappedFootballStepTranslator():
@@ -51,8 +51,6 @@ class ScrappedFootballStepTranslator():
                 else:
                     sgs = matching[0]
                 sgs.save()
-        else:
-            print('Not completed yet.')
 
 
 class ScrappedGamesheetTranslator():
@@ -78,6 +76,19 @@ class ScrappedGamesheetTranslator():
                     sg.actual_player.current_teams.clear()  # remove all
                     sg.actual_player.current_teams.add(sg.actual_team_id)
                     sg.save()
-            #self.prepare_related(scrapped.actual_step)
+            self.prepare_related(scrapped.actual_meeting)
         else:
             print('Not completed yet.')
+
+    def prepare_related(self, team_meeting):
+        """
+        Creates ScrappedStatistics.
+        """
+        if not isinstance(team_meeting, TeamMeeting):
+            raise TypeError('prepare_related operates on TeamMeeting '
+                            'instances.')
+        matching = ScrappedTeamMeetingData.objects.filter(actual_teammeeting=team_meeting)
+        if len(matching) == 0:
+            stmd = ScrappedTeamMeetingData()
+            stmd.actual_teammeeting = team_meeting
+            stmd.save()

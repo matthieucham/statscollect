@@ -3,12 +3,14 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import ChainedForeignKey
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
-    TournamentInstanceStep, TeamMeeting, Person
+    TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
 
 
 class Scrapper(models.Model):
     name = models.CharField(max_length=20)
     class_name = models.CharField(max_length=30)
+    next_scrapper = models.ForeignKey('self', blank=True, null=True)
+    url_pattern = models.CharField(max_length=300)
 
     def __str__(self):
         return self.class_name
@@ -144,11 +146,41 @@ class ScrappedGameSheet(FootballScrappedEntity):
 
 class ScrappedGameSheetParticipant(models.Model):
     scrapped_game_sheet = models.ForeignKey(ScrappedGameSheet)
-    read_player = models.CharField(max_length=100)
+    read_player = models.CharField(max_length=100, blank=True)
     actual_player = models.ForeignKey(Person, null=True)
-    read_team = models.CharField(max_length=50)
+    read_team = models.CharField(max_length=50, blank=True)
     actual_team = models.ForeignKey(Team, null=True)
+    ratio_player = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+
+    def __str__(self):
+        return self.read_player
+
+
+class ScrappedTeamMeetingData(FootballScrappedEntity):
+    actual_teammeeting = models.ForeignKey(TeamMeeting)
+
+
+class ScrappedPlayerStats(models.Model):
+    teammeeting = models.ForeignKey(ScrappedTeamMeetingData)
+    actual_teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True)
+    read_player = models.CharField(max_length=100)
     ratio_player = models.DecimalField(max_digits=4, decimal_places=1)
+    read_playtime = models.CharField(max_length=4)
+    actual_playtime = models.SmallIntegerField()
+    read_goals_scored = models.CharField(max_length=4)
+    actual_goals_scored = models.SmallIntegerField()
+    read_penalties_scored = models.CharField(max_length=4)
+    actual_penalties_scored = models.SmallIntegerField()
+    read_assists = models.CharField(max_length=4)
+    actual_assists = models.SmallIntegerField()
+    read_penalties_assists = models.CharField(max_length=4)
+    actual_penalties_assists = models.SmallIntegerField()
+    read_saves = models.CharField(max_length=4)
+    actual_saves = models.SmallIntegerField()
+    read_conceded = models.CharField(max_length=4)
+    actual_conceded = models.SmallIntegerField()
+    read_own_goals = models.CharField(max_length=4)
+    actual_own_goals = models.SmallIntegerField()
 
     def __str__(self):
         return self.read_player

@@ -55,3 +55,19 @@ class TestFootballScrapper(TestCase):
         self.assertTrue(len(results) <= 28)
         for res in results:
             print("%s matched by %s" % (res.participant.read_player, res.matching_player))
+
+    def test_WhoscoredStats(self):
+        my_url = 'http://www.whoscored.com/Matches/824572/Live'
+        scrapper = scrappers.WhoscoredStatsScrapper()
+        results = scrapper.scrap(my_url)
+        self.assertTrue(len(results) <= 28)
+        for res in results:
+            print(res)
+
+    def test_processor_stats(self):
+        my_url = 'http://www.whoscored.com/Matches/824582/Live'
+        scrapper = 'WhoscoredStatsScrapper'
+        results = scrappers.FootballStatsProcessor(FootballMeeting.objects.get(uuid='05a76fb2-0ece-4fe0-829f-ddecebd4f154')).process(my_url, scrapper)
+        self.assertTrue(len(results) <= 28)
+        for res in results:
+            print(res)

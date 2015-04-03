@@ -60,6 +60,7 @@ class FootballPersonAdmin(admin.ModelAdmin):
         ('Identity', {'fields': ('last_name', 'first_name', 'usual_name', 'birth', 'sex', 'rep_country')}),
         ('Status', {'fields': ('status', 'current_teams')}),
     )
+    search_fields = ['last_name', 'usual_name' ]
 
     def get_queryset(self, request):
         return FootballPerson.objects.filter(field__contains='FOOTBALL')

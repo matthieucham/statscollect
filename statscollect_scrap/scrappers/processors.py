@@ -3,6 +3,21 @@ from fuzzywuzzy import process
 from statscollect_db.models import FootballTeam, FootballPerson
 
 
+def search_player(player_name, choices, cutoff):
+    print('Searching %s' % player_name)
+    matching_results = process.extractBests(player_name, choices,
+                                            score_cutoff=cutoff,
+                                            limit=1)
+    if len(matching_results) > 0:
+        result, ratio, player_id = matching_results[0]
+        print('Found %s with ratio %s' % (result, ratio))
+        matching_player = FootballPerson.objects.get(pk=player_id)
+        return matching_player, ratio
+    else:
+        print("Alert : no match for %s" % player_name)
+        return None, 0.0
+
+
 class BaseProcessor():
     def process(self, url, scrapper_class_name):
         module = importlib.import_module('statscollect_scrap.scrappers.scrappers')
@@ -111,29 +126,60 @@ class FootballGamesheetProcessor(BaseProcessor):
             matching_results.append(self.process_player(player))
         return matching_results
 
-    def search_player(self, player_name, choices):
-        print('Searching %s' % player_name)
-        matching_results = process.extractBests(player_name, choices,
-                                                score_cutoff=FootballGamesheetProcessor.CUTOFF_PREFERRED,
-                                                limit=1)
-        if len(matching_results) > 0:
-            result, ratio, player_id = matching_results[0]
-            print('Found %s with ratio %s' % (result, ratio))
-            matching_player = FootballPerson.objects.get(pk=player_id)
-            return matching_player, ratio
-        else:
-            print("Alert : no match for %s" % player_name)
-            return None, 0.0
-
     def process_player(self, player):
         process_result = FootballGamesheetParticipantProcessingResult(player)
         # Search Home
         if player.is_home:
-            found, ratio = self.search_player(player.read_player, self.choices_home)
+            found, ratio = search_player(player.read_player, self.choices_home,
+                                         FootballGamesheetProcessor.CUTOFF_PREFERRED)
         else:
-            found, ratio = self.search_player(player.read_player, self.choices_away)
+            found, ratio = search_player(player.read_player, self.choices_away,
+                                         FootballGamesheetProcessor.CUTOFF_PREFERRED)
         if found is not None:
             process_result.matching_player = found
             process_result.matching_ratio = ratio
         process_result.matching_player_team = self.home_team if player.is_home else self.away_team
+        return process_result
+
+
+class FootballStatsProcessor(BaseProcessor):
+    # cutoff faible car la sélection a été déjà faite avant
+    CUTOFF_PREFERRED = 40
+
+    def __init__(self, team_meeting):
+        self.choices_home = dict(
+            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in FootballPerson.objects.filter(teammeetingperson__meeting=team_meeting,
+                                                       teammeetingperson__played_for=team_meeting.home_team).values(
+                'id', 'first_name', 'last_name', 'usual_name')]
+        )
+        self.choices_away = dict(
+            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in FootballPerson.objects.filter(teammeetingperson__meeting=team_meeting,
+                                                       teammeetingperson__played_for=team_meeting.away_team).values(
+                'id', 'first_name', 'last_name', 'usual_name')]
+        )
+
+    def scrap_and_match(self, scrap_url, scrapper):
+        stats = scrapper.scrap(scrap_url)
+        matching_results = []
+        for statline in stats:
+            matching_results.append(self.process_stats(statline))
+        return matching_results
+
+    def process_stats(self, statline):
+        process_result = dict(statline)
+        # Search Home
+        if statline['team'] == 'home':
+            found, ratio = search_player(statline['read_player'], self.choices_home,
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
+        else:
+            found, ratio = search_player(statline['read_player'], self.choices_away,
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
+        if found is not None:
+            process_result['actual_player'] = found
+            process_result['ratio_player'] = ratio
+        else:
+            raise ValueError('No matching player found for name %s : fix registered playered in the gamesheet then '
+                             'process again' % statline['read_player'])
         return process_result
