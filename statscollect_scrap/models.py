@@ -157,30 +157,31 @@ class ScrappedGameSheetParticipant(models.Model):
 
 
 class ScrappedTeamMeetingData(FootballScrappedEntity):
-    actual_teammeeting = models.ForeignKey(TeamMeeting)
+    teammeeting = models.ForeignKey(TeamMeeting)
+
+    def __str__(self):
+        return self.teammeeting.__str__()
 
 
 class ScrappedPlayerStats(models.Model):
-    teammeeting = models.ForeignKey(ScrappedTeamMeetingData)
-    actual_teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True)
-    read_player = models.CharField(max_length=100)
-    ratio_player = models.DecimalField(max_digits=4, decimal_places=1)
-    read_playtime = models.CharField(max_length=4)
-    actual_playtime = models.SmallIntegerField()
-    read_goals_scored = models.CharField(max_length=4)
-    actual_goals_scored = models.SmallIntegerField()
-    read_penalties_scored = models.CharField(max_length=4)
-    actual_penalties_scored = models.SmallIntegerField()
-    read_assists = models.CharField(max_length=4)
-    actual_assists = models.SmallIntegerField()
-    read_penalties_assists = models.CharField(max_length=4)
-    actual_penalties_assists = models.SmallIntegerField()
-    read_saves = models.CharField(max_length=4)
-    actual_saves = models.SmallIntegerField()
-    read_conceded = models.CharField(max_length=4)
-    actual_conceded = models.SmallIntegerField()
-    read_own_goals = models.CharField(max_length=4)
-    actual_own_goals = models.SmallIntegerField()
+    teammeeting = models.ForeignKey(ScrappedTeamMeetingData, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True, editable=False)
+    read_playtime = models.CharField(max_length=4, default='0')
+    actual_playtime = models.SmallIntegerField(default=0)
+    read_goals_scored = models.CharField(max_length=4, default='0')
+    actual_goals_scored = models.SmallIntegerField(default=0)
+    read_penalties_scored = models.CharField(max_length=4, default='0')
+    actual_penalties_scored = models.SmallIntegerField(default=0)
+    read_assists = models.CharField(max_length=4, default='0')
+    actual_assists = models.SmallIntegerField(default=0)
+    read_penalties_assists = models.CharField(max_length=4, default='0')
+    actual_penalties_assists = models.SmallIntegerField(default=0)
+    read_saves = models.CharField(max_length=4, default='0')
+    actual_saves = models.SmallIntegerField(default=0)
+    read_conceded = models.CharField(max_length=4, default='0')
+    actual_conceded = models.SmallIntegerField(default=0)
+    read_own_goals = models.CharField(max_length=4, default='0')
+    actual_own_goals = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return self.read_player
+        return self.teammeetingperson.__str__()

@@ -66,3 +66,6 @@ class TeamMeetingPerson(models.Model):
 
     # TODO restriction du champ played_for aux Team home/away.
 
+    def __str__(self):
+        return self.person.__str__()
+

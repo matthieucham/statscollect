@@ -87,8 +87,8 @@ class ScrappedGamesheetTranslator():
         if not isinstance(team_meeting, TeamMeeting):
             raise TypeError('prepare_related operates on TeamMeeting '
                             'instances.')
-        matching = ScrappedTeamMeetingData.objects.filter(actual_teammeeting=team_meeting)
+        matching = ScrappedTeamMeetingData.objects.filter(teammeeting=team_meeting)
         if len(matching) == 0:
             stmd = ScrappedTeamMeetingData()
-            stmd.actual_teammeeting = team_meeting
+            stmd.teammeeting = team_meeting
             stmd.save()

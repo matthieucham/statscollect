@@ -6,26 +6,8 @@ import locale
 from datetime import datetime
 from time import mktime
 import json
-from collections import defaultdict
-
-
-class FootballGamePivot():
-    """
-    FootballGamePivot is a structure holding scrapped textual info about a game that is to be treated by the data
-    matching processor.
-    """
-
-    def __init__(self, game_date_time, read_date, home_team, home_goals, away_team, away_goals):
-        if game_date_time is not None:
-            self.game_date = datetime.fromtimestamp(mktime(game_date_time))
-        else:
-            self.game_date = None
-        self.read_date = read_date
-        self.home_team_name = home_team
-        self.away_team_name = away_team
-        self.home_team_goals = home_goals
-        self.away_team_goals = away_goals
-        self.gamesheet_identifier = None
+from faker import Faker
+import random
 
 
 class BaseScrapper():
@@ -36,12 +18,13 @@ class BaseScrapper():
         if not m:
             raise ValueError('Input url %s does not match the expected url pattern of this scrapper. Scrapper\'s url '
                              'pattern is %s' % (url, self.url_pattern))
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0'
+        fake = Faker()
+        headers = {
+            'User-Agent': random.choice(
+                [fake.chrome(), fake.firefox(), fake.internet_explorer(), fake.opera(), fake.safari()])
         }
         self.page_identifier = m.group(1)
-        page = requests.get(url, headers=self.headers)
-        print("Page encoding= %s" % page.encoding)
+        page = requests.get(url, headers=headers)
         return self.scrap_page(page)
 
     def scrap_page(self, page):
@@ -51,7 +34,7 @@ class BaseScrapper():
 class LFPFootballStepScrapper(BaseScrapper):
     def __init__(self):
         self.url_pattern = r'^http\:\/\/www\.lfp\.fr\/competitionPluginCalendrierResultat' \
-                           r'\/changeCalendrierHomeJournee\?c\=ligue1\&js\=([0-9]{1-2})+'
+                           r'\/changeCalendrierHomeJournee\?c\=ligue1\&js\=([0-9]{2})+'
         try:
             locale.setlocale(locale.LC_ALL, 'fra_fra')  # only on windows
         except locale.Error:
@@ -67,6 +50,7 @@ class LFPFootballStepScrapper(BaseScrapper):
             french_date = gd.xpath('preceding-sibling::h4[1]/text()')
             scrapped_games = gd.xpath('tr')
             for game in scrapped_games:
+                sg = {}
                 game_hour = game.xpath('td[@class="horaire"]/a/text()')[0].strip()
                 home = game.xpath('td[@class="domicile"]/a/text()')[0].strip()
                 away = game.xpath('td[@class="exterieur"]/a/text()')[0].strip()
@@ -79,9 +63,12 @@ class LFPFootballStepScrapper(BaseScrapper):
                     game_date = None
                 score_dom = score[0]
                 score_ext = score[1]
-                pivot = FootballGamePivot(game_date, rd, home, score_dom, away, score_ext)
-                pivot.gamesheet_identifier = match_id
-                result.append(pivot)
+                output = {'read_game_date': rd, 'read_home_team': home,
+                          'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
+                if game_date:
+                    output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
+
+                result.append(output)
 
         return result
 
@@ -117,21 +104,13 @@ class LEquipeFootballStepScrapper(BaseScrapper):
                 game_date = None
             score_dom = score[0]
             score_ext = score[1]
-            result.append(FootballGamePivot(game_date, rd, home, score_dom, away, score_ext))
+            output = {'read_game_date': rd, 'read_home_team': home,
+                      'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
+            if game_date:
+                output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
 
+            result.append(output)
         return result
-
-
-class GamesheetParticipantPivot():
-    def __init__(self, read_player, read_team, is_home=None):
-        self.read_player = read_player
-        self.read_team = read_team
-        self.is_home = is_home
-        if (not read_team) and (is_home is not None):
-            if is_home:
-                self.read_team = 'HOME'
-            else:
-                self.read_team = 'AWAY'
 
 
 class LFPFootballGamesheetScrapper(BaseScrapper):
@@ -151,23 +130,22 @@ class LFPFootballGamesheetScrapper(BaseScrapper):
             awayplayers = block_titulaires.xpath('following-sibling::div[@class="exterieur"][1]/ul/li/a/@href')
             for pl in homeplayers:
                 name = pl.strip()[len('/joueur/'):].replace('-', ' ')
-                result.append(GamesheetParticipantPivot(name, None, True))
+                result.append({'read_player': name, 'read_team': 'domicile', 'is_home': True})
             for pl in awayplayers:
                 name = pl.strip()[len('/joueur/'):].replace('-', ' ')
-                result.append(GamesheetParticipantPivot(name, None, False))
+                result.append({'read_player': name, 'read_team': 'exterieur', 'is_home': False})
         return result
 
 
-class WhoscoredMatchDataExtractor:
-    def extract(self, page_text):
-        tree = html.fromstring(page_text)
-        javascript_stats = tree.xpath('//div[@id="layout-content-wrapper"]/script[@type="text/javascript"]/text('
-                                      ')')
-        # extract javascript array named matchCentreData
-        pattern = r"(?:matchCentreData =)(.*);"
-        m = re.search(pattern, javascript_stats[0]).group().strip()[len('matchCentreData ='):][:-1]
-        # load string array (json notation) into python dict:
-        return json.loads(m)
+def extract_ws_matchdata(page_text):
+    tree = html.fromstring(page_text)
+    javascript_stats = tree.xpath('//div[@id="layout-content-wrapper"]/script[@type="text/javascript"]/text('
+                                  ')')
+    # extract javascript array named matchCentreData
+    pattern = r"(?:matchCentreData =)(.*);"
+    m = re.search(pattern, javascript_stats[0]).group().strip()[len('matchCentreData ='):][:-1]
+    # load string array (json notation) into python dict:
+    return json.loads(m)
 
 
 class WhoscoredFGSScrapper(BaseScrapper):
@@ -179,15 +157,12 @@ class WhoscoredFGSScrapper(BaseScrapper):
             locale.setlocale(locale.LC_ALL, 'en_GB')  # only on linux
 
     def scrap_page(self, page):
-        deserz = WhoscoredMatchDataExtractor().extract(page.text)
+        deserz = extract_ws_matchdata(page.text)
         result = []
-        for pl in deserz['home']['players']:
-            if ('isFirstEleven' in pl) or ('subbedInExpandedMinute' in pl):
-                result.append(GamesheetParticipantPivot(pl['name'], None, True))
-
-        for pl in deserz['away']['players']:
-            if ('isFirstEleven' in pl) or ('subbedInExpandedMinute' in pl):
-                result.append(GamesheetParticipantPivot(pl['name'], None, False))
+        for field in ['home', 'away']:
+            for pl in deserz[field]['players']:
+                if ('isFirstEleven' in pl) or ('subbedInExpandedMinute' in pl):
+                    result.append({'read_player': pl['name'], 'read_team': field, 'is_home': field == 'home'})
         return result
 
 
@@ -206,7 +181,7 @@ class WhoscoredStatsScrapper(BaseScrapper):
             target_dict[key] += 1
 
     def scrap_page(self, page):
-        deserz = WhoscoredMatchDataExtractor().extract(page.text)
+        deserz = extract_ws_matchdata(page.text)
         result = []
 
         total_time = deserz['maxMinute'] + 1
@@ -231,7 +206,7 @@ class WhoscoredStatsScrapper(BaseScrapper):
                 elif 'Goal' == ev['type']['displayName']:
                     if 'isOwnGoal' in ev:
                         goals_time['away' if field == 'home' else 'home'].append(ev['minute'])
-                        self.increment_or_set_key(event_stats[ev['playerId']], 'og')
+                        self.increment_or_set_key(event_stats[ev['playerId']], 'own_goals')
                     else:
                         goals_time[field].append(ev['minute'])
                         is_penalty = False
@@ -240,9 +215,9 @@ class WhoscoredStatsScrapper(BaseScrapper):
                                 is_penalty = True
                                 break
                         if is_penalty:
-                            self.increment_or_set_key(event_stats[ev['playerId']], 'penalties')
+                            self.increment_or_set_key(event_stats[ev['playerId']], 'penalties_scored')
                         else:
-                            self.increment_or_set_key(event_stats[ev['playerId']], 'goals')
+                            self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
                 elif 'Pass' == ev['type']['displayName']:
                     for q in ev['qualifiers']:
                         if 'IntentionalGoalAssist' == q['type']['displayName']:
