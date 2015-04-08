@@ -61,7 +61,7 @@ class ScrappedEntityAdminMixin(object):
                     scrapped_entity.scrapper.class_name, url_to_scrap))
         elif scrapped_entity.status == 'PENDING':
             new_status = 'COMPLETE'
-        elif scrapped_entity.status == 'COMPLETE':
+        else:
             new_status = 'AMENDED'
 
         scrapped_entity.status = new_status
@@ -140,6 +140,14 @@ class ScrappedFootballStepAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
 
 
 class FootballScrapperAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'class_name',
+        'category',
+    )
+
+
+class FootballRatingScrapperAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'class_name',
@@ -276,9 +284,60 @@ class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
         self.processor = scrappers.FootballStatsProcessor(obj)
         self.process_model(obj, form)
 
+    def save_related(self, request, form, formsets, change):
+        super(ScrappedTeamMeetingAdmin, self).save_related(request, form, formsets, change)
+        if form.instance.status in ['COMPLETE', 'AMENDED']:
+            translators.ScrappedTeamMeetingDataTranslator().translate(form.instance)
+
+
+class ExpectedRatingSourceAdmin(admin.ModelAdmin):
+    list_display = ('tournament_instance', 'get_sources')
+
+    def get_sources(self, obj):
+        return ", ".join([p.__str__() for p in obj.rating_source.all()])
+
+
+class ScrappedPlayerRatingsInline(admin.TabularInline):
+    model = models.ScrappedPlayerRatings
+    extra = 0
+    readonly_fields = (
+        'read_rating',
+    )
+    fields = (
+        'read_rating',
+        'actual_rating',
+    )
+
+
+class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
+    readonly_fields = ('teammeeting', 'rating_source')
+    model = models.ScrappedTeamMeetingRatings
+    form = TeamMeetingDataForm
+    fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url')
+    list_display = ('__str__', 'status')
+    inlines = [ScrappedPlayerRatingsInline, ]
+    scrapper_category = 'RATING'
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        restrained = self.restrain_scrapper_category(db_field, **kwargs)
+        return super(ScrappedRatingsAdmin, self).formfield_for_foreignkey(db_field, request, **restrained)
+
+    def save_model(self, request, obj, form, change):
+        super(ScrappedRatingsAdmin, self).save_model(request, obj, form, change)
+        self.processor = scrappers.FootballRatingsProcessor(obj)
+        self.process_model(obj, form)
+
+    # def save_related(self, request, form, formsets, change):
+    #     super(ScrappedRatingsAdmin, self).save_related(request, form, formsets, change)
+    #     if form.instance.status in ['COMPLETE', 'AMENDED']:
+    #         translators.ScrappedTeamMeetingDataTranslator().translate(form.instance)
+
 
 # Register your models here.
 admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
+admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
+admin.site.register(models.ExpectedRatingSource, ExpectedRatingSourceAdmin)
 admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
 admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)
 admin.site.register(models.ScrappedTeamMeetingData, ScrappedTeamMeetingAdmin)
+admin.site.register(models.ScrappedTeamMeetingRatings, ScrappedRatingsAdmin)

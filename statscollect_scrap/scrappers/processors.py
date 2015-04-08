@@ -56,7 +56,7 @@ class FootballStepProcessor(BaseProcessor):
         return matching_results
 
     def process_game(self, game):
-        #process_result = FootballMeetingProcessingResult(game_pivot)
+        # process_result = FootballMeetingProcessingResult(game_pivot)
         for field in ['home', 'away']:
             found, ratio = self.search_team(game['read_%s_team' % field])
             if found is not None:
@@ -182,3 +182,51 @@ class FootballStatsProcessor(BaseProcessor):
         obj = models.ScrappedPlayerStats()
         obj.teammeeting = self.parent_entity
         return obj
+
+
+class FootballRatingsProcessor(BaseProcessor):
+    # cutoff faible car la sélection a été déjà faite avant
+    CUTOFF_PREFERRED = 40
+
+    def __init__(self, parent_entity):
+        self.parent_entity = parent_entity
+        self.choices_home = dict(
+            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in FootballPerson.objects.filter(teammeetingperson__meeting=parent_entity.teammeeting,
+                                                       teammeetingperson__played_for=parent_entity.teammeeting.home_team).values(
+                'id', 'first_name', 'last_name', 'usual_name')]
+        )
+        self.choices_away = dict(
+            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in FootballPerson.objects.filter(teammeetingperson__meeting=parent_entity.teammeeting,
+                                                       teammeetingperson__played_for=parent_entity.teammeeting.away_team).values(
+                'id', 'first_name', 'last_name', 'usual_name')]
+        )
+
+    def create_target_object(self):
+        obj = models.ScrappedPlayerRatings()
+        obj.scrapped_meeting = self.parent_entity
+        return obj
+
+    def scrap_and_match(self, scrap_url, scrapper):
+        ratings = scrapper.scrap(scrap_url)
+        matching_results = []
+        for rating in ratings:
+            matching_results.append(self.process_rating(rating))
+        return matching_results
+
+    def process_rating(self, rating):
+        player_name = rating.pop('read_player')
+        if rating.pop('team') == 'home':
+            found, ratio = search_player(player_name, self.choices_home,
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
+        else:
+            found, ratio = search_player(player_name, self.choices_away,
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
+        if found is not None:
+            rating['fk_teammeetingperson'] = TeamMeetingPerson.objects.get(person=found,
+                                                                           meeting=self.parent_entity.teammeeting)
+        else:
+            raise ValueError('No matching player found for name %s : fix registered playered in the gamesheet then '
+                             'process again' % player_name)
+        return rating

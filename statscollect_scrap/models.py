@@ -31,11 +31,23 @@ class FootballScrapper(Scrapper):
 
 
 class FootballRatingScrapper(FootballScrapper):
-    source = models.ForeignKey(RatingSource)
+    rating_source = models.ForeignKey(RatingSource)
 
     def save(self, *args, **kwargs):
         self.category = 'RATING'
         super(FootballRatingScrapper, self).save(*args, **kwargs)
+
+
+class ExpectedRatingSource(models.Model):
+    tournament = models.ForeignKey(Tournament)
+    tournament_instance = ChainedForeignKey(
+        TournamentInstance,
+        chained_field='tournament',
+        chained_model_field='tournament',
+        show_all=False,
+        auto_choose=True
+    )
+    rating_source = models.ManyToManyField(RatingSource)
 
 
 class ScrappedEntity(models.Model):
@@ -182,6 +194,35 @@ class ScrappedPlayerStats(models.Model):
     actual_conceded = models.SmallIntegerField(default=0)
     read_own_goals = models.CharField(max_length=4, default='0')
     actual_own_goals = models.SmallIntegerField(default=0)
+
+    def __str__(self):
+        return self.teammeetingperson.__str__()
+
+
+class ScrappedTeamMeetingRatings(FootballScrappedEntity):
+    #scrapper = models.ForeignKey(FootballRatingScrapper, null=True)
+    teammeeting = models.ForeignKey(TeamMeeting)
+    rating_source = models.ForeignKey(RatingSource)
+
+    def __str__(self):
+        return "%s ratings for %s" % (self.rating_source, self.teammeeting)
+
+    def clean(self):
+        super(ScrappedTeamMeetingRatings, self).clean()
+        if self.scrapper is not None:
+            frs = self.scrapper.footballratingscrapper
+            if not frs:
+                raise ValidationError('The selected scrapper must be a FootballRatingScrapper')
+        if (self.status != 'CREATED') and (frs.rating_source_id != self.rating_source_id):
+            raise ValidationError('The selected scrapper does not match the rating_source of this '
+                                  'ScrappedTeamMeetingRatings')
+
+
+class ScrappedPlayerRatings(models.Model):
+    scrapped_meeting = models.ForeignKey(ScrappedTeamMeetingRatings, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True, editable=False)
+    read_rating = models.CharField(max_length=10)
+    actual_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.teammeetingperson.__str__()

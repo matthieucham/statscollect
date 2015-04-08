@@ -1,5 +1,6 @@
-from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet, ScrappedTeamMeetingData
-from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, TeamMeeting
+from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet, ScrappedTeamMeetingData, \
+    ScrappedTeamMeetingRatings, ExpectedRatingSource, RatingSource
+from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, TeamMeeting, FootballPersonalStats
 
 
 class ScrappedFootballStepTranslator():
@@ -92,3 +93,47 @@ class ScrappedGamesheetTranslator():
             stmd = ScrappedTeamMeetingData()
             stmd.teammeeting = team_meeting
             stmd.save()
+
+        # Research and create for each expected source
+        expected_rs = RatingSource.objects.filter(
+            expectedratingsource__tournament_instance=team_meeting.tournament_instance)
+        # expected = ExpectedRatingSource.objects.filter(
+        #     tournament_instance=team_meeting.tournament_instance)
+        for ers in expected_rs:
+            # rs = src.rating_source.all()
+            existing = ScrappedTeamMeetingRatings.objects.filter(rating_source=ers).filter(
+                teammeeting=team_meeting)
+            if len(existing) == 0:
+                stmd = ScrappedTeamMeetingRatings()
+                stmd.teammeeting = team_meeting
+                stmd.rating_source = ers
+                stmd.save()
+
+
+class ScrappedTeamMeetingDataTranslator():
+    def translate(self, scrapped):
+        if not (isinstance(scrapped, ScrappedTeamMeetingData)):
+            raise TypeError('ScrappedTeamMeetingDataTranslator operates on ScrappedTeamMeetingData '
+                            'instances.')
+        if scrapped.status in ['COMPLETE', 'AMENDED']:
+            for plstat in scrapped.scrappedplayerstats_set.all():
+                # Find existing entity
+                matching = FootballPersonalStats.objects.filter(meeting=scrapped.teammeeting).filter(
+                    person=plstat.teammeetingperson.person)
+                if len(matching) == 0:
+                    tmp_obj = FootballPersonalStats()
+                    tmp_obj.meeting = scrapped.teammeeting
+                    tmp_obj.person = plstat.teammeetingperson.person
+                else:
+                    tmp_obj = matching[0]
+                tmp_obj.goals_assists = plstat.actual_assists
+                tmp_obj.goals_conceded = plstat.actual_conceded
+                tmp_obj.goals_saved = plstat.actual_saves
+                tmp_obj.goals_scored = plstat.actual_goals_scored
+                tmp_obj.own_goals = plstat.actual_own_goals
+                tmp_obj.penalties_awarded = plstat.actual_penalties_assists
+                tmp_obj.penalties_scored = plstat.actual_penalties_scored
+                tmp_obj.playtime = plstat.actual_playtime
+                tmp_obj.save()
+        else:
+            print('Not completed yet.')
