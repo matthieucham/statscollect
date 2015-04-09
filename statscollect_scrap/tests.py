@@ -1,6 +1,7 @@
 from django.test import TestCase
 from statscollect_scrap import scrappers
-from statscollect_db.models import FootballMeeting
+from statscollect_db.models import FootballMeeting,TournamentInstanceStep
+from statscollect_scrap import models
 
 
 class TestFootballScrapper(TestCase):
@@ -17,15 +18,16 @@ class TestFootballScrapper(TestCase):
         self.assertTrue(True)
 
     def test_Fuzzy(self):
-        # my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=28
-        # &id=0'
-        my_url = 'http://www.lequipe.fr/Football/FootballResultat48019.html'
-        # scrapper = 'LFPFootballStepScrapper'
-        scrapper = 'LEquipeFootballStepScrapper'
-        results = scrappers.FootballStepProcessor().process(my_url, scrapper)
+        my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=28'
+        #my_url = 'http://www.lequipe.fr/Football/FootballResultat48019.html'
+        scrapper = 'LFPFootballStepScrapper'
+        #scrapper = 'LEquipeFootballStepScrapper'
+        step = models.ScrappedFootballStep()
+        step.actual_step = TournamentInstanceStep()
+        results = scrappers.FootballStepProcessor(step).process(my_url, scrapper)
         self.assertTrue(len(results) == 10)
         for res in results:
-            self.assertTrue(res.matching_home_team is not None)
+            print(res)
 
     def test_LFPGamesheet(self):
         my_url = 'http://www.lfp.fr/ligue1/feuille_match/showInfosMatch?matchId=79075&domId=35&extId=283&live=0&domNomClub=Paris+Saint-Germain&extNomClub=FC+Lorient'

@@ -1,27 +1,12 @@
 from django.contrib import admin
-from django import forms
 
-from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget
+from functools import partial
 
 from statscollect_scrap import models
-from statscollect_scrap import lookups
+from statscollect_scrap import forms
 from statscollect_scrap import scrappers
 from statscollect_scrap import translators
-
-
-class ScrapIdentifierForm(forms.ModelForm):
-    identifier = forms.CharField(max_length=8, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super(ScrapIdentifierForm, self).__init__(*args, **kwargs)
-        if self.instance and self.instance.scrapped_url:
-            self.fields['identifier'].required = False
-
-    def clean(self):
-        cleaned_data = self.cleaned_data
-        if self.instance.status == 'CREATED':
-            if not cleaned_data['scrapped_url'] and not cleaned_data['identifier']:
-                raise forms.ValidationError('Either scrapped_url or identifier is required')
+from statscollect_scrap import widgets
 
 
 class ScrappedEntityAdminMixin(object):
@@ -36,29 +21,33 @@ class ScrappedEntityAdminMixin(object):
     def process_model(self, scrapped_entity, form):
         assert isinstance(scrapped_entity, models.ScrappedEntity)
         if scrapped_entity.status == 'CREATED':
-            # Scrap this new object !
-            if form.cleaned_data.get('scrapped_url'):
-                url_to_scrap = form.cleaned_data.get('scrapped_url')
+            if scrapped_entity.scrapper.class_name == 'FakeScrapper':
+                # Do nothing (no scrapping required)
+                new_status = 'COMPLETE'
             else:
-                url_to_scrap = scrapped_entity.scrapper.url_pattern % form.cleaned_data.get('identifier')
-            scrapped_result = self.processor.process(url_to_scrap, scrapped_entity.scrapper.class_name)
-            if scrapped_result and len(scrapped_result) > 0:
-                for scrapped in scrapped_result:
-                    target = self.processor.create_target_object()
-                    for key, value in scrapped.items():
-                        if key.startswith('fk_'):
-                            setattr(target, key[3:], value)
-                        elif key.startswith('read_') or key.startswith('actual_') or key.startswith('ratio_'):
-                            setattr(target, key, value)
-                        else:
-                            setattr(target, 'read_' + key, value)
-                            setattr(target, 'actual_' + key, value)
-                    target.save()
-                scrapped_entity.scrapped_url = url_to_scrap
-                new_status = 'PENDING'
-            else:
-                raise ValueError('The scrapping processor %s could not scrap any stat from the URL %s' % (
-                    scrapped_entity.scrapper.class_name, url_to_scrap))
+                # Scrap this new object !
+                if form.cleaned_data.get('scrapped_url'):
+                    url_to_scrap = form.cleaned_data.get('scrapped_url')
+                else:
+                    url_to_scrap = scrapped_entity.scrapper.url_pattern % form.cleaned_data.get('identifier')
+                scrapped_result = self.processor.process(url_to_scrap, scrapped_entity.scrapper.class_name)
+                if scrapped_result and len(scrapped_result) > 0:
+                    for scrapped in scrapped_result:
+                        target = self.processor.create_target_object()
+                        for key, value in scrapped.items():
+                            if key.startswith('fk_'):
+                                setattr(target, key[3:], value)
+                            elif key.startswith('read_') or key.startswith('actual_') or key.startswith('ratio_'):
+                                setattr(target, key, value)
+                            else:
+                                setattr(target, 'read_' + key, value)
+                                setattr(target, 'actual_' + key, value)
+                        target.save()
+                    scrapped_entity.scrapped_url = url_to_scrap
+                    new_status = 'PENDING'
+                else:
+                    raise ValueError('The scrapping processor %s could not scrap any stat from the URL %s' % (
+                        scrapped_entity.scrapper.class_name, url_to_scrap))
         elif scrapped_entity.status == 'PENDING':
             new_status = 'COMPLETE'
         else:
@@ -99,28 +88,10 @@ class ScrappedFootballGameResultInline(admin.StackedInline):
     )
 
 
-class ScrappedFootballStepForm(ScrapIdentifierForm):
-    # actual_step = AutoCompleteSelectField(
-    # lookup_class=lookups.TournamentStepLookup,
-    # allow_new=True,
-    # required=True,
-    # widget=AutoComboboxSelectWidget
-    # )
-    #
-    # class Media:
-    # js = (
-    # '/static/statscollect_scrap/js/step_lookup.js',
-    # )
-
-    class Meta(object):
-        model = models.ScrappedFootballStep
-        fields = ('actual_tournament', 'actual_instance', 'actual_step', 'scrapper', 'identifier', 'scrapped_url',)
-
-
 class ScrappedFootballStepAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
     model = models.ScrappedFootballStep
-    form = ScrappedFootballStepForm
-    list_display = ('__str__', 'status')
+    form = forms.ScrappedFootballStepForm
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedFootballGameResultInline, ]
     scrapper_category = 'STEP'
 
@@ -136,7 +107,8 @@ class ScrappedFootballStepAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super(ScrappedFootballStepAdmin, self).save_related(request, form, formsets, change)
         if form.instance.status in ['COMPLETE', 'AMENDED']:
-            translators.ScrappedFootballStepTranslator().translate(form.instance)
+            translators.ScrappedFootballStepTranslator().translate(form.instance, update_names=form.cleaned_data.get(
+                'set_team_names', False))
 
 
 class FootballScrapperAdmin(admin.ModelAdmin):
@@ -155,19 +127,10 @@ class FootballRatingScrapperAdmin(admin.ModelAdmin):
     )
 
 
-class ParticipantAdminForm(forms.ModelForm):
-    actual_player = AutoCompleteSelectField(
-        lookup_class=lookups.ParticipantLookup
-    )
-
-    class Meta(object):
-        model = models.ScrappedGameSheetParticipant
-
-
 class ScrappedGameSheetParticipantInline(admin.StackedInline):
     model = models.ScrappedGameSheetParticipant
     extra = 0
-    form = ParticipantAdminForm
+    form = forms.ParticipantAdminForm
     readonly_fields = (
         'read_player',
         'read_team',
@@ -183,21 +146,9 @@ class ScrappedGameSheetParticipantInline(admin.StackedInline):
     )
 
 
-class ScrappedGamesheetForm(ScrapIdentifierForm):
-    set_current_teams = forms.BooleanField(required=False)
-
-    class Media:
-        js = (
-            '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
-        )
-
-    class Meta:
-        model = models.ScrappedGameSheet
-
-
 class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
-    form = ScrappedGamesheetForm
-    list_display = ('__str__', 'status')
+    form = forms.ScrappedGamesheetForm
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedGameSheetParticipantInline, ]
 
     fields = (
@@ -227,10 +178,6 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
         if form.instance.status in ['COMPLETE', 'AMENDED']:
             translators.ScrappedGamesheetTranslator().translate(form.instance, form.cleaned_data.get(
                 'set_current_teams', False))
-
-
-class TeamMeetingDataForm(ScrapIdentifierForm):
-    pass
 
 
 class ScrappedPlayerStatsInline(admin.TabularInline):
@@ -269,9 +216,9 @@ class ScrappedPlayerStatsInline(admin.TabularInline):
 class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
     readonly_fields = ('teammeeting',)
     model = models.ScrappedTeamMeetingData
-    form = TeamMeetingDataForm
+    form = forms.TeamMeetingDataForm
     fields = ('teammeeting', 'scrapper', 'identifier', 'scrapped_url')
-    list_display = ('__str__', 'status')
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedPlayerStatsInline, ]
     scrapper_category = 'STATS'
 
@@ -291,9 +238,9 @@ class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
 
 
 class ExpectedRatingSourceAdmin(admin.ModelAdmin):
-    list_display = ('tournament_instance', 'get_sources')
+    list_display = ('tournament_instance', 'expected_sources')
 
-    def get_sources(self, obj):
+    def expected_sources(self, obj):
         return ", ".join([p.__str__() for p in obj.rating_source.all()])
 
 
@@ -304,17 +251,32 @@ class ScrappedPlayerRatingsInline(admin.TabularInline):
         'read_rating',
     )
     fields = (
+        'teammeetingperson',
         'read_rating',
         'actual_rating',
     )
+
+    def get_formset(self, request, obj=None, **kwargs):
+        kwargs['formfield_callback'] = partial(self.formfield_for_dbfield, request=request, obj=obj)
+        return super(ScrappedPlayerRatingsInline, self).get_formset(request, obj, **kwargs)
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        scrapped_player_rating = kwargs.pop('obj', None)
+        if db_field.name == 'teammeetingperson':
+            kwargs['widget'] = widgets.ReadOnlySelectWidget()
+        formfield = super(ScrappedPlayerRatingsInline, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'teammeetingperson' and scrapped_player_rating:
+            formfield.queryset = models.TeamMeetingPerson.objects.filter(
+                meeting=scrapped_player_rating.teammeeting)
+        return formfield
 
 
 class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
     readonly_fields = ('teammeeting', 'rating_source')
     model = models.ScrappedTeamMeetingRatings
-    form = TeamMeetingDataForm
+    form = forms.TeamMeetingDataForm
     fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url')
-    list_display = ('__str__', 'status')
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedPlayerRatingsInline, ]
     scrapper_category = 'RATING'
 
@@ -327,10 +289,10 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
         self.processor = scrappers.FootballRatingsProcessor(obj)
         self.process_model(obj, form)
 
-    # def save_related(self, request, form, formsets, change):
-    #     super(ScrappedRatingsAdmin, self).save_related(request, form, formsets, change)
-    #     if form.instance.status in ['COMPLETE', 'AMENDED']:
-    #         translators.ScrappedTeamMeetingDataTranslator().translate(form.instance)
+    def save_related(self, request, form, formsets, change):
+        super(ScrappedRatingsAdmin, self).save_related(request, form, formsets, change)
+        if form.instance.status in ['COMPLETE', 'AMENDED']:
+            translators.ScrappedRatingsTranslator().translate(form.instance)
 
 
 # Register your models here.

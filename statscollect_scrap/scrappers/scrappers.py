@@ -31,6 +31,11 @@ class BaseScrapper():
         raise NotImplementedError('scrap_page must be implemented by subclasses')
 
 
+class FakeScrapper():
+
+    def scrap(self, url):
+        pass
+
 class LFPFootballStepScrapper(BaseScrapper):
     def __init__(self):
         self.url_pattern = "http\:\/\/www\.lfp\.fr\/competitionPluginCalendrierResultat\/changeCalendrierHomeJournee" \

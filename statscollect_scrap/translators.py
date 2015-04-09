@@ -1,6 +1,7 @@
 from statscollect_scrap.models import ScrappedFootballStep, ScrappedGameSheet, ScrappedTeamMeetingData, \
-    ScrappedTeamMeetingRatings, ExpectedRatingSource, RatingSource
-from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, TeamMeeting, FootballPersonalStats
+    ScrappedTeamMeetingRatings, RatingSource
+from statscollect_db.models import FootballMeeting, TournamentInstanceStep, TeamMeetingPerson, TeamMeeting, \
+    FootballPersonalStats, Rating, FootballTeam
 
 
 class ScrappedFootballStepTranslator():
@@ -8,7 +9,7 @@ class ScrappedFootballStepTranslator():
     Translates a ScrappedFootballGameResult to a FootballMeeting entity
     """
 
-    def translate(self, scrapped):
+    def translate(self, scrapped, **kwargs):
         if not isinstance(scrapped, ScrappedFootballStep):
             raise TypeError('ScrappedFootballStepTranslator operates on ScrappedFootballStep '
                             'instances.')
@@ -29,6 +30,14 @@ class ScrappedFootballStepTranslator():
                 meeting_obj.home_result = sg.actual_home_score
                 meeting_obj.away_result = sg.actual_away_score
                 meeting_obj.save()
+                if kwargs['update_names']:
+                    hteam = FootballTeam.objects.get(pk=meeting_obj.home_team_id)
+                    hteam.name = sg.read_home_team
+                    hteam.save()
+
+                    ateam = FootballTeam.objects.get(pk=meeting_obj.away_team_id)
+                    ateam.name = sg.read_away_team
+                    ateam.save()
             self.prepare_related(scrapped.actual_step)
         else:
             print('Not completed yet.')
@@ -97,10 +106,7 @@ class ScrappedGamesheetTranslator():
         # Research and create for each expected source
         expected_rs = RatingSource.objects.filter(
             expectedratingsource__tournament_instance=team_meeting.tournament_instance)
-        # expected = ExpectedRatingSource.objects.filter(
-        #     tournament_instance=team_meeting.tournament_instance)
         for ers in expected_rs:
-            # rs = src.rating_source.all()
             existing = ScrappedTeamMeetingRatings.objects.filter(rating_source=ers).filter(
                 teammeeting=team_meeting)
             if len(existing) == 0:
@@ -134,6 +140,31 @@ class ScrappedTeamMeetingDataTranslator():
                 tmp_obj.penalties_awarded = plstat.actual_penalties_assists
                 tmp_obj.penalties_scored = plstat.actual_penalties_scored
                 tmp_obj.playtime = plstat.actual_playtime
+                tmp_obj.save()
+        else:
+            print('Not completed yet.')
+
+
+class ScrappedRatingsTranslator():
+    def translate(self, scrapped):
+        if not (isinstance(scrapped, ScrappedTeamMeetingRatings)):
+            raise TypeError('ScrappedRatingsTranslator operates on ScrappedTeamMeetingRatings '
+                            'instances.')
+        if scrapped.status in ['COMPLETE', 'AMENDED']:
+            for sr in scrapped.scrappedplayerratings_set.all():
+                if sr.actual_rating is None:  # Some scrapped rating may be null, don't save them.
+                    continue
+                # Find existing entity
+                matching = Rating.objects.filter(meeting=scrapped.teammeeting).filter(
+                    person=sr.teammeetingperson.person).filter(source=scrapped.rating_source)
+                if len(matching) == 0:
+                    tmp_obj = Rating()
+                    tmp_obj.meeting = scrapped.teammeeting
+                    tmp_obj.person = sr.teammeetingperson.person
+                    tmp_obj.source = scrapped.rating_source
+                else:
+                    tmp_obj = matching[0]
+                tmp_obj.original_rating = sr.actual_rating
                 tmp_obj.save()
         else:
             print('Not completed yet.')

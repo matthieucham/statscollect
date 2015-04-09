@@ -35,8 +35,8 @@ class BaseProcessor():
 
 
 class FootballStepProcessor(BaseProcessor):
-    CUTOFF_PREFERRED = 70
-    CUTOFF_SECONDARY = 90
+    CUTOFF_PREFERRED = 80
+    CUTOFF_SECONDARY = 80
 
     # Ensemble de recherche.
     choices_preferred = dict([(elem['id'], elem['name']) for elem in FootballTeam.objects.all().values('id', 'name')])

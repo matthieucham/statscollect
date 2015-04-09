@@ -1,10 +1,10 @@
 from django.contrib import admin
-from merged_inlines.admin import MergedInlineAdmin
+from functools import partial
 
 from statscollect_db.forms import FootballPersonForm, FootballTeamForm, FootballMeetingForm, \
     FootballTeamMeetingPersonInlineForm
 
-from statscollect_db.models import FootballPerson
+from statscollect_db.models import FootballPerson, Person
 from statscollect_db.models.tournament_model import Tournament, TournamentInstance, \
     TournamentInstanceStep
 from statscollect_db.models.team_model import FootballTeam
@@ -66,15 +66,29 @@ class FootballPersonAdmin(admin.ModelAdmin):
         return FootballPerson.objects.filter(field__contains='FOOTBALL')
 
 
-class FootballStatsInline(admin.TabularInline):
+class FootballMeetingParticipantRelatedInline(admin.TabularInline):
+    def get_formset(self, request, obj=None, **kwargs):
+        kwargs['formfield_callback'] = partial(self.formfield_for_dbfield, request=request, obj=obj)
+        return super(FootballMeetingParticipantRelatedInline, self).get_formset(request, obj, **kwargs)
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        football_meeting = kwargs.pop('obj', None)
+        formfield = super(FootballMeetingParticipantRelatedInline, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'person' and football_meeting:
+            formfield.queryset = Person.objects.filter(
+                teammeeting=football_meeting)
+        return formfield
+
+
+class FootballStatsInline(FootballMeetingParticipantRelatedInline):
     model = FootballPersonalStats
 
 
-class RatingsInline(admin.StackedInline):
+class RatingsInline(FootballMeetingParticipantRelatedInline):
     model = Rating
 
 
-class TeamMeetingPersonInline(admin.TabularInline):
+class TeamMeetingPersonInline(FootballMeetingParticipantRelatedInline):
     model = TeamMeetingPerson
     form = FootballTeamMeetingPersonInlineForm
 
@@ -86,7 +100,6 @@ class FootballMeetingAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(RatingSource)
-admin.site.register(Rating)
 admin.site.register(FootballMeeting, FootballMeetingAdmin)
 admin.site.register(FootballTeam, FootballTeamAdmin)
 admin.site.register(FootballPerson, FootballPersonAdmin)

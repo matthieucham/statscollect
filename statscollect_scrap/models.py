@@ -177,7 +177,7 @@ class ScrappedTeamMeetingData(FootballScrappedEntity):
 
 class ScrappedPlayerStats(models.Model):
     teammeeting = models.ForeignKey(ScrappedTeamMeetingData, editable=False)
-    teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson, editable=False)
     read_playtime = models.CharField(max_length=4, default='0')
     actual_playtime = models.SmallIntegerField(default=0)
     read_goals_scored = models.CharField(max_length=4, default='0')
@@ -200,7 +200,7 @@ class ScrappedPlayerStats(models.Model):
 
 
 class ScrappedTeamMeetingRatings(FootballScrappedEntity):
-    #scrapper = models.ForeignKey(FootballRatingScrapper, null=True)
+    # scrapper = models.ForeignKey(FootballRatingScrapper, null=True)
     teammeeting = models.ForeignKey(TeamMeeting)
     rating_source = models.ForeignKey(RatingSource)
 
@@ -210,17 +210,20 @@ class ScrappedTeamMeetingRatings(FootballScrappedEntity):
     def clean(self):
         super(ScrappedTeamMeetingRatings, self).clean()
         if self.scrapper is not None:
-            frs = self.scrapper.footballratingscrapper
-            if not frs:
+            if self.scrapper.class_name == 'FakeScrapper':
+                return
+            try:
+                frs = self.scrapper.footballratingscrapper
+            except FootballRatingScrapper.DoesNotExist:
                 raise ValidationError('The selected scrapper must be a FootballRatingScrapper')
-        if (self.status != 'CREATED') and (frs.rating_source_id != self.rating_source_id):
-            raise ValidationError('The selected scrapper does not match the rating_source of this '
-                                  'ScrappedTeamMeetingRatings')
+            if (self.status != 'CREATED') and (frs.rating_source_id != self.rating_source_id):
+                raise ValidationError('The selected scrapper does not match the rating_source of this '
+                                      'ScrappedTeamMeetingRatings')
 
 
 class ScrappedPlayerRatings(models.Model):
     scrapped_meeting = models.ForeignKey(ScrappedTeamMeetingRatings, editable=False)
-    teammeetingperson = models.ForeignKey(TeamMeetingPerson, null=True, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson)
     read_rating = models.CharField(max_length=10)
     actual_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
