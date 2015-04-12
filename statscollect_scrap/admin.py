@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from functools import partial
 
 from statscollect_scrap import models
@@ -10,13 +9,7 @@ from statscollect_scrap import widgets
 
 
 class ScrappedEntityAdminMixin(object):
-    scrapper_category = None
     processor = None
-
-    def restrain_scrapper_category(self, db_field, **kwargs):
-        if db_field.name == 'scrapper':
-            kwargs["queryset"] = models.FootballScrapper.objects.filter(category=self.scrapper_category)
-        return kwargs
 
     def process_model(self, scrapped_entity, form):
         assert isinstance(scrapped_entity, models.ScrappedEntity)
@@ -57,6 +50,32 @@ class ScrappedEntityAdminMixin(object):
         scrapped_entity.save()
 
 
+class ScrappedModelAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
+
+    def add_view(self, request, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_scrap'] = True
+        return super(ScrappedModelAdmin, self).add_view(request, form_url, extra_context)
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        if object_id:
+            ss = self.model.objects.get(pk=object_id)
+            if ss.status == 'CREATED':
+                extra_context['show_scrap'] = True
+            else:
+                extra_context['show_confirm'] = True
+        else:
+            extra_context['show_confirm'] = True
+        return super(ScrappedModelAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'scrapper':
+            kwargs["queryset"] = models.FootballScrapper.objects.filter(category=self.scrapper_category)
+        return super(ScrappedModelAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 class ScrappedFootballGameResultInline(admin.StackedInline):
     model = models.ScrappedFootballGameResult
     extra = 0
@@ -88,16 +107,11 @@ class ScrappedFootballGameResultInline(admin.StackedInline):
     )
 
 
-class ScrappedFootballStepAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
+class ScrappedFootballStepAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     model = models.ScrappedFootballStep
     form = forms.ScrappedFootballStepForm
-    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedFootballGameResultInline, ]
     scrapper_category = 'STEP'
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        restrained = self.restrain_scrapper_category(db_field, **kwargs)
-        return super(ScrappedFootballStepAdmin, self).formfield_for_foreignkey(db_field, request, **restrained)
 
     def save_model(self, request, obj, form, change):
         super(ScrappedFootballStepAdmin, self).save_model(request, obj, form, change)
@@ -146,9 +160,8 @@ class ScrappedGameSheetParticipantInline(admin.StackedInline):
     )
 
 
-class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
+class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     form = forms.ScrappedGamesheetForm
-    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedGameSheetParticipantInline, ]
 
     fields = (
@@ -163,10 +176,6 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
         return self.readonly_fields
 
     scrapper_category = 'SHEET'
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        restrained = self.restrain_scrapper_category(db_field, **kwargs)
-        return super(ScrappedGameSheetAdmin, self).formfield_for_foreignkey(db_field, request, **restrained)
 
     def save_model(self, request, obj, form, change):
         super(ScrappedGameSheetAdmin, self).save_model(request, obj, form, change)
@@ -213,18 +222,13 @@ class ScrappedPlayerStatsInline(admin.TabularInline):
     )
 
 
-class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
+class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting',)
     model = models.ScrappedTeamMeetingData
     form = forms.TeamMeetingDataForm
     fields = ('teammeeting', 'scrapper', 'identifier', 'scrapped_url')
-    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedPlayerStatsInline, ]
     scrapper_category = 'STATS'
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        restrained = self.restrain_scrapper_category(db_field, **kwargs)
-        return super(ScrappedTeamMeetingAdmin, self).formfield_for_foreignkey(db_field, request, **restrained)
 
     def save_model(self, request, obj, form, change):
         super(ScrappedTeamMeetingAdmin, self).save_model(request, obj, form, change)
@@ -271,18 +275,13 @@ class ScrappedPlayerRatingsInline(admin.TabularInline):
         return formfield
 
 
-class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, admin.ModelAdmin):
+class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting', 'rating_source')
     model = models.ScrappedTeamMeetingRatings
     form = forms.TeamMeetingDataForm
     fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url')
-    list_display = ('__str__', 'status', 'created_at', 'updated_at')
     inlines = [ScrappedPlayerRatingsInline, ]
     scrapper_category = 'RATING'
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        restrained = self.restrain_scrapper_category(db_field, **kwargs)
-        return super(ScrappedRatingsAdmin, self).formfield_for_foreignkey(db_field, request, **restrained)
 
     def save_model(self, request, obj, form, change):
         super(ScrappedRatingsAdmin, self).save_model(request, obj, form, change)

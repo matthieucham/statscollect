@@ -1,6 +1,5 @@
 from django import forms
-
-from selectable.forms import AutoCompleteSelectField
+from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget
 
 from statscollect_scrap import lookups
 from statscollect_scrap import models
@@ -18,18 +17,25 @@ class ScrapIdentifierForm(forms.ModelForm):
 
 
 class ScrappedFootballStepForm(ScrapIdentifierForm):
-    # actual_step = AutoCompleteSelectField(
-    # lookup_class=lookups.TournamentStepLookup,
-    # allow_new=True,
-    # required=True,
-    # widget=AutoComboboxSelectWidget
-    # )
-    #
-    # class Media:
-    # js = (
-    # '/static/statscollect_scrap/js/step_lookup.js',
-    # )
+    actual_instance = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentInstanceLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+    actual_step = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentStepLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
     set_team_names = forms.BooleanField(required=False)
+
+    class Media:
+        js = (
+            '/static/statscollect_scrap/js/instance_lookup.js',
+            '/static/statscollect_scrap/js/step_lookup.js',
+        )
 
     class Meta(object):
         model = models.ScrappedFootballStep
@@ -47,10 +53,32 @@ class ParticipantAdminForm(forms.ModelForm):
 
 
 class ScrappedGamesheetForm(ScrapIdentifierForm):
+    actual_instance = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentInstanceLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+    actual_step = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentStepLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+    actual_meeting = AutoCompleteSelectField(
+        lookup_class=lookups.MeetingLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+
     set_current_teams = forms.BooleanField(required=False)
 
     class Media:
         js = (
+            '/static/statscollect_scrap/js/instance_lookup.js',
+            '/static/statscollect_scrap/js/step_lookup.js',
+            '/static/statscollect_scrap/js/meeting_lookup.js',
             '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
         )
 

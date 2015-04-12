@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from smart_selects.db_fields import ChainedForeignKey
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
     TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
 
@@ -40,12 +39,8 @@ class FootballRatingScrapper(FootballScrapper):
 
 class ExpectedRatingSource(models.Model):
     tournament = models.ForeignKey(Tournament)
-    tournament_instance = ChainedForeignKey(
-        TournamentInstance,
-        chained_field='tournament',
-        chained_model_field='tournament',
-        show_all=False,
-        auto_choose=True
+    tournament_instance = models.ForeignKey(
+        TournamentInstance
     )
     rating_source = models.ManyToManyField(RatingSource)
 
@@ -89,19 +84,11 @@ class FootballScrappedEntity(ScrappedEntity):
 
 class ScrappedFootballStep(FootballScrappedEntity):
     actual_tournament = models.ForeignKey(Tournament)
-    actual_instance = ChainedForeignKey(
-        TournamentInstance,
-        chained_field='actual_tournament',
-        chained_model_field='tournament',
-        show_all=False,
-        auto_choose=True
+    actual_instance = models.ForeignKey(
+        TournamentInstance
     )
-    actual_step = ChainedForeignKey(
-        TournamentInstanceStep,
-        chained_field='actual_instance',
-        chained_model_field='tournament_instance',
-        show_all=False,
-        auto_choose=True
+    actual_step = models.ForeignKey(
+        TournamentInstanceStep
     )
 
     def __str__(self):
@@ -130,26 +117,14 @@ class ScrappedFootballGameResult(models.Model):
 
 class ScrappedGameSheet(FootballScrappedEntity):
     actual_tournament = models.ForeignKey(Tournament)
-    actual_instance = ChainedForeignKey(
-        TournamentInstance,
-        chained_field='actual_tournament',
-        chained_model_field='tournament',
-        show_all=False,
-        auto_choose=True
+    actual_instance = models.ForeignKey(
+        TournamentInstance
     )
-    actual_step = ChainedForeignKey(
-        TournamentInstanceStep,
-        chained_field='actual_instance',
-        chained_model_field='tournament_instance',
-        show_all=False,
-        auto_choose=True
+    actual_step = models.ForeignKey(
+        TournamentInstanceStep
     )
-    actual_meeting = ChainedForeignKey(
+    actual_meeting = models.ForeignKey(
         TeamMeeting,
-        chained_field='actual_step',
-        chained_model_field='tournament_step',
-        show_all=False,
-        auto_choose=True
     )
 
     def __str__(self):
