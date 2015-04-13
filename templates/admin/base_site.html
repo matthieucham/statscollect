@@ -1,6 +1,6 @@
 {% extends "admin/base.html" %}
 
-{% block title %}{{ title }} | {{ site_title|default:_('Stats Collect Administration') }}{% endblock %}
+{% block title %}{{ title }} | {{ site_title|default:_('StatNuts') }}{% endblock %}
 
 {% block extrahead %}
     {% load selectable_tags %}
@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block branding %}
-<h1 id="site-name"><a href="{% url 'admin:index' %}">Stats Collect Administration</a></h1>
+<h1 id="site-name"><a href="{% url 'admin:index' %}">StatNuts Administration</a></h1>
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
