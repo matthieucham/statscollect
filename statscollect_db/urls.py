@@ -3,32 +3,18 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from statscollect_db import views
 from statscollect_db.views.apiroot_view import api_root
 
-ratingsource_list = views.RatingSourceViewSet.as_view({
-                                                          'get': 'list'
-                                                      }, suffix='List')
+ratingsource_list = views.RatingSourceViewSet.as_view({'get': 'list'}, suffix='List')
 ratingsource_detail = views.RatingSourceViewSet.as_view({
     'get': 'retrieve'
 })
-footballteam_list = views.FootballTeamViewSet.as_view({
-                                                          'get': 'list',
-                                                          'post': 'create'
-                                                      }, suffix='List')
+footballteam_list = views.FootballTeamViewSet.as_view({'get': 'list'}, suffix='List')
 footballteam_detail = views.FootballTeamViewSet.as_view({
     'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-    'delete': 'destroy'
 })
-footballplayer_list = views.FootballPlayerViewSet.as_view({
-                                                              'get': 'list',
-                                                              'post': 'create',
-                                                          }, suffix='List')
+footballplayer_list = views.FootballPlayerViewSet.as_view({'get': 'list'}, suffix='List')
 
 footballplayer_detail = views.FootballPlayerViewSet.as_view({
     'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-    'delete': 'destroy'
 })
 
 person_urls = patterns(
@@ -36,9 +22,6 @@ person_urls = patterns(
     url(r'^/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
         views.PersonViewSet.as_view({
             'get': 'retrieve',
-            'put': 'update',
-            'patch': 'partial_update',
-            'delete': 'destroy'
         }),
         name='person_detail'),
 )
