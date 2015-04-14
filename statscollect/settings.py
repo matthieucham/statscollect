@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from django.contrib import messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -42,6 +43,10 @@ INSTALLED_APPS = (
     # contrib
     'django_extensions',
     'django_countries',
+    'crispy_forms',
+    'honeypot',
+    'envelope',
+
 
     # django-selectable
     'selectable',
@@ -86,6 +91,12 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -119,8 +130,40 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': [
     #    'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     #]
-    'PAGINATE_BY': 10,
+    'PAGINATE_BY': 40,
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
+HONEYPOT_FIELD_NAME = 'topyenoh'
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = 'statnuts.kcup@gmail.com'
+
+#EMAIL_HOST_PASSWORD = 'casacavoquinho'
+
+EMAIL_SUBJECT_PREFIX = '[StatNuts] '
+
+DEFAULT_FROM_EMAIL = 'statnuts.kcup@gmail.com'
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger'  # 'error' by default
+}
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
 TEST_RUNNER = 'statscollect_scrap.testrunner.NoDbTestRunner'
+
+try:
+    LOCAL_SETTINGS
+except NameError:
+    try:
+        from .local_settings import *
+    except ImportError:
+        pass

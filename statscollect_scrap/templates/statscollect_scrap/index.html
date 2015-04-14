@@ -1,9 +1,0 @@
-{% if tournament_list %}
-    <ul>
-    {% for tn in tournament_list %}
-        <li><a href=" {%  url 'scrap:tournament_detail' tn.id %}">{{ tn }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No tournament are available.</p>
-{% endif %}
