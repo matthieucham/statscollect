@@ -44,6 +44,8 @@ class FootballMeeting(TeamMeeting):
 
     class Meta:
         proxy = True
+        verbose_name = 'rencontre (football)'
+        verbose_name_plural = 'rencontres (football)'
 
 
 class TeamMeetingPerson(models.Model):

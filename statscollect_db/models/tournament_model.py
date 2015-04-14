@@ -20,6 +20,9 @@ class Tournament(MetaModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'compétition'
+
 
 class TournamentInstance(MetaModel):
     STATUS_CHOICES = (
@@ -33,6 +36,10 @@ class TournamentInstance(MetaModel):
     def __str__(self):
         return "%s / %s" % (self.tournament.name, self.name)
 
+    class Meta:
+        verbose_name = 'édition de compétition'
+        verbose_name_plural = 'éditions de compétition'
+
 
 class TournamentInstanceStep(MetaModel):
     tournament_instance = models.ForeignKey(TournamentInstance, related_name='steps')
@@ -40,3 +47,7 @@ class TournamentInstanceStep(MetaModel):
 
     def __str__(self):
         return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'journée de compétition'
+        verbose_name_plural = 'journées de compétition'

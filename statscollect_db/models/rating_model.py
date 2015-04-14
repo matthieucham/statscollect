@@ -24,9 +24,16 @@ class RatingSource(MetaModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'source de notes'
+        verbose_name_plural = 'sources de notes'
+
 
 class Rating(models.Model):
     person = models.ForeignKey(Person)
     meeting = models.ForeignKey(Meeting)
     source = models.ForeignKey(RatingSource)
     original_rating = models.DecimalField(null=True, max_digits=5, decimal_places=2)
+
+    class Meta:
+        verbose_name = 'note'

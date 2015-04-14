@@ -6,7 +6,8 @@ from statscollect_scrap import models
 
 
 class ScrapIdentifierForm(forms.ModelForm):
-    identifier = forms.CharField(max_length=8, required=False)
+    identifier = forms.CharField(max_length=8, required=False,
+                                 help_text='Identifiant du match ou de la journée dans l\'URL de la page à importer. Dans le doute, laissez ce champ vide et copiez l\'adresse complète dans scrapped_url')
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -29,7 +30,8 @@ class ScrappedFootballStepForm(ScrapIdentifierForm):
         required=True,
         widget=AutoComboboxSelectWidget
     )
-    set_team_names = forms.BooleanField(required=False)
+    set_team_names = forms.BooleanField(required=False,
+                                        help_text='Cocher cette case pour mettre à jour les noms "longs" des équipes avec les données importées de cette page')
 
     class Media:
         js = (
@@ -72,7 +74,8 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
         widget=AutoComboboxSelectWidget
     )
 
-    set_current_teams = forms.BooleanField(required=False)
+    set_current_teams = forms.BooleanField(required=False,
+                                           help_text='Cocher cette case pour mettre à jour les équipes actuelles de ces joueurs avec les données importées')
 
     class Media:
         js = (

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
     TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
 
@@ -55,7 +56,8 @@ class ScrappedEntity(models.Model):
 
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField(editable=False)
-    scrapped_url = models.URLField(max_length=300, blank=True, null=True)
+    scrapped_url = models.URLField(max_length=300, blank=True, null=True,
+                                   help_text='Adresse HTTP complète de la page à importer')
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default='CREATED', editable=False)
 
     def save(self, *args, **kwargs):
@@ -69,7 +71,8 @@ class ScrappedEntity(models.Model):
 
 
 class FootballScrappedEntity(ScrappedEntity):
-    scrapper = models.ForeignKey(FootballScrapper, null=True)
+    scrapper = models.ForeignKey(FootballScrapper, null=True,
+                                 help_text='Choisir un robot d\'importation correspondant à scrapped_url')
 
     def clean(self):
         if self.status != 'CREATED':
@@ -83,16 +86,20 @@ class FootballScrappedEntity(ScrappedEntity):
 
 
 class ScrappedFootballStep(FootballScrappedEntity):
-    actual_tournament = models.ForeignKey(Tournament)
+    actual_tournament = models.ForeignKey(Tournament, help_text='Championnat ou compétition')
     actual_instance = models.ForeignKey(
-        TournamentInstance
+        TournamentInstance, help_text='Edition de cette compétition'
     )
     actual_step = models.ForeignKey(
-        TournamentInstanceStep
+        TournamentInstanceStep, help_text='Journée de cette édition'
     )
 
     def __str__(self):
         return "Step %s of %s" % (self.actual_step, self.actual_instance)
+
+    class Meta:
+        verbose_name = 'import de journée'
+        verbose_name_plural = 'imports de journées'
 
 
 class ScrappedFootballGameResult(models.Model):
@@ -114,6 +121,9 @@ class ScrappedFootballGameResult(models.Model):
         return "[%s] %s %i - %i %s" % (self.read_game_date, self.read_home_team, self.read_home_score,
                                        self.read_away_score, self.read_away_team)
 
+    class Meta:
+        verbose_name = 'résultat'
+
 
 class ScrappedGameSheet(FootballScrappedEntity):
     actual_tournament = models.ForeignKey(Tournament)
@@ -124,60 +134,76 @@ class ScrappedGameSheet(FootballScrappedEntity):
         TournamentInstanceStep
     )
     actual_meeting = models.ForeignKey(
-        TeamMeeting,
+        TeamMeeting, help_text='Rencontre'
     )
 
     def __str__(self):
         return self.actual_meeting.__str__()
 
+    class Meta:
+        verbose_name = 'import de feuille de match'
+        verbose_name_plural = 'imports de feuilles de match'
+
 
 class ScrappedGameSheetParticipant(models.Model):
     scrapped_game_sheet = models.ForeignKey(ScrappedGameSheet)
-    read_player = models.CharField(max_length=100, blank=True)
-    actual_player = models.ForeignKey(Person, null=True)
-    read_team = models.CharField(max_length=50, blank=True)
-    actual_team = models.ForeignKey(Team, null=True)
-    ratio_player = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    read_player = models.CharField(max_length=100, blank=True, help_text='Nom du joueur importé de la page lue')
+    actual_player = models.ForeignKey(Person, null=True, help_text='Joueur réel')
+    read_team = models.CharField(max_length=50, blank=True,
+                                 help_text='Nom de l\'équipe ou du club, importé de la page lue')
+    actual_team = models.ForeignKey(Team, null=True, help_text='Club ou équipe réelle')
+    ratio_player = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True,
+                                       help_text='Taux de correspondance entre nom lu et joueur préselectionné (%)')
 
     def __str__(self):
         return self.read_player
 
+    class Meta:
+        verbose_name = 'joueur'
+
 
 class ScrappedTeamMeetingData(FootballScrappedEntity):
-    teammeeting = models.ForeignKey(TeamMeeting)
+    teammeeting = models.ForeignKey(TeamMeeting, help_text='Rencontre')
 
     def __str__(self):
         return self.teammeeting.__str__()
+
+    class Meta:
+        verbose_name = 'import de statistiques de match'
+        verbose_name_plural = 'imports de statistiques de match'
 
 
 class ScrappedPlayerStats(models.Model):
     teammeeting = models.ForeignKey(ScrappedTeamMeetingData, editable=False)
     teammeetingperson = models.ForeignKey(TeamMeetingPerson, editable=False)
-    read_playtime = models.CharField(max_length=4, default='0')
-    actual_playtime = models.SmallIntegerField(default=0)
-    read_goals_scored = models.CharField(max_length=4, default='0')
-    actual_goals_scored = models.SmallIntegerField(default=0)
-    read_penalties_scored = models.CharField(max_length=4, default='0')
-    actual_penalties_scored = models.SmallIntegerField(default=0)
-    read_assists = models.CharField(max_length=4, default='0')
-    actual_assists = models.SmallIntegerField(default=0)
-    read_penalties_assists = models.CharField(max_length=4, default='0')
-    actual_penalties_assists = models.SmallIntegerField(default=0)
-    read_saves = models.CharField(max_length=4, default='0')
-    actual_saves = models.SmallIntegerField(default=0)
-    read_conceded = models.CharField(max_length=4, default='0')
-    actual_conceded = models.SmallIntegerField(default=0)
-    read_own_goals = models.CharField(max_length=4, default='0')
-    actual_own_goals = models.SmallIntegerField(default=0)
+    read_playtime = models.CharField(max_length=4, default='0', help_text='Temps de jeu importé')
+    actual_playtime = models.SmallIntegerField(default=0, help_text='Temps de jeu réel')
+    read_goals_scored = models.CharField(max_length=4, default='0',
+                                         help_text='Nombre importé de buts marqués (hors pénaltys)')
+    actual_goals_scored = models.SmallIntegerField(default=0, help_text='Nombre réel de buts marqués (hors pénaltys)')
+    read_penalties_scored = models.CharField(max_length=4, default='0', help_text='Nombre importé de pénaltys marqués')
+    actual_penalties_scored = models.SmallIntegerField(default=0, help_text='Nombre réel de pénaltys marqués')
+    read_assists = models.CharField(max_length=4, default='0', help_text='Nombre importé de passes décisives')
+    actual_assists = models.SmallIntegerField(default=0, help_text='Nombre réel de passes décisives')
+    read_penalties_assists = models.CharField(max_length=4, default='0', help_text='Nombre importé de pénaltys obtenus')
+    actual_penalties_assists = models.SmallIntegerField(default=0, help_text='Nombre réel de pénaltys obtenus')
+    read_saves = models.CharField(max_length=4, default='0', help_text='Nombre importé d\'arrêts')
+    actual_saves = models.SmallIntegerField(default=0, help_text='Nombre réel d\'arrêts')
+    read_conceded = models.CharField(max_length=4, default='0', help_text='Nombre importé de buts encaissés')
+    actual_conceded = models.SmallIntegerField(default=0, help_text='Nombre réel de buts encaissés')
+    read_own_goals = models.CharField(max_length=4, default='0', help_text='Nombre importé de buts contre son camp')
+    actual_own_goals = models.SmallIntegerField(default=0, help_text='Nombre réel de buts contre son camp')
 
     def __str__(self):
         return self.teammeetingperson.__str__()
 
+    verbose_name = 'stats'
+    verbose_name_plural = 'stats'
+
 
 class ScrappedTeamMeetingRatings(FootballScrappedEntity):
-    # scrapper = models.ForeignKey(FootballRatingScrapper, null=True)
-    teammeeting = models.ForeignKey(TeamMeeting)
-    rating_source = models.ForeignKey(RatingSource)
+    teammeeting = models.ForeignKey(TeamMeeting, help_text='Rencontre')
+    rating_source = models.ForeignKey(RatingSource, help_text='Source de notation')
 
     def __str__(self):
         return "%s ratings for %s" % (self.rating_source, self.teammeeting)
@@ -195,12 +221,19 @@ class ScrappedTeamMeetingRatings(FootballScrappedEntity):
                 raise ValidationError('The selected scrapper does not match the rating_source of this '
                                       'ScrappedTeamMeetingRatings')
 
+    class Meta:
+        verbose_name = 'import de notes'
+        verbose_name_plural = 'imports de notes'
+
 
 class ScrappedPlayerRatings(models.Model):
     scrapped_meeting = models.ForeignKey(ScrappedTeamMeetingRatings, editable=False)
     teammeetingperson = models.ForeignKey(TeamMeetingPerson)
-    read_rating = models.CharField(max_length=10)
-    actual_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    read_rating = models.CharField(max_length=10, help_text='Note lue')
+    actual_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text='Note réelle')
 
     def __str__(self):
         return self.teammeetingperson.__str__()
+
+    class Meta:
+        verbose_name = 'note'

@@ -140,13 +140,19 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 EMAIL_PORT = 587
 
+EMAIL_USE_TLS = True
+
 EMAIL_HOST_USER = 'statnuts.kcup@gmail.com'
 
-#EMAIL_HOST_PASSWORD = 'casacavoquinho'
+EMAIL_HOST_PASSWORD = 'ev_lrZefR3156[t___iuh@po'
 
 EMAIL_SUBJECT_PREFIX = '[StatNuts] '
 
 DEFAULT_FROM_EMAIL = 'statnuts.kcup@gmail.com'
+
+ENVELOPE_EMAIL_RECIPIENTS = ['matthieu.cham@gmail.com']
+
+ENVELOPE_USE_HTML_EMAIL = False
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'debug',

@@ -30,6 +30,8 @@ class Team(MetaModel):
 class FootballTeam(Team):
     class Meta:
         proxy = True
+        verbose_name = 'club (football)'
+        verbose_name_plural = 'clubs (football)'
 
     objects = FootballTeamManager()
 

@@ -37,6 +37,7 @@ class Person(MetaModel):
 class FootballPerson(Person):
     class Meta:
         proxy = True
+        verbose_name = 'footballeur'
 
     objects = FootballPersonManager()
 
