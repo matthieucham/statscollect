@@ -1,4 +1,9 @@
 {% extends "admin/change_form.html" %}
+{% load markdown_filter %}
+
+{% block after_field_sets %}
+    {{ '/templates/admin/statscollect_scrap/scrappedteammeetingratings/instructions.md'|markdownify|safe }}
+{% endblock %}
 
 {% block submit_buttons_bottom %}
     {% load i18n admin_urls %}

@@ -79,6 +79,7 @@ class ScrappedModelAdmin(admin.ModelAdmin):
 class ScrappedFootballGameResultInline(admin.StackedInline):
     model = models.ScrappedFootballGameResult
     extra = 0
+    max_num = 0
     readonly_fields = (
         'read_game_date',
         'read_home_team',
@@ -192,6 +193,7 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 class ScrappedPlayerStatsInline(admin.TabularInline):
     model = models.ScrappedPlayerStats
     extra = 0
+    max_num = 0
     can_delete = False
     readonly_fields = (
         'read_playtime',
