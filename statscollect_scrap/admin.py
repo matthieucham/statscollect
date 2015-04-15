@@ -192,6 +192,7 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 class ScrappedPlayerStatsInline(admin.TabularInline):
     model = models.ScrappedPlayerStats
     extra = 0
+    can_delete = False
     readonly_fields = (
         'read_playtime',
         'read_goals_scored',
