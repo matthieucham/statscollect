@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'honeypot',
     'envelope',
+    'oauth2_provider',
 
 
     # django-selectable
@@ -127,10 +128,14 @@ COUNTRIES_FIRST_REPEAT = True
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #    'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    #]
-    'PAGINATE_BY': 40,
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'PAGINATE_BY': 20,
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 

@@ -9,7 +9,7 @@ from statscollect_db import serializers
 class FootballMeetingViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.FootballMeetingDetailedSerializer
     lookup_field = 'uuid'
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return models.FootballMeeting.objects.all().order_by('date')
@@ -18,7 +18,6 @@ class FootballMeetingViewSet(viewsets.ModelViewSet):
 class FootballMeetingSummaryViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.FootballMeetingSummarySerializer
     lookup_field = 'uuid'
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
         person = self.kwargs.get('person')

@@ -9,7 +9,6 @@ from statscollect_db.serializers import FootballTeamSerializer
 class FootballTeamViewSet(viewsets.ModelViewSet):
     serializer_class = FootballTeamSerializer
     lookup_field = 'uuid'
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_backends = (
         filters.OrderingFilter,
         filters.DjangoFilterBackend,

@@ -16,4 +16,5 @@ urlpatterns = patterns('',
                        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
                        url(r'^selectable/', include('selectable.urls')),
                        url(r'^contact/', ContactPage.as_view(), name='envelope-contact'),
+                       url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 )

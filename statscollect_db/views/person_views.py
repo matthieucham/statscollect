@@ -10,7 +10,6 @@ class PersonViewSet(viewsets.ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
     lookup_field = 'uuid'
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_backends = (
         filters.SearchFilter,
         filters.DjangoFilterBackend
