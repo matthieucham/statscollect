@@ -1,0 +1,14 @@
+{% extends "admin/app_index.html" %}
+{% load markdown_filter %}
+
+{% block extrahead %}{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+  <div class="md-content">
+    {{ '/templates/admin/statscollect_scrap/scrappedfootballstep/scrapping.md'|markdownify|safe }}
+    {{ '/templates/admin/statscollect_scrap/scrappedgamesheet/scrapping.md'|markdownify|safe }}
+    {{ '/templates/admin/statscollect_scrap/scrappedteammeetingdata/scrapping.md'|markdownify|safe }}
+    {{ '/templates/admin/statscollect_scrap/scrappedteammeetingratings/scrapping.md'|markdownify|safe }}
+  </div>
+{% endblock %}
