@@ -21,7 +21,7 @@ class BaseScrapper():
         fake = Faker()
         headers = {
             'User-Agent': random.choice(
-                [fake.chrome(), fake.firefox(), fake.internet_explorer(), fake.opera(), fake.safari()])
+                [fake.chrome(), fake.firefox(), fake.safari()])
         }
         self.page_identifier = m.group(1)
         page = requests.get(url, headers=headers)

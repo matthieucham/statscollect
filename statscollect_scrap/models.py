@@ -75,7 +75,7 @@ class FootballScrappedEntity(ScrappedEntity):
                                  help_text='Choisir un robot d\'importation correspondant à scrapped_url')
 
     def clean(self):
-        if self.status != 'CREATED':
+        if self.status != 'CREATED' and self.scrapper.class_name != 'FakeScrapper':
             if not self.scrapped_url:
                 raise ValidationError('Scrapped URL is required')
             if not self.scrapper:

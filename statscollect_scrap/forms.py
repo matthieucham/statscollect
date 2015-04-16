@@ -12,8 +12,8 @@ class ScrapIdentifierForm(forms.ModelForm):
     def clean(self):
         cleaned_data = self.cleaned_data
         if self.instance.status == 'CREATED':
-            if cleaned_data['scrapper'].class_name != 'FakeScrapper':
-                if not cleaned_data['scrapped_url'] and not cleaned_data['identifier']:
+            if 'scrapper' in cleaned_data and cleaned_data['scrapper'].class_name != 'FakeScrapper':
+                if not ('scrapped_url' in cleaned_data or 'identifier' in cleaned_data):
                     raise forms.ValidationError('Either scrapped_url or identifier is required')
 
 
@@ -59,7 +59,8 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
         lookup_class=lookups.TournamentInstanceLookup,
         allow_new=False,
         required=True,
-        widget=AutoComboboxSelectWidget
+        widget=AutoComboboxSelectWidget,
+
     )
     actual_step = AutoCompleteSelectField(
         lookup_class=lookups.TournamentStepLookup,

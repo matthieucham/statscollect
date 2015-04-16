@@ -172,6 +172,10 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
+            #self.form.declared_fields['actual_tournament'].required = False
+            self.form.declared_fields['actual_instance'].required = False
+            self.form.declared_fields['actual_step'].required = False
+            self.form.declared_fields['actual_meeting'].required = False
             return self.readonly_fields + (
                 'actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting')
         return self.readonly_fields
