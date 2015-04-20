@@ -220,9 +220,18 @@ class FootballRatingsProcessor(BaseProcessor):
         if rating.pop('team') == 'home':
             found, ratio = search_player(player_name, self.choices_home,
                                          FootballStatsProcessor.CUTOFF_PREFERRED)
+            if found is None:
+                print("No match for home, searching away in case of inversion")
+                found, ratio = search_player(player_name, self.choices_away,
+                                             FootballStatsProcessor.CUTOFF_PREFERRED)
         else:
             found, ratio = search_player(player_name, self.choices_away,
                                          FootballStatsProcessor.CUTOFF_PREFERRED)
+            if found is None:
+                print("No match for away, searching home in case of inversion")
+                found, ratio = search_player(player_name, self.choices_home,
+                                             FootballStatsProcessor.CUTOFF_PREFERRED)
+
         if found is not None:
             rating['fk_teammeetingperson'] = TeamMeetingPerson.objects.get(person=found,
                                                                            meeting=self.parent_entity.teammeeting)

@@ -92,3 +92,12 @@ class TestFootballScrapper(TestCase):
         self.assertTrue(len(results) == 28)
         for res in results:
             print(res)
+
+    def test_OrangeNotesReverseTeams(self):
+        my_url = 'http://sports.orange.fr/football/compte-rendu/ligue-1/montpellier-lyon.html'
+        scrapper = 'OrangeRatingsScrapper'
+        results = scrappers.FootballRatingsProcessor(
+            FootballMeeting.objects.get(uuid='9ede93c2-41b9-49a9-943e-d44c764ea081')).process(my_url, scrapper)
+        self.assertTrue(len(results) == 22)
+        for res in results:
+            print(res)
