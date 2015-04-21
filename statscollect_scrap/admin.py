@@ -52,6 +52,7 @@ class ScrappedEntityAdminMixin(object):
 
 class ScrappedModelAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
+    actions = ['delete_complete']
 
     def add_view(self, request, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -74,6 +75,13 @@ class ScrappedModelAdmin(admin.ModelAdmin):
         if db_field.name == 'scrapper':
             kwargs["queryset"] = models.FootballScrapper.objects.filter(category=self.scrapper_category)
         return super(ScrappedModelAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def delete_complete(self, request, queryset):
+        self.model.objects.filter(status__in=['COMPLETE', 'AMENDED']).delete()
+        self.message_user(request, "Entités %s avec status COMPLETE ou AMENDED effacées" %
+                          self.model._meta.verbose_name_plural)
+
+    delete_complete.short_description = "Effacer les entités COMPLETE ou AMENDED"
 
 
 class ScrappedFootballGameResultInline(admin.StackedInline):
@@ -172,7 +180,7 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
-            #self.form.declared_fields['actual_tournament'].required = False
+            # self.form.declared_fields['actual_tournament'].required = False
             self.form.declared_fields['actual_instance'].required = False
             self.form.declared_fields['actual_step'].required = False
             self.form.declared_fields['actual_meeting'].required = False
