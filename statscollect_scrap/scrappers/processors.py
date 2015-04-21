@@ -186,7 +186,8 @@ class FootballStatsProcessor(BaseProcessor):
 
 class FootballRatingsProcessor(BaseProcessor):
     # cutoff faible car la sélection a été déjà faite avant
-    CUTOFF_PREFERRED = 70
+    CUTOFF_HARSH = 40
+    CUTOFF_EASY = 70
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
@@ -218,19 +219,15 @@ class FootballRatingsProcessor(BaseProcessor):
     def process_rating(self, rating):
         player_name = rating.pop('read_player')
         if rating.pop('team') == 'home':
-            found, ratio = search_player(player_name, self.choices_home,
-                                         FootballRatingsProcessor.CUTOFF_PREFERRED)
+            found, ratio = search_player(player_name, self.choices_home, FootballRatingsProcessor.CUTOFF_HARSH)
             if found is None:
                 print("No match for home, searching away in case of inversion")
-                found, ratio = search_player(player_name, self.choices_away,
-                                             FootballRatingsProcessor.CUTOFF_PREFERRED)
+                found, ratio = search_player(player_name, self.choices_away, FootballRatingsProcessor.CUTOFF_EASY)
         else:
-            found, ratio = search_player(player_name, self.choices_away,
-                                         FootballRatingsProcessor.CUTOFF_PREFERRED)
+            found, ratio = search_player(player_name, self.choices_away, FootballRatingsProcessor.CUTOFF_HARSH)
             if found is None:
                 print("No match for away, searching home in case of inversion")
-                found, ratio = search_player(player_name, self.choices_home,
-                                             FootballRatingsProcessor.CUTOFF_PREFERRED)
+                found, ratio = search_player(player_name, self.choices_home, FootballRatingsProcessor.CUTOFF_EASY)
 
         if found is not None:
             rating['fk_teammeetingperson'] = TeamMeetingPerson.objects.get(person=found,
