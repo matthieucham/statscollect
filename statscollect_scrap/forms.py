@@ -6,7 +6,7 @@ from statscollect_scrap import models
 
 
 class ScrapIdentifierForm(forms.ModelForm):
-    identifier = forms.CharField(max_length=8, required=False,
+    identifier = forms.CharField(max_length=100, required=False,
                                  help_text='Identifiant du match ou de la journée dans l\'URL de la page à importer. Dans le doute, laissez ce champ vide et copiez l\'adresse complète dans scrapped_url')
 
     def clean(self):
