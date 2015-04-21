@@ -339,7 +339,8 @@ class SportsFrRatingsScrapper(BaseScrapper):
             href = pl.xpath('a/@href')[0].strip()
             plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
             for mark in pl.xpath('a/span[@class="numero"]/text()'):
-                plrating['rating'] = mark
+                if mark != '-':
+                    plrating['rating'] = mark
             result.append(plrating)
         for pl in awayplayers:
             plrating = {'team': 'away'}
