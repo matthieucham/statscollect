@@ -138,7 +138,7 @@ class FootballGamesheetProcessor(BaseProcessor):
 
 class FootballStatsProcessor(BaseProcessor):
     # cutoff faible car la sélection a été déjà faite avant
-    CUTOFF_PREFERRED = 70
+    CUTOFF_PREFERRED = 40
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
@@ -186,7 +186,7 @@ class FootballStatsProcessor(BaseProcessor):
 
 class FootballRatingsProcessor(BaseProcessor):
     # cutoff faible car la sélection a été déjà faite avant
-    CUTOFF_PREFERRED = 70
+    CUTOFF_PREFERRED = 40
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
@@ -219,18 +219,18 @@ class FootballRatingsProcessor(BaseProcessor):
         player_name = rating.pop('read_player')
         if rating.pop('team') == 'home':
             found, ratio = search_player(player_name, self.choices_home,
-                                         FootballRatingsProcessor.CUTOFF_PREFERRED)
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
             if found is None:
                 print("No match for home, searching away in case of inversion")
                 found, ratio = search_player(player_name, self.choices_away,
-                                             FootballRatingsProcessor.CUTOFF_PREFERRED)
+                                             FootballStatsProcessor.CUTOFF_PREFERRED)
         else:
             found, ratio = search_player(player_name, self.choices_away,
-                                         FootballRatingsProcessor.CUTOFF_PREFERRED)
+                                         FootballStatsProcessor.CUTOFF_PREFERRED)
             if found is None:
                 print("No match for away, searching home in case of inversion")
                 found, ratio = search_player(player_name, self.choices_home,
-                                             FootballRatingsProcessor.CUTOFF_PREFERRED)
+                                             FootballStatsProcessor.CUTOFF_PREFERRED)
 
         if found is not None:
             rating['fk_teammeetingperson'] = TeamMeetingPerson.objects.get(person=found,
