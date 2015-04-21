@@ -103,7 +103,7 @@ class TestFootballScrapper(TestCase):
             print(res)
 
     def test_SportsNotes(self):
-        my_url = 'http://www.sports.fr/football/compte-rendu/ligue-1/nantes-evian-thonon.html'
+        my_url = 'http://www.sports.fr/football/compte-rendu/ligue-1/marseille-lyon.html'
         scrapper = scrappers.SportsFrRatingsScrapper()
         results = scrapper.scrap(my_url)
         self.assertTrue(len(results) == 22)
