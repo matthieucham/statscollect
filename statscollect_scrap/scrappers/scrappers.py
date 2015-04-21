@@ -322,3 +322,30 @@ class WhoscoredRatingsScrapper(BaseScrapper):
                     mark = round(pl['stats']['ratings'][max_key]+.001, 1)
                     result.append({'read_player': pl['name'], 'rating': mark, 'team': field})
         return result
+
+
+class SportsFrRatingsScrapper(BaseScrapper):
+    url_pattern = "http\:\/\/www\.sports\.fr\/football\/compte\-rendu\/ligue\-1\/(.*).html"
+
+    def scrap_page(self, page):
+        tree = html.fromstring(page.text)
+        field = tree.xpath('//div[@class="stade"]')
+        result = []
+        homeplayers = field[0].xpath('div[@class="compo team1"]/ul/li')
+        awayplayers = field[0].xpath('div[@class="compo team2"]/ul/li')
+        href_pattern = "/football/joueurs/[0-9]{1,2}/([a-z\-]+)\-[0-9]{3,6}.html"
+        for pl in homeplayers:
+            plrating = {'team': 'home'}
+            href = pl.xpath('a/@href')[0].strip()
+            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
+            for mark in pl.xpath('a/span[@class="numero"]/text()'):
+                plrating['rating'] = mark
+            result.append(plrating)
+        for pl in awayplayers:
+            plrating = {'team': 'away'}
+            href = pl.xpath('a/@href')[0].strip()
+            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
+            for mark in pl.xpath('a/span[@class="numero"]/text()'):
+                plrating['rating'] = mark
+            result.append(plrating)
+        return result

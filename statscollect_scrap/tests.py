@@ -101,3 +101,11 @@ class TestFootballScrapper(TestCase):
         self.assertTrue(len(results) == 22)
         for res in results:
             print(res)
+
+    def test_SportsNotes(self):
+        my_url = 'http://www.sports.fr/football/compte-rendu/ligue-1/nantes-evian-thonon.html'
+        scrapper = scrappers.SportsFrRatingsScrapper()
+        results = scrapper.scrap(my_url)
+        self.assertTrue(len(results) == 22)
+        for res in results:
+            print(res)
