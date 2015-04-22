@@ -2,4 +2,4 @@ from .settings import *
 
 LOCAL_SETTINGS = True
 
-# TODO surcharge : Database, Cache, autre ?
+#CORS_ORIGIN_ALLOW_ALL = True

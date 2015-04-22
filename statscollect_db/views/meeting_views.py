@@ -1,6 +1,5 @@
 from rest_framework import permissions
 from rest_framework import viewsets
-from rest_framework import filters
 
 from statscollect_db import models
 from statscollect_db import serializers
