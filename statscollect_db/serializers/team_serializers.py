@@ -13,4 +13,4 @@ class FootballTeamSerializer(ExpandableSerializer):
     class Meta:
         model = Team
         lookup_field = 'uuid',
-        fields = ('uuid', 'href', 'name', 'short_name', 'members')
+        fields = ('uuid', 'created_at', 'updated_at', 'href', 'name', 'short_name', 'members')

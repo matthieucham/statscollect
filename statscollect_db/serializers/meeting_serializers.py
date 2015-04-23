@@ -25,7 +25,8 @@ class MeetingSerializer(serializers.ModelSerializer):
         model = models.Meeting
         fields = (
             'uuid',
-            'tournament_instance', 'step', 'date', )
+            'created_at', 'updated_at',
+            'tournament_instance', 'step', 'date', 'created_at', 'updated_at',)
 
 
 class FootballMeetingSummarySerializer(serializers.ModelSerializer):
@@ -41,6 +42,7 @@ class FootballMeetingSummarySerializer(serializers.ModelSerializer):
         model = models.FootballMeeting
         fields = (
             'uuid',
+            'created_at', 'updated_at',
             'href',
             'tournament_instance', 'step', 'date', 'home_team', 'home_result', 'away_team',
             'away_result')
@@ -137,6 +139,7 @@ class FootballMeetingDetailedSerializer(serializers.ModelSerializer):
         model = models.FootballMeeting
         fields = (
             'uuid',
+            'created_at', 'updated_at',
             'href',
             'tournament_instance',
             'step',
