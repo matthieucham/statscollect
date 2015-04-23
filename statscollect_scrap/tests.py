@@ -6,13 +6,13 @@ from statscollect_scrap import models
 
 class TestFootballScrapper(TestCase):
     def test_LFP_scrapper(self):
-        my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=26&id=0'
+        my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=32&id=0'
         scrapper = scrappers.LFPFootballStepScrapper()
         scrapper.scrap(my_url)
         self.assertTrue(True)
 
     def test_LEquipe_scrapper(self):
-        my_url = 'http://www.lequipe.fr/Football/FootballResultat48016.html'
+        my_url = 'http://www.lequipe.fr/Football/FootballResultat48022.html'
         scrapper = scrappers.LEquipeFootballStepScrapper()
         scrapper.scrap(my_url)
         self.assertTrue(True)
