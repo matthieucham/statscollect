@@ -206,33 +206,36 @@ class WhoscoredStatsScrapper(BaseScrapper):
                 if 'playerId' in ev:
                     if not ev['playerId'] in event_stats:
                         event_stats[ev['playerId']] = {}
-                if 'cardType' in ev:
-                    if ev['cardType']['displayName'] in ['SecondYellow', 'Red']:
+                try:
+                    if 'cardType' in ev:
+                        if ev['cardType']['displayName'] in ['SecondYellow', 'Red']:
+                            out_time[ev['playerId']] = ev['minute']
+                    elif 'SubstitutionOff' == ev['type']['displayName']:
                         out_time[ev['playerId']] = ev['minute']
-                elif 'SubstitutionOff' == ev['type']['displayName']:
-                    out_time[ev['playerId']] = ev['minute']
-                elif 'SubstitutionOn' == ev['type']['displayName']:
-                    in_time[ev['playerId']] = ev['minute']
-                elif 'Goal' == ev['type']['displayName']:
-                    if 'isOwnGoal' in ev:
-                        goals_time['away' if field == 'home' else 'home'].append(ev['minute'])
-                        self.increment_or_set_key(event_stats[ev['playerId']], 'own_goals')
-                    else:
-                        goals_time[field].append(ev['minute'])
-                        is_penalty = False
-                        for q in ev['qualifiers']:
-                            if 'Penalty' == q['type']['displayName']:
-                                is_penalty = True
-                                break
-                        if is_penalty:
-                            self.increment_or_set_key(event_stats[ev['playerId']], 'penalties_scored')
+                    elif 'SubstitutionOn' == ev['type']['displayName']:
+                        in_time[ev['playerId']] = ev['minute']
+                    elif 'Goal' == ev['type']['displayName']:
+                        if 'isOwnGoal' in ev:
+                            goals_time['away' if field == 'home' else 'home'].append(ev['minute'])
+                            self.increment_or_set_key(event_stats[ev['playerId']], 'own_goals')
                         else:
-                            self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
-                elif 'Pass' == ev['type']['displayName']:
-                    for q in ev['qualifiers']:
-                        if 'IntentionalGoalAssist' == q['type']['displayName']:
-                            self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
-                            break
+                            goals_time[field].append(ev['minute'])
+                            is_penalty = False
+                            for q in ev['qualifiers']:
+                                if 'Penalty' == q['type']['displayName']:
+                                    is_penalty = True
+                                    break
+                            if is_penalty:
+                                self.increment_or_set_key(event_stats[ev['playerId']], 'penalties_scored')
+                            else:
+                                self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
+                    elif 'Pass' == ev['type']['displayName']:
+                        for q in ev['qualifiers']:
+                            if 'IntentionalGoalAssist' == q['type']['displayName']:
+                                self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                                break
+                except KeyError:
+                    pass
         # global stats (the first loop must have been completed
         read_stats = {}
         ordered_plid = []
