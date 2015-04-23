@@ -10,5 +10,5 @@ class RatingSourceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RatingSource
-        fields = ('uuid', 'name', 'website', 'field', 'type', 'country', 'url')
+        fields = ('uuid', 'created_at', 'updated_at', 'name', 'website', 'field', 'type', 'country', 'url')
 

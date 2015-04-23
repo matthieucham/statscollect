@@ -16,7 +16,8 @@ class PersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Person
-        fields = ('uuid', 'href', 'last_name', 'first_name', 'usual_name', 'sex', 'rep_country', 'field', 'status')
+        fields = ('uuid', 'created_at', 'updated_at', 'href', 'last_name', 'first_name', 'usual_name', 'sex',
+                  'rep_country', 'field', 'status')
 
 
 class FootballPlayerSerializer(serializers.ModelSerializer):
@@ -49,6 +50,7 @@ class FootballPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FootballPerson
         fields = ('uuid',
+                  'created_at', 'updated_at',
                   'href',
                   'last_name',
                   'first_name',
