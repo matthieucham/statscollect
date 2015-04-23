@@ -56,26 +56,28 @@ class LFPFootballStepScrapper(BaseScrapper):
             french_date = gd.xpath('preceding-sibling::h4[1]/text()')
             scrapped_games = gd.xpath('tr')
             for game in scrapped_games:
-                sg = {}
-                game_hour = game.xpath('td[@class="horaire"]/a/text()')[0].strip()
-                home = game.xpath('td[@class="domicile"]/a/text()')[0].strip()
-                away = game.xpath('td[@class="exterieur"]/a/text()')[0].strip()
-                score = game.xpath('td[@class="stats"]/a/text()')[0].strip().split(' - ')
-                match_id = game.xpath('td[@class="stats"]/a/@href')[0].strip()[len('/ligue1/feuille_match/'):]
-                rd = french_date[0] + ' ' + game_hour
                 try:
-                    game_date = time.strptime(rd, '%A %d %B %Y %H:%M')
-                except ValueError:
-                    game_date = None
-                score_dom = score[0]
-                score_ext = score[1]
-                output = {'read_game_date': rd, 'read_home_team': home,
-                          'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
-                if game_date:
-                    output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
+                    sg = {}
+                    game_hour = game.xpath('td[@class="horaire"]/a/text()')[0].strip()
+                    home = game.xpath('td[@class="domicile"]/a/text()')[0].strip()
+                    away = game.xpath('td[@class="exterieur"]/a/text()')[0].strip()
+                    score = game.xpath('td[@class="stats"]/a/text()')[0].strip().split(' - ')
+                    match_id = game.xpath('td[@class="stats"]/a/@href')[0].strip()[len('/ligue1/feuille_match/'):]
+                    rd = french_date[0] + ' ' + game_hour
+                    try:
+                        game_date = time.strptime(rd, '%A %d %B %Y %H:%M')
+                    except ValueError:
+                        game_date = None
+                    score_dom = score[0]
+                    score_ext = score[1]
+                    output = {'read_game_date': rd, 'read_home_team': home,
+                              'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
+                    if game_date:
+                        output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
 
-                result.append(output)
-
+                    result.append(output)
+                except IndexError:
+                    pass
         return result
 
 
@@ -95,26 +97,29 @@ class LEquipeFootballStepScrapper(BaseScrapper):
         result = []
 
         for game in games:
-            french_date = game.xpath('preceding-sibling::h2[1]/text()')
-            print(french_date)
-            game_hour = game.xpath('div[@class="heure "]/text()')[0].strip()
-            home = game.xpath('div[@class="equipeDom"]/a/text()')[0].strip()
-            away = game.xpath('div[@class="equipeExt"]/a/text()')[0].strip()
-            score = game.xpath('div[@class="score"]/a/text()')[0].strip().split('-')
-            rd = french_date[0] + ' ' + game_hour
             try:
-                game_date = time.strptime(rd, '%A %d %B %Y '
-                                              '%Hh%M')
-            except ValueError:
-                game_date = None
-            score_dom = score[0]
-            score_ext = score[1]
-            output = {'read_game_date': rd, 'read_home_team': home,
-                      'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
-            if game_date:
-                output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
+                french_date = game.xpath('preceding-sibling::h2[1]/text()')
+                print(french_date)
+                game_hour = game.xpath('div[@class="heure "]/text()')[0].strip()
+                home = game.xpath('div[@class="equipeDom"]/a/text()')[0].strip()
+                away = game.xpath('div[@class="equipeExt"]/a/text()')[0].strip()
+                score = game.xpath('div[@class="score"]/a/text()')[0].strip().split('-')
+                rd = french_date[0] + ' ' + game_hour
+                try:
+                    game_date = time.strptime(rd, '%A %d %B %Y '
+                                                  '%Hh%M')
+                except ValueError:
+                    game_date = None
+                score_dom = score[0]
+                score_ext = score[1]
+                output = {'read_game_date': rd, 'read_home_team': home,
+                          'read_away_team': away, 'home_score': score_dom, 'away_score': score_ext}
+                if game_date:
+                    output['actual_game_date'] = datetime.fromtimestamp(mktime(game_date))
 
-            result.append(output)
+                result.append(output)
+            except IndexError:
+                pass
         return result
 
 
