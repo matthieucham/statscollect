@@ -16,6 +16,10 @@ class FootballPersonalStats(models.Model):
     goals_conceded = models.SmallIntegerField(blank=True, null=True)
     own_goals = models.SmallIntegerField(blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        super(FootballPersonalStats, self).save(*args, **kwargs)
+        self.meeting.save()
+
     class Meta:
         verbose_name = 'statistiques (football)'
         verbose_name_plural = 'statistiques (football)'

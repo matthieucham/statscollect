@@ -36,6 +36,10 @@ class TournamentInstance(MetaModel):
     def __str__(self):
         return "%s / %s" % (self.tournament.name, self.name)
 
+    def save(self, *args, **kwargs):
+        super(TournamentInstance, self).save(*args, **kwargs)
+        self.tournament.save()
+
     class Meta:
         verbose_name = 'édition de compétition'
         verbose_name_plural = 'éditions de compétition'
@@ -47,6 +51,10 @@ class TournamentInstanceStep(MetaModel):
 
     def __str__(self):
         return "%s" % self.name
+
+    def save(self, *args, **kwargs):
+        super(TournamentInstanceStep, self).save(*args, **kwargs)
+        self.tournament_instance.save()
 
     class Meta:
         verbose_name = 'journée de compétition'

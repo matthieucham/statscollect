@@ -35,5 +35,9 @@ class Rating(models.Model):
     source = models.ForeignKey(RatingSource)
     original_rating = models.DecimalField(null=True, max_digits=5, decimal_places=2)
 
+    def save(self, *args, **kwargs):
+        super(Rating, self).save(*args, **kwargs)
+        self.meeting.save()
+
     class Meta:
         verbose_name = 'note'

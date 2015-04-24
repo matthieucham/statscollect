@@ -23,6 +23,12 @@ class Meeting(MetaModel):
         else:
             return self.tournament_instance.__str__()
 
+    def save(self, *args, **kwargs):
+        super(Meeting, self).save(*args, **kwargs)
+        self.tournament_instance.save()
+        if self.tournament_step:
+            self.tournament_step.save()
+
 
 class TeamMeeting(Meeting):
     home_team = models.ForeignKey(Team, related_name='meetings_home')
@@ -71,3 +77,6 @@ class TeamMeetingPerson(models.Model):
     def __str__(self):
         return self.person.__str__()
 
+    def save(self, *args, **kwargs):
+        super(TeamMeetingPerson, self).save(*args, **kwargs)
+        self.meeting.save()
