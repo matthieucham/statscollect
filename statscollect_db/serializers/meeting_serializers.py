@@ -35,8 +35,16 @@ class FootballMeetingSummarySerializer(serializers.ModelSerializer):
     step = serializers.SlugRelatedField(slug_field='uuid', read_only=True,
                                         source='tournament_step',
                                         required=False)
-    home_team = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    away_team = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    home_team = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+    away_team = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
+    home_team_name = serializers.SerializerMethodField()
+    away_team_name = serializers.SerializerMethodField()
+
+    def get_home_team_name(self, obj):
+        return obj.home_team.__str__()
+
+    def get_away_team_name(self, obj):
+        return obj.away_team.__str__()
 
     class Meta:
         model = models.FootballMeeting
@@ -44,8 +52,8 @@ class FootballMeetingSummarySerializer(serializers.ModelSerializer):
             'uuid',
             'created_at', 'updated_at',
             'href',
-            'tournament_instance', 'step', 'date', 'home_team', 'home_result', 'away_team',
-            'away_result')
+            'tournament_instance', 'step', 'date', 'home_team', 'home_team_name', 'home_result', 'away_team',
+            'away_team_name', 'away_result')
 
 
 class FootballStatsSerializer(serializers.ModelSerializer):
