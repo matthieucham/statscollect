@@ -9,6 +9,9 @@ class ScrapIdentifierForm(forms.ModelForm):
     identifier = forms.CharField(max_length=100, required=False,
                                  help_text='Identifiant du match ou de la journée dans l\'URL de la page à importer. Dans le doute, laissez ce champ vide et copiez l\'adresse complète dans scrapped_url')
 
+    scrap_again = forms.BooleanField(required=False,
+                                     help_text='Cocher cette case pour forcer la réimportation à partir de l\'URL')
+
     def clean(self):
         cleaned_data = self.cleaned_data
         if self.instance.status == 'CREATED':
@@ -42,7 +45,7 @@ class ScrappedFootballStepForm(ScrapIdentifierForm):
     class Meta(object):
         model = models.ScrappedFootballStep
         fields = ('actual_tournament', 'actual_instance', 'actual_step', 'scrapper', 'identifier', 'scrapped_url',
-                  'set_team_names')
+                  'scrap_again')
 
 
 class ParticipantAdminForm(forms.ModelForm):

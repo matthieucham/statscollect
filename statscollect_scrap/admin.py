@@ -13,7 +13,8 @@ class ScrappedEntityAdminMixin(object):
 
     def process_model(self, scrapped_entity, form):
         assert isinstance(scrapped_entity, models.ScrappedEntity)
-        if scrapped_entity.status == 'CREATED':
+        force_scrapping = form.cleaned_data.get('scrap_again', False)
+        if scrapped_entity.status == 'CREATED' or force_scrapping:
             if scrapped_entity.scrapper.class_name == 'FakeScrapper':
                 # Do nothing (no scrapping required)
                 new_status = 'COMPLETE'
@@ -25,6 +26,9 @@ class ScrappedEntityAdminMixin(object):
                     url_to_scrap = scrapped_entity.scrapper.url_pattern % form.cleaned_data.get('identifier')
                 scrapped_result = self.processor.process(url_to_scrap, scrapped_entity.scrapper.class_name)
                 if scrapped_result and len(scrapped_result) > 0:
+                    # Delete previous scrap results if 'scrap_again'
+                    if force_scrapping:
+                        self.processor.cleanup_target_objects()
                     for scrapped in scrapped_result:
                         target = self.processor.create_target_object()
                         for key, value in scrapped.items():
@@ -176,6 +180,7 @@ class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     fields = (
         'actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'identifier',
         'scrapped_url',
+        'scrap_again',
         'set_current_teams')
 
     def get_readonly_fields(self, request, obj=None):
@@ -241,7 +246,7 @@ class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting',)
     model = models.ScrappedTeamMeetingData
     form = forms.TeamMeetingDataForm
-    fields = ('teammeeting', 'scrapper', 'identifier', 'scrapped_url')
+    fields = ('teammeeting', 'scrapper', 'identifier', 'scrapped_url', 'scrap_again')
     inlines = [ScrappedPlayerStatsInline, ]
     scrapper_category = 'STATS'
 
@@ -294,7 +299,7 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting', 'rating_source')
     model = models.ScrappedTeamMeetingRatings
     form = forms.TeamMeetingDataForm
-    fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url')
+    fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url', 'scrap_again')
     inlines = [ScrappedPlayerRatingsInline, ]
     scrapper_category = 'RATING'
 
