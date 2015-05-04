@@ -89,6 +89,9 @@ class FootballStepProcessor(BaseProcessor):
         obj.scrapped_game_sheet = self.parent_entity
         return obj
 
+    def cleanup_target_objects(self):
+        models.ScrappedFootballGameResult.objects.filter(scrapped_step=self.parent_entity).delete()
+
 
 class FootballGamesheetProcessor(BaseProcessor):
     CUTOFF_PREFERRED = 70
@@ -134,6 +137,9 @@ class FootballGamesheetProcessor(BaseProcessor):
         obj = models.ScrappedGameSheetParticipant()
         obj.scrapped_game_sheet = self.parent_entity
         return obj
+
+    def cleanup_target_objects(self):
+        models.ScrappedGameSheetParticipant.objects.filter(scrapped_game_sheet=self.parent_entity).delete()
 
 
 class FootballStatsProcessor(BaseProcessor):
@@ -182,6 +188,9 @@ class FootballStatsProcessor(BaseProcessor):
         obj = models.ScrappedPlayerStats()
         obj.teammeeting = self.parent_entity
         return obj
+
+    def cleanup_target_objects(self):
+        models.ScrappedPlayerStats.objects.filter(teammeeting=self.parent_entity).delete()
 
 
 class FootballRatingsProcessor(BaseProcessor):
@@ -236,3 +245,6 @@ class FootballRatingsProcessor(BaseProcessor):
             raise ValueError('No matching player found for name %s : fix registered playered in the gamesheet then '
                              'process again' % player_name)
         return rating
+
+    def cleanup_target_objects(self):
+        models.ScrappedPlayerRatings.objects.filter(scrapped_meeting=self.parent_entity).delete()
