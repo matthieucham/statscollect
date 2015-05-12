@@ -230,10 +230,10 @@ class WhoscoredStatsScrapper(BaseScrapper):
                             else:
                                 self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
                     elif 'Pass' == ev['type']['displayName']:
-                        for q in ev['qualifiers']:
-                            if 'IntentionalGoalAssist' == q['type']['displayName']:
-                                self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
-                                break
+                        #for q in ev['qualifiers']:
+                        #    if 'IntentionalGoalAssist' == q['type']['displayName']:
+                        self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                        #        break
                 except KeyError:
                     pass
         # global stats (the first loop must have been completed
