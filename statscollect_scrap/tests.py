@@ -69,10 +69,10 @@ class TestFootballScrapper(TestCase):
             print(res)
 
     def test_processor_stats(self):
-        my_url = 'http://www.whoscored.com/Matches/824582/Live'
+        my_url = 'http://www.whoscored.com/Matches/824511/Live'
         scrapper = 'WhoscoredStatsScrapper'
         results = scrappers.FootballStatsProcessor(
-            FootballMeeting.objects.get(uuid='05a76fb2-0ece-4fe0-829f-ddecebd4f154')).process(my_url, scrapper)
+            FootballMeeting.objects.get(uuid='51167adc-f597-4f6c-b06c-6784b50cec2b')).process(my_url, scrapper)
         self.assertTrue(len(results) <= 28)
         for res in results:
             print(res)
