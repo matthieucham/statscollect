@@ -160,7 +160,7 @@ def extract_ws_matchdata(page_text):
 
 class WhoscoredFGSScrapper(BaseScrapper):
     def __init__(self):
-        self.url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6})\/Live"
+        self.url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6,7})\/Live"
         try:
             locale.setlocale(locale.LC_ALL, 'eng_gbr')  # only on windows
         except locale.Error:
@@ -178,7 +178,7 @@ class WhoscoredFGSScrapper(BaseScrapper):
 
 class WhoscoredStatsScrapper(BaseScrapper):
     def __init__(self):
-        self.url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6})\/Live"
+        self.url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6,7})\/Live"
         try:
             locale.setlocale(locale.LC_ALL, 'eng_gbr')  # only on windows
         except locale.Error:
@@ -317,7 +317,7 @@ class OrangeRatingsScrapper(BaseScrapper):
 
 
 class WhoscoredRatingsScrapper(BaseScrapper):
-    url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6})\/Live"
+    url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6,7})\/Live"
 
     def scrap_page(self, page):
         deserz = extract_ws_matchdata(page.text)
