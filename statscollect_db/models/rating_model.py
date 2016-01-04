@@ -1,12 +1,13 @@
 from django.db import models
 from django_countries.fields import CountryField
+from django_extensions.db.fields import UUIDField
+from django.utils import timezone
 
-from .meta_model import MetaModel
 from .meeting_model import Meeting
 from .person_model import Person
 
 
-class RatingSource(MetaModel):
+class RatingSource(models.Model):
     FIELD_CHOICES = (
         ('FOOTBALL', 'Football'),
     )
@@ -14,6 +15,9 @@ class RatingSource(MetaModel):
         ('10CLASSIC', 'Classical 0-10'),
         ('6GERMAN', 'German 1-6'),
     )
+    uuid = UUIDField(unique=True)
+    created_at = models.DateTimeField(editable=False, default=timezone.now())
+    updated_at = models.DateTimeField(editable=False, default=timezone.now())
     code = models.CharField(primary_key=True, max_length=8)
     name = models.CharField(max_length=50)
     website = models.CharField(max_length=400, blank=True)
@@ -23,6 +27,13 @@ class RatingSource(MetaModel):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        """On save, update timestamps"""
+        if not self.code:
+            self.created_at = timezone.now()
+        self.updated_at = timezone.now()
+        super(RatingSource, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'source de notes'
