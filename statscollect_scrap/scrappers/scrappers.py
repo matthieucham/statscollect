@@ -32,7 +32,6 @@ class BaseScrapper():
 
 
 class FakeScrapper():
-
     def scrap(self, url):
         pass
 
@@ -200,8 +199,10 @@ class WhoscoredStatsScrapper(BaseScrapper):
         goals_time = {'home': [], 'away': []}
 
         event_stats = {}
+
         # incremental stats
         for field in ['home', 'away']:
+            goal_related_events = []
             for ev in deserz[field]['incidentEvents']:
                 if 'playerId' in ev:
                     if not ev['playerId'] in event_stats:
@@ -228,14 +229,23 @@ class WhoscoredStatsScrapper(BaseScrapper):
                             if is_penalty:
                                 self.increment_or_set_key(event_stats[ev['playerId']], 'penalties_scored')
                             else:
+                                for q in ev['qualifiers']:
+                                    if 'RelatedEventId' == q['type']['displayName']:
+                                        goal_related_events.append(q['value'])
+                                        break
                                 self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
-                    elif 'Pass' == ev['type']['displayName']:
-                        #for q in ev['qualifiers']:
-                        #    if 'IntentionalGoalAssist' == q['type']['displayName']:
-                        self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
-                        #        break
                 except KeyError:
                     pass
+            # Loop again to find passes
+            for ev in deserz[field]['incidentEvents']:
+                if 'Pass' == ev['type']['displayName']:
+                    self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                elif str(ev['eventId']) in goal_related_events:
+                    for q in ev['qualifiers']:
+                        if q['type']['displayName'] in ('IntentionalGoalAssist', 'IntentionalAssist', 'KeyPass',):
+                            self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                            break
+
         # global stats (the first loop must have been completed
         read_stats = {}
         ordered_plid = []
@@ -290,29 +300,57 @@ class WhoscoredStatsScrapper(BaseScrapper):
 
 
 class OrangeRatingsScrapper(BaseScrapper):
-    url_pattern = "http\:\/\/sports\.orange\.fr\/football\/compte\-rendu\/ligue\-1\/(.*).html"
+    url_pattern = "http\:\/\/sports\.orange\.fr\/football\/ligue\-1\/match\/(.*).html"
 
     def scrap_page(self, page):
         tree = html.fromstring(page.text)
-        field = tree.xpath('//section[@id="playersMark"]//div[@class="field"]')
+        article = tree.xpath('//div[@itemprop="articleBody"]/p/strong[1]')
         result = []
-        homeplayers = field[0].xpath('div[@class="team team1"]/ul/li')
-        awayplayers = field[0].xpath('div[@class="team team2"]/ul/li')
-        href_pattern = "/football/joueurs/[0-9]{1,2}/([a-z\-]+)\-[0-9]{3,6}.html"
-        for pl in homeplayers:
+        # homep = article[0].xpath('p[last()-1]/strong')
+        # awayp = article[0].xpath('p[last()]/strong')
+        name_pattern = r'([\w][\w|àéèäëâêiîïöôûüù\-]+) \('
+        next_is_away = False
+        for par in article:
+            if par.text is not None and par.text.startswith('La feuille de match'):
+                homep = par.xpath('parent::p/strong')
+                next_is_away = True
+            elif next_is_away:
+                awayp = par.xpath('parent::p/strong')
+                next_is_away = False
+
+        previous_tail = None
+        ignore_next = False
+        for blabla in homep:
             plrating = {'team': 'home'}
-            href = pl.xpath('a/@href')[0].strip()
-            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
-            for mark in pl.xpath('a/span[@data-mark]/@data-mark'):
-                plrating['rating'] = mark
-            result.append(plrating)
-        for pl in awayplayers:
+            content = blabla.text
+            if content is not None and content.startswith('Arbitre'):
+                ignore_next = True
+            if len(content) == 1 and content.isdigit:
+                matched = re.search(name_pattern, previous_tail)
+                if matched is not None:
+                    if ignore_next:
+                        ignore_next = False
+                    else:
+                        plrating['read_player'] = matched.group(1).strip()
+                        plrating['rating'] = content
+                        result.append(plrating)
+            previous_tail = blabla.tail
+        previous_tail = None
+        for blabla in awayp:
             plrating = {'team': 'away'}
-            href = pl.xpath('a/@href')[0].strip()
-            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
-            for mark in pl.xpath('a/span[@data-mark]/@data-mark'):
-                plrating['rating'] = mark
-            result.append(plrating)
+            content = blabla.text
+            if content is not None and content.startswith('Arbitre'):
+                ignore_next = True
+            if len(content) == 1 and content.isdigit:
+                matched = re.search(name_pattern, previous_tail)
+                if matched is not None:
+                    if ignore_next:
+                        ignore_next = False
+                    else:
+                        plrating['read_player'] = matched.group(1).strip()
+                        plrating['rating'] = content
+                        result.append(plrating)
+            previous_tail = blabla.tail
         return result
 
 
@@ -327,7 +365,7 @@ class WhoscoredRatingsScrapper(BaseScrapper):
                 if 'ratings' in pl['stats']:
                     max_key = max(pl['stats']['ratings'], key=int)
                     # +001 because WS rounds ...5 UP while python rounds it down.
-                    mark = round(pl['stats']['ratings'][max_key]+.001, 1)
+                    mark = round(pl['stats']['ratings'][max_key] + .001, 1)
                     result.append({'read_player': pl['name'], 'rating': mark, 'team': field})
         return result
 

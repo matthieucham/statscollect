@@ -61,7 +61,7 @@ class TestFootballScrapper(TestCase):
             print("%s matched by %s" % (res.participant.read_player, res.matching_player))
 
     def test_WhoscoredStats(self):
-        my_url = 'http://www.whoscored.com/Matches/824608/Live'
+        my_url = 'http://www.whoscored.com/Matches/960954/Live'
         scrapper = scrappers.WhoscoredStatsScrapper()
         results = scrapper.scrap(my_url)
         self.assertTrue(len(results) <= 28)
@@ -78,10 +78,9 @@ class TestFootballScrapper(TestCase):
             print(res)
 
     def test_OrangeNotes(self):
-        my_url = 'http://sports.orange.fr/football/compte-rendu/ligue-1/marseille-caen.html'
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/rennes-angers-apres-match-SPEF010amO0iMH.html'
         scrapper = scrappers.OrangeRatingsScrapper()
         results = scrapper.scrap(my_url)
-        self.assertTrue(len(results) == 22)
         for res in results:
             print(res)
 
