@@ -61,7 +61,7 @@ class TestFootballScrapper(TestCase):
             print("%s matched by %s" % (res.participant.read_player, res.matching_player))
 
     def test_WhoscoredStats(self):
-        my_url = 'http://www.whoscored.com/Matches/960746/Live'
+        my_url = 'http://www.whoscored.com/Matches/960954/Live'
         scrapper = scrappers.WhoscoredStatsScrapper()
         results = scrapper.scrap(my_url)
         self.assertTrue(len(results) <= 28)

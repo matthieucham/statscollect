@@ -199,8 +199,10 @@ class WhoscoredStatsScrapper(BaseScrapper):
         goals_time = {'home': [], 'away': []}
 
         event_stats = {}
+
         # incremental stats
         for field in ['home', 'away']:
+            goal_related_events = []
             for ev in deserz[field]['incidentEvents']:
                 if 'playerId' in ev:
                     if not ev['playerId'] in event_stats:
@@ -227,14 +229,23 @@ class WhoscoredStatsScrapper(BaseScrapper):
                             if is_penalty:
                                 self.increment_or_set_key(event_stats[ev['playerId']], 'penalties_scored')
                             else:
+                                for q in ev['qualifiers']:
+                                    if 'RelatedEventId' == q['type']['displayName']:
+                                        goal_related_events.append(q['value'])
+                                        break
                                 self.increment_or_set_key(event_stats[ev['playerId']], 'goals_scored')
-                    elif 'Pass' == ev['type']['displayName']:
-                        # for q in ev['qualifiers']:
-                        #    if 'IntentionalGoalAssist' == q['type']['displayName']:
-                        self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
-                        #        break
                 except KeyError:
                     pass
+            # Loop again to find passes
+            for ev in deserz[field]['incidentEvents']:
+                if 'Pass' == ev['type']['displayName']:
+                    self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                elif str(ev['eventId']) in goal_related_events:
+                    for q in ev['qualifiers']:
+                        if q['type']['displayName'] in ('IntentionalGoalAssist', 'IntentionalAssist', 'KeyPass',):
+                            self.increment_or_set_key(event_stats[ev['playerId']], 'assists')
+                            break
+
         # global stats (the first loop must have been completed
         read_stats = {}
         ordered_plid = []
