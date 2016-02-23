@@ -308,7 +308,7 @@ class OrangeRatingsScrapper(BaseScrapper):
         result = []
         # homep = article[0].xpath('p[last()-1]/strong')
         # awayp = article[0].xpath('p[last()]/strong')
-        name_pattern = r'(?:puis )*([\w][\w|àéèäëâêiîïöôûüù\- ]+) \((?:[\d]+[^,\-]+(?:\-[\s])*)*$'
+        name_pattern = r'(?:puis )*([\w][\w|àéèäëâêiîïöôûüù\- ]+)[\s]*(?:\(cap\))*[\s]*\((?:[\d]+[^,\-]+(?:\-[\s])*)*$'
         next_is_away = False
         homep = None
         awayp = None
