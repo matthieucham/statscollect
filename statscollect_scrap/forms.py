@@ -1,23 +1,39 @@
 from django import forms
+from django.forms.widgets import Textarea
 from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget
 
 from statscollect_scrap import lookups
 from statscollect_scrap import models
 
 
-class ScrapIdentifierForm(forms.ModelForm):
+class ScrapAccessModeMixin(forms.Form):
+    mode = forms.ChoiceField(choices=(('URL', 'Par adresse'), ('MANUAL', 'Copier-coller')), initial='URL',
+                             required=True, label="Mode d'accès")
+
+
+class ScrapIdentifierForm(ScrapAccessModeMixin, forms.ModelForm):
     identifier = forms.CharField(max_length=100, required=False,
                                  help_text='Identifiant du match ou de la journée dans l\'URL de la page à importer. Dans le doute, laissez ce champ vide et copiez l\'adresse complète dans scrapped_url')
 
+    scraped_url = forms.URLField(max_length=300, required=False,
+                                 help_text='Adresse HTTP complète de la page à importer')
+
+    page_content = forms.CharField(required=False, widget=Textarea,
+                                   help_text='Copier ici le code source de la page à traiter')
+
     scrap_again = forms.BooleanField(required=False,
-                                     help_text='Cocher cette case pour forcer la réimportation à partir de l\'URL')
+                                     help_text='Cocher cette case pour forcer la réimportation')
 
     def clean(self):
         cleaned_data = self.cleaned_data
         if self.instance.status == 'CREATED':
-            if 'scrapper' in cleaned_data and cleaned_data['scrapper'].class_name != 'FakeScrapper':
-                if not ('scrapped_url' in cleaned_data or 'identifier' in cleaned_data):
-                    raise forms.ValidationError('Either scrapped_url or identifier is required')
+            if cleaned_data['mode'] == 'URL':
+                if 'scrapper' in cleaned_data and cleaned_data['scrapper'].class_name != 'FakeScrapper':
+                    if not ('scrapped_url' in cleaned_data or 'identifier' in cleaned_data):
+                        raise forms.ValidationError('Either scrapped_url or identifier is required')
+            elif cleaned_data['mode'] == 'MANUAL':
+                if not cleaned_data['page_content']:
+                    raise forms.ValidationError('Page content is required')
 
 
 class ScrappedFootballStepForm(ScrapIdentifierForm):
@@ -44,8 +60,7 @@ class ScrappedFootballStepForm(ScrapIdentifierForm):
 
     class Meta(object):
         model = models.ScrappedFootballStep
-        fields = ('actual_tournament', 'actual_instance', 'actual_step', 'scrapper', 'identifier', 'scrapped_url',
-                  'scrap_again')
+        fields = ('actual_tournament', 'actual_instance', 'actual_step', 'scrapper')
 
 
 class ParticipantAdminForm(forms.ModelForm):

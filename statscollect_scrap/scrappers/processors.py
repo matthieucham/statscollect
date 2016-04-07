@@ -2,6 +2,7 @@ import importlib
 from fuzzywuzzy import process
 from statscollect_db.models import FootballTeam, FootballPerson, TeamMeetingPerson
 from statscollect_scrap import models
+from statscollect_scrap.scrappers import accessors
 
 
 def search_player(player_name, choices, cutoff):
@@ -20,14 +21,18 @@ def search_player(player_name, choices, cutoff):
 
 
 class BaseProcessor():
-    def process(self, url, scrapper_class_name):
+    def process(self, form, scrapper_data):
         module = importlib.import_module('statscollect_scrap.scrappers.scrappers')
-        klass = getattr(module, scrapper_class_name)
+        klass = getattr(module, scrapper_data.class_name)
         scrapper = klass()
-        results = self.scrap_and_match(url, scrapper)
+        if form.cleaned_data.get('mode') == 'URL':
+            accessor = accessors.URLAccessor(scrapper.url_pattern, scrapper_data.url_pattern)
+        else:
+            accessor = accessors.CopyPasteAccessor()
+        results = self.scrap_and_match(accessor, scrapper, form)
         return results
 
-    def scrap_and_match(self, scrap_url, scrapper):
+    def scrap_and_match(self, accessor, scrapper, form):
         raise NotImplementedError
 
     def create_target_object(self):
@@ -47,8 +52,8 @@ class FootballStepProcessor(BaseProcessor):
         self.parent_entity = parent_entity
         self.processed_step = parent_entity.actual_step
 
-    def scrap_and_match(self, scrap_url, scrapper):
-        step_games = scrapper.scrap(scrap_url)
+    def scrap_and_match(self, accessor, scrapper, form):
+        step_games = scrapper.scrap_page(accessor.get_content(form))
         matching_results = []
         for game in step_games:
             game['fk_scrapped_step'] = self.parent_entity
@@ -111,8 +116,8 @@ class FootballGamesheetProcessor(BaseProcessor):
                 'id', 'first_name', 'last_name', 'usual_name')]
         )
 
-    def scrap_and_match(self, scrap_url, scrapper):
-        scrapped_players = scrapper.scrap(scrap_url)
+    def scrap_and_match(self, accessor, scrapper, form):
+        scrapped_players = scrapper.scrap_page(accessor.get_content(form))
         matching_results = []
         for player in scrapped_players:
             matching_results.append(self.process_player(player))
@@ -161,8 +166,8 @@ class FootballStatsProcessor(BaseProcessor):
                 'id', 'first_name', 'last_name', 'usual_name')]
         )
 
-    def scrap_and_match(self, scrap_url, scrapper):
-        stats = scrapper.scrap(scrap_url)
+    def scrap_and_match(self, accessor, scrapper, form):
+        stats = scrapper.scrap_page(accessor.get_content(form))
         matching_results = []
         for statline in stats:
             matching_results.append(self.process_stats(statline))
@@ -218,8 +223,8 @@ class FootballRatingsProcessor(BaseProcessor):
         obj.scrapped_meeting = self.parent_entity
         return obj
 
-    def scrap_and_match(self, scrap_url, scrapper):
-        ratings = scrapper.scrap(scrap_url)
+    def scrap_and_match(self, accessor, scrapper, form):
+        ratings = scrapper.scrap_page(accessor.get_content(form))
         matching_results = []
         for rating in ratings:
             matching_results.append(self.process_rating(rating))

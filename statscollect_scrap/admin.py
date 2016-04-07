@@ -20,11 +20,7 @@ class ScrappedEntityAdminMixin(object):
                 new_status = 'COMPLETE'
             else:
                 # Scrap this new object !
-                if form.cleaned_data.get('scrapped_url'):
-                    url_to_scrap = form.cleaned_data.get('scrapped_url')
-                else:
-                    url_to_scrap = scrapped_entity.scrapper.url_pattern % form.cleaned_data.get('identifier')
-                scrapped_result = self.processor.process(url_to_scrap, scrapped_entity.scrapper.class_name)
+                scrapped_result = self.processor.process(form, scrapped_entity.scrapper)
                 if scrapped_result and len(scrapped_result) > 0:
                     # Delete previous scrap results if 'scrap_again'
                     if force_scrapping:
@@ -40,11 +36,11 @@ class ScrappedEntityAdminMixin(object):
                                 setattr(target, 'read_' + key, value)
                                 setattr(target, 'actual_' + key, value)
                         target.save()
-                    scrapped_entity.scrapped_url = url_to_scrap
+                    # scrapped_entity.scrapped_url = url_to_scrap
                     new_status = 'PENDING'
                 else:
-                    raise ValueError('The scrapping processor %s could not scrap any stat from the URL %s' % (
-                        scrapped_entity.scrapper.class_name, url_to_scrap))
+                    raise ValueError('The scrapping processor %s could not scrap any stat' % (
+                        scrapped_entity.scrapper.class_name))
         elif scrapped_entity.status == 'PENDING':
             new_status = 'COMPLETE'
         else:
@@ -176,12 +172,9 @@ class ScrappedGameSheetParticipantInline(admin.StackedInline):
 class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     form = forms.ScrappedGamesheetForm
     inlines = [ScrappedGameSheetParticipantInline, ]
-
     fields = (
-        'actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'identifier',
-        'scrapped_url',
-        'scrap_again',
-        'set_current_teams')
+        'actual_tournament', 'actual_instance', 'actual_step', 'actual_meeting', 'scrapper', 'mode', 'identifier',
+        'scraped_url', 'page_content', 'scrap_again', 'set_current_teams')
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
@@ -246,7 +239,7 @@ class ScrappedTeamMeetingAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting',)
     model = models.ScrappedTeamMeetingData
     form = forms.TeamMeetingDataForm
-    fields = ('teammeeting', 'scrapper', 'identifier', 'scrapped_url', 'scrap_again')
+    fields = ('teammeeting', 'scrapper', 'mode', 'identifier', 'scraped_url', 'page_content', 'scrap_again')
     inlines = [ScrappedPlayerStatsInline, ]
     scrapper_category = 'STATS'
 
@@ -299,7 +292,8 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
     readonly_fields = ('teammeeting', 'rating_source')
     model = models.ScrappedTeamMeetingRatings
     form = forms.TeamMeetingDataForm
-    fields = ('teammeeting', 'rating_source', 'scrapper', 'identifier', 'scrapped_url', 'scrap_again')
+    fields = ('teammeeting', 'rating_source', 'scrapper', 'mode', 'identifier', 'scraped_url',
+              'page_content', 'scrap_again')
     inlines = [ScrappedPlayerRatingsInline, ]
     scrapper_category = 'RATING'
 
