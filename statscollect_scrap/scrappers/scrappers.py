@@ -308,8 +308,10 @@ class OrangeRatingsScrapper(BaseScrapper):
         result = []
         # homep = article[0].xpath('p[last()-1]/strong')
         # awayp = article[0].xpath('p[last()]/strong')
-        name_pattern = r'([\w][\w|àéèäëâêiîïöôûüù\-]+) \('
+        name_pattern = r'(?:puis )*([\w][\w|àéèäëâêiîïöôûüù\- ]+) \((?:[\d]+[^,\-]+(?:\-[\s])*)*$'
         next_is_away = False
+        homep = None
+        awayp = None
         for par in article:
             if par.text is not None and par.text.startswith('La feuille de match'):
                 homep = par.xpath('parent::p/strong')
@@ -317,39 +319,42 @@ class OrangeRatingsScrapper(BaseScrapper):
             elif next_is_away:
                 awayp = par.xpath('parent::p/strong')
                 next_is_away = False
-
+        if homep is None or awayp is None:
+            return result
         previous_tail = None
         ignore_next = False
         for blabla in homep:
             plrating = {'team': 'home'}
             content = blabla.text
-            if content is not None and content.startswith('Arbitre'):
-                ignore_next = True
-            if len(content) == 1 and content.isdigit:
-                matched = re.search(name_pattern, previous_tail)
-                if matched is not None:
-                    if ignore_next:
-                        ignore_next = False
-                    else:
-                        plrating['read_player'] = matched.group(1).strip()
-                        plrating['rating'] = content
-                        result.append(plrating)
+            if content is not None:
+                if content.startswith('Arbitre'):
+                    ignore_next = True
+                if len(content) == 1 and content.isdigit:
+                    matched = re.search(name_pattern, previous_tail)
+                    if matched is not None:
+                        if ignore_next:
+                            ignore_next = False
+                        else:
+                            plrating['read_player'] = matched.group(1).strip()
+                            plrating['rating'] = content
+                            result.append(plrating)
             previous_tail = blabla.tail
         previous_tail = None
         for blabla in awayp:
             plrating = {'team': 'away'}
             content = blabla.text
-            if content is not None and content.startswith('Arbitre'):
-                ignore_next = True
-            if len(content) == 1 and content.isdigit:
-                matched = re.search(name_pattern, previous_tail)
-                if matched is not None:
-                    if ignore_next:
-                        ignore_next = False
-                    else:
-                        plrating['read_player'] = matched.group(1).strip()
-                        plrating['rating'] = content
-                        result.append(plrating)
+            if content is not None:
+                if content.startswith('Arbitre'):
+                    ignore_next = True
+                if len(content) == 1 and content.isdigit:
+                    matched = re.search(name_pattern, previous_tail)
+                    if matched is not None:
+                        if ignore_next:
+                            ignore_next = False
+                        else:
+                            plrating['read_player'] = matched.group(1).strip()
+                            plrating['rating'] = content
+                            result.append(plrating)
             previous_tail = blabla.tail
         return result
 
