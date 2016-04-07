@@ -1,38 +1,20 @@
 import re
 from lxml import html
-import requests
 import time
 import locale
 from datetime import datetime
 from time import mktime
 import json
-from faker import Faker
-import random
 
 
 class BaseScrapper():
-    url_pattern = r'^http'
-
-    def scrap(self, url):
-        m = re.match(self.url_pattern, url)
-        if not m:
-            raise ValueError('Input url %s does not match the expected url pattern of this scrapper. Scrapper\'s url '
-                             'pattern is %s' % (url, self.url_pattern))
-        fake = Faker()
-        headers = {
-            'User-Agent': random.choice(
-                [fake.chrome(), fake.firefox(), fake.safari()])
-        }
-        self.page_identifier = m.group(1)
-        page = requests.get(url, headers=headers)
-        return self.scrap_page(page)
 
     def scrap_page(self, page):
         raise NotImplementedError('scrap_page must be implemented by subclasses')
 
 
 class FakeScrapper():
-    def scrap(self, url):
+    def scrap_page(self, page):
         pass
 
 
@@ -46,7 +28,7 @@ class LFPFootballStepScrapper(BaseScrapper):
             locale.setlocale(locale.LC_ALL, 'fr_FR')  # only on linux
 
     def scrap_page(self, page):
-        tree = html.fromstring(page.text)
+        tree = html.fromstring(page)
         game_days = tree.xpath('//table')
 
         result = []
@@ -90,7 +72,7 @@ class LEquipeFootballStepScrapper(BaseScrapper):
 
     def scrap_page(self, page):
         page.encoding = "UTF8"
-        tree = html.fromstring(page.text)
+        tree = html.fromstring(page)
         games = tree.xpath('//div[@idmatch]')
 
         result = []
@@ -131,7 +113,7 @@ class LFPFootballGamesheetScrapper(BaseScrapper):
             locale.setlocale(locale.LC_ALL, 'fr_FR')  # only on linux
 
     def scrap_page(self, page):
-        tree = html.fromstring(page.text)
+        tree = html.fromstring(page)
         titulaires = tree.xpath('//h2[text()="Titulaires"]')
         result = []
         for block_titulaires in titulaires:
@@ -150,6 +132,7 @@ def extract_ws_matchdata(page_text):
     tree = html.fromstring(page_text)
     javascript_stats = tree.xpath('//div[@id="layout-content-wrapper"]/script[@type="text/javascript"]/text('
                                   ')')
+    # javascript_stats = robobrowser.find(id="layout-content-wrapper").find("script", type="text/javascript").string
     # extract javascript array named matchCentreData
     pattern = r"(?:matchCentreData =)(.*);"
     m = re.search(pattern, javascript_stats[0]).group().strip()[len('matchCentreData ='):][:-1]
@@ -166,7 +149,7 @@ class WhoscoredFGSScrapper(BaseScrapper):
             locale.setlocale(locale.LC_ALL, 'en_GB')  # only on linux
 
     def scrap_page(self, page):
-        deserz = extract_ws_matchdata(page.text)
+        deserz = extract_ws_matchdata(page)
         result = []
         for field in ['home', 'away']:
             for pl in deserz[field]['players']:
@@ -190,7 +173,7 @@ class WhoscoredStatsScrapper(BaseScrapper):
             target_dict[key] += 1
 
     def scrap_page(self, page):
-        deserz = extract_ws_matchdata(page.text)
+        deserz = extract_ws_matchdata(page)
         result = []
 
         total_time = deserz['maxMinute'] + 1
@@ -303,7 +286,7 @@ class OrangeRatingsScrapper(BaseScrapper):
     url_pattern = "http\:\/\/sports\.orange\.fr\/football\/ligue\-1\/match\/(.*).html"
 
     def scrap_page(self, page):
-        tree = html.fromstring(page.text)
+        tree = html.fromstring(page)
         article = tree.xpath('//div[@itemprop="articleBody"]/p/strong[1]')
         result = []
         # homep = article[0].xpath('p[last()-1]/strong')
@@ -363,7 +346,7 @@ class WhoscoredRatingsScrapper(BaseScrapper):
     url_pattern = "http\:\/\/www\.whoscored\.com\/Matches\/([0-9]{6,7})\/Live"
 
     def scrap_page(self, page):
-        deserz = extract_ws_matchdata(page.text)
+        deserz = extract_ws_matchdata(page)
         result = []
         for field in ['home', 'away']:
             for pl in deserz[field]['players']:
@@ -379,7 +362,7 @@ class SportsFrRatingsScrapper(BaseScrapper):
     url_pattern = "http\:\/\/www\.sports\.fr\/football\/compte\-rendu\/ligue\-1\/(.*).html"
 
     def scrap_page(self, page):
-        tree = html.fromstring(page.text)
+        tree = html.fromstring(page)
         field = tree.xpath('//div[@class="stade"]')
         result = []
         homeplayers = field[0].xpath('div[@class="compo team1"]/ul/li')

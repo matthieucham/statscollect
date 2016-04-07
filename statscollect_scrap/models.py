@@ -56,8 +56,8 @@ class ScrappedEntity(models.Model):
 
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField(editable=False)
-    scrapped_url = models.URLField(max_length=300, blank=True, null=True,
-                                   help_text='Adresse HTTP complète de la page à importer')
+    #scrapped_url = models.URLField(max_length=300, blank=True, null=True,
+    #                               help_text='Adresse HTTP complète de la page à importer')
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default='CREATED', editable=False)
 
     def save(self, *args, **kwargs):
@@ -76,8 +76,8 @@ class FootballScrappedEntity(ScrappedEntity):
 
     def clean(self):
         if self.status != 'CREATED' and self.scrapper.class_name != 'FakeScrapper':
-            if not self.scrapped_url:
-                raise ValidationError('Scrapped URL is required')
+            #if not self.scrapped_url:
+            #    raise ValidationError('Scrapped URL is required')
             if not self.scrapper:
                 raise ValidationError('A scrapper is required')
 
