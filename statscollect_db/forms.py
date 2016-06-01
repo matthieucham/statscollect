@@ -29,19 +29,22 @@ class FootballPersonForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super(FootballPersonForm, self).save(*args, **kwargs)
         if instance.pk:
+            #update
             for team in instance.current_teams.all():
                 if team not in self.cleaned_data['current_teams']:
                     instance.current_teams.remove(team)
             for team in self.cleaned_data['current_teams']:
                 if team not in instance.current_teams.all():
                     instance.current_teams.add(team)
+        else:
+            #create
+            instance.save()
+            for team in self.cleaned_data['current_teams']:
+                instance.current_teams.add(team)
         return instance
 
 
 class FootballTeamForm(forms.ModelForm):
-    class Meta:
-        model = FootballTeam
-        fields = ('name', 'short_name', 'current_members', 'country',)
 
     def __init__(self, *args, **kwargs):
         super(FootballTeamForm, self).__init__(*args, **kwargs)
