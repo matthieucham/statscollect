@@ -24,7 +24,7 @@ class Person(MetaModel):
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default='M')
     rep_country = CountryField(blank=True)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
     migration_id = models.CharField(max_length=35, unique=True, null=True)
 
     def __str__(self):
@@ -38,6 +38,7 @@ class FootballPerson(Person):
     class Meta:
         proxy = True
         verbose_name = 'footballeur'
+        ordering = ['last_name', 'usual_name', 'first_name']
 
     objects = FootballPersonManager()
 

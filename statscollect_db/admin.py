@@ -49,6 +49,8 @@ class FootballTeamAdmin(admin.ModelAdmin):
     model = FootballTeam
     filter_horizontal = ('current_members',)
     form = FootballTeamForm
+    readonly_fields = ('uuid',)
+    fields = ('uuid', 'name', 'short_name', 'current_members', 'country',)
 
     def get_queryset(self, request):
         return FootballTeam.objects.filter(field__contains='FOOTBALL')
@@ -57,13 +59,21 @@ class FootballTeamAdmin(admin.ModelAdmin):
 class FootballPersonAdmin(admin.ModelAdmin):
     form = FootballPersonForm
     fieldsets = (
-        ('Identity', {'fields': ('last_name', 'first_name', 'usual_name', 'birth', 'sex', 'rep_country')}),
+        ('Identity', {'fields': ('uuid', 'last_name', 'first_name', 'usual_name', 'birth', 'sex', 'rep_country')}),
         ('Status', {'fields': ('status', 'current_teams')}),
     )
-    search_fields = ['last_name', 'usual_name' ]
+    search_fields = ['last_name', 'usual_name']
+    readonly_fields = ('uuid',)
+    list_display = (
+        'first_name',
+        'last_name',
+        'usual_name',
+        'updated_at',
+    )
+    ordering = ('-updated_at',)
 
     def get_queryset(self, request):
-        return FootballPerson.objects.filter(field__contains='FOOTBALL')
+        return FootballPerson.objects.filter(field__contains='FOOTBALL').order_by('-updated_at')
 
 
 class FootballMeetingParticipantRelatedInline(admin.TabularInline):
