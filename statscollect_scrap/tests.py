@@ -12,9 +12,23 @@ class TestFootballScrapper(TestCase):
         self.assertTrue(True)
 
     def test_LEquipe_scrapper(self):
-        my_url = 'http://www.lequipe.fr/Football/FootballResultat48022.html'
+        my_url = 'http://www.lequipe.fr/Football/Euro/Saison-2016/calendrier-resultats.html'
         scrapper = scrappers.LEquipeFootballStepScrapper()
-        scrapper.scrap(my_url)
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
+        self.assertTrue(True)
+
+    def test_UEFA_scrapper(self):
+        my_url = 'http://fr.euro2016.infra.uefa.com/matches/libraries/1/matches'
+        scrapper = scrappers.UEFAStepScrapper()
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
+        for res in results:
+            print(res)
         self.assertTrue(True)
 
     def test_Fuzzy(self):
