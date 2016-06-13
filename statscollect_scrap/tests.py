@@ -1,6 +1,6 @@
 from django.test import TestCase
 from statscollect_scrap import scrappers
-from statscollect_db.models import FootballMeeting,TournamentInstanceStep
+from statscollect_db.models import FootballMeeting, TournamentInstanceStep
 from statscollect_scrap import models
 
 
@@ -19,9 +19,9 @@ class TestFootballScrapper(TestCase):
 
     def test_Fuzzy(self):
         my_url = 'http://www.lfp.fr/competitionPluginCalendrierResultat/changeCalendrierHomeJournee?c=ligue1&js=28'
-        #my_url = 'http://www.lequipe.fr/Football/FootballResultat48019.html'
+        # my_url = 'http://www.lequipe.fr/Football/FootballResultat48019.html'
         scrapper = 'LFPFootballStepScrapper'
-        #scrapper = 'LEquipeFootballStepScrapper'
+        # scrapper = 'LEquipeFootballStepScrapper'
         step = models.ScrappedFootballStep()
         step.actual_step = TournamentInstanceStep()
         results = scrappers.FootballStepProcessor(step).process(my_url, scrapper)
@@ -77,10 +77,21 @@ class TestFootballScrapper(TestCase):
         for res in results:
             print(res)
 
+    class TestForm(object):
+        cleaned_data = {}
+
+    class TestScrapperData(object):
+        url_pattern = ''
+        class_name = ''
+
+
     def test_OrangeNotes(self):
-        my_url = 'http://sports.orange.fr/football/ligue-1/match/marseille-saint-etienne-apres-match-SPEF010amP0iMN.html'
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/psg-nice-apres-match-SPEF010amU0iNC.html'
         scrapper = scrappers.OrangeRatingsScrapper()
-        results = scrapper.scrap(my_url)
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
         for res in results:
             print(res)
 
@@ -104,7 +115,34 @@ class TestFootballScrapper(TestCase):
     def test_SportsNotes(self):
         my_url = 'http://www.sports.fr/football/compte-rendu/ligue-1/marseille-lyon.html'
         scrapper = scrappers.SportsFrRatingsScrapper()
-        results = scrapper.scrap(my_url)
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
+        self.assertTrue(len(results) == 22)
+        for res in results:
+            print(res)
+
+    def test_processor_notes(self):
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/monaco-bordeaux-apres-match-SPEF010amU0iNw.html'
+        scrapper_data = TestFootballScrapper.TestScrapperData()
+        scrapper_data.class_name = 'OrangeRatingsScrapper'
+        scrapper_data.url_pattern = 'http\:\/\/sports\.orange\.fr\/football\/ligue\-1\/match\/(.*).html'
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url, 'mode': 'URL'}
+        results = scrappers.FootballRatingsProcessor(
+            FootballMeeting.objects.get(uuid='3173b9c6-3913-430c-837f-2cba567a9c50')).process(form, scrapper_data)
+        self.assertTrue(len(results) <= 28)
+        for res in results:
+            print(res)
+
+    def test_KickerNotes(self):
+        my_url = 'http://www.kicker.de/news/fussball/em/spielplan/europameisterschaft/2016/1/2394901/spielanalyse_wales_slowakei.html'
+        scrapper = scrappers.KickerRatingsScrapper()
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scrapped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
         self.assertTrue(len(results) == 22)
         for res in results:
             print(res)

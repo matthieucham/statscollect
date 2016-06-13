@@ -1,4 +1,5 @@
 import re
+import os
 from lxml import html
 import time
 import locale
@@ -8,7 +9,6 @@ import json
 
 
 class BaseScrapper():
-
     def scrap_page(self, page):
         raise NotImplementedError('scrap_page must be implemented by subclasses')
 
@@ -286,6 +286,7 @@ class OrangeRatingsScrapper(BaseScrapper):
     url_pattern = "http\:\/\/sports\.orange\.fr\/football\/ligue\-1\/match\/(.*).html"
 
     def scrap_page(self, page):
+        print('Scrappingwith OrangeRatingsScrapper')
         tree = html.fromstring(page)
         article = tree.xpath('//div[@itemprop="articleBody"]/p/strong[1]')
         result = []
@@ -320,6 +321,7 @@ class OrangeRatingsScrapper(BaseScrapper):
                         else:
                             plrating['read_player'] = matched.group(1).strip()
                             plrating['rating'] = content
+                            print('Read player %s ; %s' % (plrating['read_player'], plrating['rating']))
                             result.append(plrating)
             previous_tail = blabla.tail
         previous_tail = None
@@ -337,6 +339,7 @@ class OrangeRatingsScrapper(BaseScrapper):
                         else:
                             plrating['read_player'] = matched.group(1).strip()
                             plrating['rating'] = content
+                            print('Read player %s ; %s' % (plrating['read_player'], plrating['rating']))
                             result.append(plrating)
             previous_tail = blabla.tail
         return result
@@ -383,5 +386,42 @@ class SportsFrRatingsScrapper(BaseScrapper):
             for mark in pl.xpath('a/span[@class="numero"]/text()'):
                 if mark != '-':
                     plrating['rating'] = mark
+            result.append(plrating)
+        return result
+
+
+class KickerRatingsScrapper(BaseScrapper):
+    url_pattern = "http\:\/\/www\.kicker\.de\/news\/fussball\/(.*)html"
+
+    def scrap_page(self, page):
+        # dump_file = open('kicker.html', 'w')
+        # dump_file.write(page)
+        # dump_file.close()
+        # print("Dump file at %s", os.path.abspath('kicker.html'))
+        tree = html.fromstring(page)
+        aufstellungen = tree.xpath('//table[@summary="Vereinsliste"]')
+        result = []
+        homeplayers = aufstellungen[0].xpath('//tr[@id="ctl00_PlaceHolderHalf_ctl00_heim2"]//div[@class="spielerdiv"]')
+        awayplayers = aufstellungen[0].xpath('//tr[@id="ctl00_PlaceHolderHalf_ctl00_auswaerts2"]//div['
+                                             '@class="spielerdiv"]')
+        href_pattern = ".*/spieler_(.+).html$"
+        mark_pattern = "^\(([0-9,]{1,3})\).*$"
+        for pl in homeplayers:
+            plrating = {'team': 'home'}
+            href = pl.xpath('a/@href')[0].strip()
+            m = pl.xpath('text()')[0].strip()
+            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
+            mark = re.match(mark_pattern, m)
+            if mark is not None:
+                plrating['rating'] = mark.group(1).replace(',', '.')
+            result.append(plrating)
+        for pl in awayplayers:
+            plrating = {'team': 'away'}
+            href = pl.xpath('a/@href')[0].strip()
+            m = pl.xpath('text()')[0].strip()
+            plrating['read_player'] = re.match(href_pattern, href).group(1).replace('-', ' ')
+            mark = re.match(mark_pattern, m)
+            if mark is not None:
+                plrating['rating'] = mark.group(1).replace(',', '.')
             result.append(plrating)
         return result
