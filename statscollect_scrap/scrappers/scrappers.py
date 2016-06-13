@@ -71,7 +71,6 @@ class LEquipeFootballStepScrapper(BaseScrapper):
             locale.setlocale(locale.LC_ALL, 'fr_FR')  # only on linux
 
     def scrap_page(self, page):
-        page.encoding = "UTF8"
         tree = html.fromstring(page)
         games = tree.xpath('//div[@idmatch]')
 
@@ -424,4 +423,36 @@ class KickerRatingsScrapper(BaseScrapper):
             if mark is not None:
                 plrating['rating'] = mark.group(1).replace(',', '.')
             result.append(plrating)
+        return result
+
+
+class UEFAStepScrapper(BaseScrapper):
+    url_pattern = "http\:\/\/fr\.euro2016\.infra\.uefa\.com\/matches\/libraries\/1\/matches"
+
+    def __init__(self):
+        try:
+            locale.setlocale(locale.LC_ALL, 'fra_fra')  # only on windows
+        except locale.Error:
+            locale.setlocale(locale.LC_ALL, 'fr_FR')  # only on linux
+
+    def scrap_page(self, page):
+        # dump_file = open('uefa.html', 'w')
+        # dump_file.write(page.encode('utf-8'))
+        # dump_file.close()
+        # print("Dump file at %s", os.path.abspath('uefa.html'))
+        tree = html.fromstring(page)
+        games = tree.xpath('//a[@class="match-row_link"]')
+
+        result = []
+
+        for gd in games:
+            home = gd.xpath('div//span[@class="team-name_name"]/text()')[0]
+            away = gd.xpath('div//span[@class="team-name_name"]/text()')[1]
+            score = gd.xpath('div//span[@class="match--score_score"]/span/text()')
+            french_date = gd.xpath('parent::div/preceding-sibling::h3/text()')[-1].strip()
+            gd = time.strptime(french_date, '%A, %d %B %Y')
+            output = {'read_game_date': french_date, 'read_home_team': home, 'read_away_team': away, 'home_score':
+                score[0], 'away_score': score[1]}
+            output['actual_game_date'] = datetime.fromtimestamp(mktime(gd))
+            result.append(output)
         return result
