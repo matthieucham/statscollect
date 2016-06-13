@@ -446,8 +446,8 @@ class UEFAStepScrapper(BaseScrapper):
         result = []
 
         for gd in games:
-            home = gd.xpath('div//span[@class="team-name_name"]/text()')[0]
-            away = gd.xpath('div//span[@class="team-name_name"]/text()')[1]
+            home = str(gd.xpath('div//span[@class="team-name_name"]/text()')[0])
+            away = str(gd.xpath('div//span[@class="team-name_name"]/text()')[1])
             score = gd.xpath('div//span[@class="match--score_score"]/span/text()')
             french_date = gd.xpath('parent::div/preceding-sibling::h3/text()')[-1].strip()
             gd = time.strptime(french_date, '%A, %d %B %Y')
