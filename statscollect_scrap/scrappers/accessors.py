@@ -21,8 +21,8 @@ class URLAccessor(BaseContentAccessor):
         self.url_pattern = url_pattern
 
     def get_content(self, form):
-        if form.cleaned_data.get('scrapped_url'):
-            url_to_scrap = form.cleaned_data.get('scrapped_url')
+        if form.cleaned_data.get('scraped_url'):
+            url_to_scrap = form.cleaned_data.get('scraped_url')
         else:
             url_to_scrap = self.url_pattern % form.cleaned_data.get('identifier')
         m = re.match(self.ctrl_pattern, url_to_scrap)
@@ -31,8 +31,9 @@ class URLAccessor(BaseContentAccessor):
                              'pattern is %s' % (url_to_scrap, self.ctrl_pattern))
         fake = Faker()
         headers = {
-            'User-Agent': random.choice(
-                [fake.chrome(), fake.firefox(), fake.safari()])
+            # 'User-Agent': random.choice(
+            #     [fake.chrome(), fake.firefox(), fake.safari()])
+            'User-Agent': fake.firefox()
         }
         page = requests.get(url_to_scrap, headers=headers)
         return page.text
