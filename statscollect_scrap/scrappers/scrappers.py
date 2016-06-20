@@ -427,7 +427,7 @@ class KickerRatingsScrapper(BaseScrapper):
 
 
 class UEFAStepScrapper(BaseScrapper):
-    url_pattern = "http\:\/\/fr\.euro2016\.infra\.uefa\.com\/matches\/libraries\/1\/matches"
+    url_pattern = "http\:\/\/fr\.euro2016\.infra\.uefa\.com\/matches\/libraries\/(.*)\/matches"
 
     def __init__(self):
         try:
