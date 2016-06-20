@@ -175,12 +175,12 @@ class TestFootballScrapper(TestCase):
             print(res)
 
     def test_processor_step(self):
-        my_url = 'http://fr.euro2016.infra.uefa.com/matches/libraries/1/matches'
+        my_url = 'http://fr.euro2016.infra.uefa.com/matches/libraries/2/matches'
         scrapper_data = TestFootballScrapper.TestScrapperData()
         scrapper_data.class_name = 'UEFAStepScrapper'
-        scrapper_data.url_pattern = 'http\:\/\/fr\.euro2016\.infra\.uefa\.com\/matches\/libraries\/1\/matches'
+        #scrapper_data.url_pattern = 'http\:\/\/fr\.euro2016\.infra\.uefa\.com\/matches\/libraries\/1\/matches'
         form = TestFootballScrapper.TestForm()
-        form.cleaned_data = {'scrapped_url': my_url, 'mode': 'URL'}
+        form.cleaned_data = {'scraped_url': my_url, 'mode': 'URL'}
         sfs = models.ScrappedFootballStep()
         sfs.actual_step = TournamentInstanceStep()
         results = scrappers.FootballStepProcessor(sfs).process(form, scrapper_data)
