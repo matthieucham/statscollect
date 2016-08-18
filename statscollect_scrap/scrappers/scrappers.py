@@ -287,26 +287,49 @@ class OrangeRatingsScrapper(BaseScrapper):
     def scrap_page(self, page):
         print('Scrappingwith OrangeRatingsScrapper')
         tree = html.fromstring(page)
-        article = tree.xpath('//div[@itemprop="articleBody"]/p/strong[1]')
+        strong_in_article = tree.xpath('//div[@itemprop="articleBody"]/p//strong')
         result = []
         # homep = article[0].xpath('p[last()-1]/strong')
         # awayp = article[0].xpath('p[last()]/strong')
         name_pattern = r'(?:puis )*([\w][\w|àéèäëâêiîïöôûüù\- ]+)[\s]*(?:\(cap\))*[\s]*\((?:[\d]+[^,\-]+(?:\-[\s])*)*$'
+        next_is_home = False
         next_is_away = False
-        homep = None
-        awayp = None
-        for par in article:
-            if par.text is not None and par.text.startswith('La feuille de match'):
-                homep = par.xpath('parent::p/strong')
+        home_pars = []
+        homep_to_search = None
+        away_pars = []
+        awayp_to_search = None
+        for par in strong_in_article:
+            if par.text is not None and par.text.startswith('Expulsion'):
+                next_is_home = True
+            elif next_is_home:
+                home_pars.append(par.xpath('following-sibling::br[1]')[0])
+                homep_to_search = par.xpath('following-sibling::strong')
+                next_is_home = False
+            elif par.text is not None and par.text.startswith('Entraîneur') and awayp_to_search is None:
                 next_is_away = True
             elif next_is_away:
-                awayp = par.xpath('parent::p/strong')
+                away_pars.append(par.xpath('following-sibling::br[1]')[0])
+                awayp_to_search = par.xpath('following-sibling::strong')
                 next_is_away = False
-        if homep is None or awayp is None:
+        if homep_to_search is None or awayp_to_search is None:
             return result
+        # select relevant pars in home
+        for par in homep_to_search:
+            if par.text.startswith('N\'ont pas participé'):
+                break
+            else:
+                home_pars.append(par)
+
+        # select relevant pars in away
+        for par in awayp_to_search:
+            if par.text.startswith('N\'ont pas participé'):
+                break
+            else:
+                away_pars.append(par)
+
         previous_tail = None
         ignore_next = False
-        for blabla in homep:
+        for blabla in home_pars:
             plrating = {'team': 'home'}
             content = blabla.text
             if content is not None:
@@ -324,7 +347,7 @@ class OrangeRatingsScrapper(BaseScrapper):
                             result.append(plrating)
             previous_tail = blabla.tail
         previous_tail = None
-        for blabla in awayp:
+        for blabla in away_pars:
             plrating = {'team': 'away'}
             content = blabla.text
             if content is not None:
