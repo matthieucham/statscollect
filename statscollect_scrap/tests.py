@@ -100,11 +100,11 @@ class TestFootballScrapper(TestCase):
 
 
     def test_OrangeNotes(self):
-        my_url = 'http://sports.orange.fr/football/ligue-1/match/psg-nice-apres-match-SPEF010amU0iNC.html'
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/bordeaux-saint-etienne-apres-match-SPEF010aV50nrr.html'
         scrapper = scrappers.OrangeRatingsScrapper()
         accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
         form = TestFootballScrapper.TestForm()
-        form.cleaned_data = {'scrapped_url': my_url}
+        form.cleaned_data = {'scraped_url': my_url}
         results = scrapper.scrap_page(accessor.get_content(form))
         for res in results:
             print(res)
@@ -151,18 +151,18 @@ class TestFootballScrapper(TestCase):
             print(res)
 
     def test_KickerNotes(self):
-        my_url = 'http://www.kicker.de/news/fussball/em/spielplan/europameisterschaft/2016/1/2394895/spielanalyse_frankreich_rumaenien.html'
+        my_url = 'http://www.kicker.de/news/fussball/em/spielplan/europameisterschaft/2016/7/2394945/spielanalyse_portugal_frankreich.html'
         scrapper = scrappers.KickerRatingsScrapper()
         accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
         form = TestFootballScrapper.TestForm()
-        form.cleaned_data = {'scrapped_url': my_url}
+        form.cleaned_data = {'scraped_url': my_url}
         results = scrapper.scrap_page(accessor.get_content(form))
         self.assertTrue(len(results) == 22)
         for res in results:
             print(res)
 
     def test_processor_notes_kicker(self):
-        my_url = 'http://www.kicker.de/news/fussball/em/spielplan/europameisterschaft/2016/1/2394895/spielanalyse_frankreich_rumaenien.html'
+        my_url = 'http://www.kicker.de/news/fussball/em/spielplan/europameisterschaft/2016/7/2394945/spielanalyse_portugal_frankreich.html'
         scrapper_data = TestFootballScrapper.TestScrapperData()
         scrapper_data.class_name = 'KickerRatingsScrapper'
         scrapper_data.url_pattern = 'http\:\/\/www\.kicker\.de\/news\/fussball\/(.*)html'
