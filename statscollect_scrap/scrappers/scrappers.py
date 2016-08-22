@@ -302,13 +302,13 @@ class OrangeRatingsScrapper(BaseScrapper):
             if par.text is not None and par.text.startswith('Expulsion'):
                 next_is_home = True
             elif next_is_home:
-                home_pars.append(par.xpath('following-sibling::br[1]')[0])
+                home_pars.append(self.get_first_br_with_tail(par))
                 homep_to_search = par.xpath('following-sibling::strong')
                 next_is_home = False
             elif par.text is not None and par.text.startswith('Entraîneur') and awayp_to_search is None:
                 next_is_away = True
             elif next_is_away:
-                away_pars.append(par.xpath('following-sibling::br[1]')[0])
+                away_pars.append(self.get_first_br_with_tail(par))
                 awayp_to_search = par.xpath('following-sibling::strong')
                 next_is_away = False
         if homep_to_search is None or awayp_to_search is None:
@@ -365,6 +365,14 @@ class OrangeRatingsScrapper(BaseScrapper):
                             result.append(plrating)
             previous_tail = blabla.tail
         return result
+
+    def get_first_br_with_tail(self, par):
+        p = None
+        xpath_index = 1
+        while p is None or p.tail is None:
+            p = par.xpath('following-sibling::br[%s]' % xpath_index)[0]
+            xpath_index += 1
+        return p
 
 
 class WhoscoredRatingsScrapper(BaseScrapper):
