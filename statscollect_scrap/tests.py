@@ -100,7 +100,7 @@ class TestFootballScrapper(TestCase):
 
 
     def test_OrangeNotes(self):
-        my_url = 'http://sports.orange.fr/football/ligue-1/match/bordeaux-saint-etienne-apres-match-SPEF010aV50nrr.html'
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/toulouse-bordeaux-apres-match-SPEF010aV60nrE.html'
         scrapper = scrappers.OrangeRatingsScrapper()
         accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
         form = TestFootballScrapper.TestForm()
