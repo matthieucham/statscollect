@@ -299,12 +299,15 @@ class OrangeRatingsScrapper(BaseScrapper):
         away_pars = []
         awayp_to_search = None
         for par in strong_in_article:
-            if par.text is not None and par.text.startswith('Expulsion'):
+            if par.text is not None and par.text.startswith('Avertissement'):
                 next_is_home = True
             elif next_is_home:
-                home_pars.append(self.get_first_br_with_tail(par))
-                homep_to_search = par.xpath('following-sibling::strong')
-                next_is_home = False
+                if par.text.startswith('Expulsion'):
+                    next_is_home = True
+                else:
+                    home_pars.append(self.get_first_br_with_tail(par))
+                    homep_to_search = par.xpath('following-sibling::strong')
+                    next_is_home = False
             elif par.text is not None and par.text.startswith('Entraîneur') and awayp_to_search is None:
                 next_is_away = True
             elif next_is_away:
