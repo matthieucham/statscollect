@@ -7,11 +7,11 @@ from statscollect_scrap.scrappers import accessors
 
 def search_player(player_name, choices, cutoff):
     print('Searching %s' % player_name)
-    matching_results = process.extractOne(player_name, choices,
-                                          score_cutoff=cutoff,
-                                          limit=1)
+    matching_results = process.extractBests(player_name, choices,
+                                            score_cutoff=cutoff,
+                                            limit=1)
     if len(matching_results) > 0:
-        result, ratio, player_id = matching_results[0]
+        result, ratio, player_id = sorted(matching_results, key=lambda x: x[1])[0]
         print('Found %s with ratio %s' % (result, ratio))
         matching_player = FootballPerson.objects.get(pk=player_id)
         return matching_player, ratio
