@@ -299,10 +299,10 @@ class OrangeRatingsScrapper(BaseScrapper):
         away_pars = []
         awayp_to_search = None
         for par in strong_in_article:
-            if par.text is not None and par.text.startswith('Avertissement'):
+            if par.text is not None and par.text.startswith('Avert'):
                 next_is_home = True
             elif next_is_home:
-                if par.text.startswith('Expulsion'):
+                if par.text.startswith('Expu') or par.text.startswith('Exclu'):
                     next_is_home = True
                 else:
                     home_pars.append(self.get_first_br_with_tail(par))
@@ -318,17 +318,19 @@ class OrangeRatingsScrapper(BaseScrapper):
             return result
         # select relevant pars in home
         for par in homep_to_search:
-            if par.text.startswith('N\'ont pas participé'):
-                break
-            else:
-                home_pars.append(par)
+            if par.text is not None:
+                if par.text.startswith('N\'ont pas participé') or par.text.startswith('Entraîneur'):
+                    break
+                else:
+                    home_pars.append(par)
 
         # select relevant pars in away
         for par in awayp_to_search:
-            if par.text.startswith('N\'ont pas participé'):
-                break
-            else:
-                away_pars.append(par)
+            if par.text is not None:
+                if par.text.startswith('N\'ont pas participé') or par.text.startswith('Entraîneur'):
+                    break
+                else:
+                    away_pars.append(par)
 
         previous_tail = None
         ignore_next = False
