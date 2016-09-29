@@ -100,7 +100,7 @@ class TestFootballScrapper(TestCase):
 
 
     def test_OrangeNotes(self):
-        my_url = 'http://sports.orange.fr/football/ligue-1/match/rennes-marseille-apres-match-SPEF010aVa0nsj.html'
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/rennes-caen-apres-match-SPEF010aV80nrZ.html'
         scrapper = scrappers.OrangeRatingsScrapper()
         accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
         form = TestFootballScrapper.TestForm()
@@ -167,7 +167,7 @@ class TestFootballScrapper(TestCase):
         scrapper_data.class_name = 'KickerRatingsScrapper'
         scrapper_data.url_pattern = 'http\:\/\/www\.kicker\.de\/news\/fussball\/(.*)html'
         form = TestFootballScrapper.TestForm()
-        form.cleaned_data = {'scrapped_url': my_url, 'mode': 'URL'}
+        form.cleaned_data = {'scraped_url': my_url, 'mode': 'URL'}
         results = scrappers.FootballRatingsProcessor(
             FootballMeeting.objects.get(uuid='3173b9c6-3913-430c-837f-2cba567a9c50')).process(form, scrapper_data)
         self.assertTrue(len(results) <= 28)
