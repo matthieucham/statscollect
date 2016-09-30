@@ -55,6 +55,7 @@ class FootballPlayerSerializer(serializers.ModelSerializer):
                   'last_name',
                   'first_name',
                   'usual_name',
+                  'position',
                   'rep_country',
                   'status',
                   'links',)

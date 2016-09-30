@@ -35,8 +35,15 @@ class Person(MetaModel):
 
 
 class FootballPerson(Person):
+    POSITION_CHOICES = (
+        ('G', 'Gardien'),
+        ('D', 'Défenseur'),
+        ('M', 'Milieu'),
+        ('A', 'Attaquant'),
+    )
+    position = models.CharField(max_length=1, null=True, choices=POSITION_CHOICES,)
+
     class Meta:
-        proxy = True
         verbose_name = 'footballeur'
         ordering = ['last_name', 'usual_name', 'first_name']
 

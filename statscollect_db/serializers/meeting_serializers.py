@@ -86,21 +86,25 @@ class RatingSerializer(serializers.ModelSerializer):
         )
 
 
-class RosterPlayerIdSerializer(serializers.ModelSerializer):
+class RosterFootballPlayerIdSerializer(serializers.ModelSerializer):
     href = serializers.HyperlinkedIdentityField(view_name='footballplayer-detail', lookup_field='uuid')
+    position = serializers.SlugRelatedField(source='footballperson', slug_field='position', read_only=True)
 
     class Meta:
-        model = models.Person
+        model = models.FootballPerson
         fields = (
             'uuid',
             'href',
+            'created_at',
+            'updated_at',
             'last_name',
             'first_name',
             'usual_name',
+            'position',
         )
 
 
-class RosterPlayerStatsField(serializers.RelatedField):
+class RosterFootballPlayerStatsField(serializers.RelatedField):
     def to_representation(self, value):
         """ value is a teammeetingperson """
         try:
@@ -110,14 +114,14 @@ class RosterPlayerStatsField(serializers.RelatedField):
             return None
 
 
-class RosterPlayerSerializer(serializers.ModelSerializer):
-    player = RosterPlayerIdSerializer(source='person')
+class RosterFootballPlayerSerializer(serializers.ModelSerializer):
+    player = RosterFootballPlayerIdSerializer(source='person')
     stats = serializers.SerializerMethodField(read_only=True)
     ratings = serializers.SerializerMethodField(read_only=True)
     played_for = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
 
     def get_stats(self, obj):
-        return RosterPlayerStatsField(read_only=True).to_representation(obj)
+        return RosterFootballPlayerStatsField(read_only=True).to_representation(obj)
 
     def get_ratings(self, value):
         ratings = models.Rating.objects.filter(meeting=value.meeting, person=value.person)
@@ -139,7 +143,7 @@ class FootballMeetingDetailedSerializer(serializers.ModelSerializer):
     step = serializers.SlugRelatedField(slug_field='uuid', read_only=True,
                                         source='tournament_step',
                                         required=False)
-    roster = RosterPlayerSerializer(source='teammeetingperson_set', many=True, read_only=True)
+    roster = RosterFootballPlayerSerializer(source='teammeetingperson_set', many=True, read_only=True)
     home_team = FootballTeamSerializer(read_only=True)
     away_team = FootballTeamSerializer(read_only=True)
 
