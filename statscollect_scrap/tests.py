@@ -109,6 +109,18 @@ class TestFootballScrapper(TestCase):
         for res in results:
             print(res)
 
+
+    def test_OrangeNotes2(self):
+        my_url = 'http://sports.orange.fr/football/ligue-1/match/lorient-marseille-apres-match-SPEF010aVw0nvL.html'
+        scrapper = scrappers.OrangeRatingsScrapper()
+        accessor = scrappers.URLAccessor(scrapper.url_pattern, '')
+        form = TestFootballScrapper.TestForm()
+        form.cleaned_data = {'scraped_url': my_url}
+        results = scrapper.scrap_page(accessor.get_content(form))
+        for res in results:
+            print(res)
+
+
     def test_WhoscoredNotes(self):
         my_url = 'http://www.whoscored.com/Matches/824572/Live'
         scrapper = scrappers.WhoscoredRatingsScrapper()

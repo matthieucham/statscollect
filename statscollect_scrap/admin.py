@@ -167,6 +167,14 @@ class ScrappedGameSheetParticipantInline(admin.StackedInline):
             )
         }),
     )
+    template = "admin/statscollect_scrap/scrappedgamesheet/edit_inline/stacked.html"
+
+    class Media:
+        css = {
+            'all': (
+                '/static/statscollect_scrap/css/scrap.css',
+            )
+        }
 
 
 class ScrappedGameSheetAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):

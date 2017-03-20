@@ -1,20 +1,38 @@
 import importlib
-from fuzzywuzzy import process
+from fuzzywuzzy import process, fuzz
 from statscollect_db.models import FootballTeam, FootballPerson, TeamMeetingPerson
 from statscollect_scrap import models
-from statscollect_scrap.scrappers import accessors
+from statscollect_scrap.scrappers import accessors, myfuzz
 
 
 def search_player(player_name, choices, cutoff):
     print('Searching %s' % player_name)
     matching_results = process.extractBests(player_name, choices,
-                                            score_cutoff=cutoff,
-                                            limit=1)
+                                            scorer=fuzz.partial_token_set_ratio,
+                                            score_cutoff=cutoff)
     if len(matching_results) > 0:
-        result, ratio, player_id = sorted(matching_results, key=lambda x: x[1])[0]
-        print('Found %s with ratio %s' % (result, ratio))
-        matching_player = FootballPerson.objects.get(pk=player_id)
-        return matching_player, ratio
+        # si les meilleurs matchs sont à egalité de score, chercher à nouveau avec méthode différente
+        best_score = 0
+        creme = dict()
+        for name, score, plid in matching_results:
+            if score >= best_score:
+                best_score = score
+                creme.update({plid: name})
+            else:
+                break  # la liste renvoyée par extractBests est triée donc on peut s'arreter dès que le niveau baisse.
+        # combien de meilleurs scores ?
+        if len(creme) == 1:
+            plid, plname = creme.popitem()
+            print('Found %s at first round with ratio %s' % (plname, best_score))
+            matching_player = FootballPerson.objects.get(pk=plid)
+            return matching_player, best_score
+        else:
+            print('Multiple matches found with ratio %s, refining...' % best_score)
+            refine_results = process.extractBests(player_name, creme, scorer=myfuzz.partial_token_set_ratio_with_avg)
+            plname, ratio, plid = refine_results[0]
+            print('Found %s at second round with ratio %s then %s' % (plname, best_score, ratio))
+            matching_player = FootballPerson.objects.get(pk=plid)
+            return matching_player, best_score
     else:
         print("Alert : no match for %s" % player_name)
         return None, 0.0
@@ -99,7 +117,7 @@ class FootballStepProcessor(BaseProcessor):
 
 
 class FootballGamesheetProcessor(BaseProcessor):
-    CUTOFF_PREFERRED = 70
+    CUTOFF_PREFERRED = 0
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
@@ -149,7 +167,7 @@ class FootballGamesheetProcessor(BaseProcessor):
 
 class FootballStatsProcessor(BaseProcessor):
     # cutoff faible car la sélection a été déjà faite avant
-    CUTOFF_PREFERRED = 70
+    CUTOFF_PREFERRED = 0
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
@@ -200,8 +218,8 @@ class FootballStatsProcessor(BaseProcessor):
 
 class FootballRatingsProcessor(BaseProcessor):
     # cutoff faible car la sélection a été déjà faite avant
-    CUTOFF_HARSH = 40
-    CUTOFF_EASY = 70
+    CUTOFF_HARSH = 0
+    CUTOFF_EASY = 0
 
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity

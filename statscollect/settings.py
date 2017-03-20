@@ -98,7 +98,7 @@ DATABASES = {
         'NAME': 'statscollect',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'postgres',
-        'PASSWORD': 'root'
+        'PASSWORD': 'postgres'
     }
 }
 
