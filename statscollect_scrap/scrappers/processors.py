@@ -124,12 +124,12 @@ class FootballGamesheetProcessor(BaseProcessor):
         self.home_team = parent_entity.actual_meeting.home_team
         self.away_team = parent_entity.actual_meeting.away_team
         self.choices_home = dict(
-            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
              for elem in FootballPerson.objects.filter(current_teams=self.home_team).values(
                 'id', 'first_name', 'last_name', 'usual_name')]
         )
         self.choices_away = dict(
-            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
              for elem in FootballPerson.objects.filter(current_teams=self.away_team).values(
                 'id', 'first_name', 'last_name', 'usual_name')]
         )
@@ -224,13 +224,13 @@ class FootballRatingsProcessor(BaseProcessor):
     def __init__(self, parent_entity):
         self.parent_entity = parent_entity
         self.choices_home = dict(
-            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
              for elem in FootballPerson.objects.filter(teammeetingperson__meeting=parent_entity.teammeeting,
                                                        teammeetingperson__played_for=parent_entity.teammeeting.home_team).values(
                 'id', 'first_name', 'last_name', 'usual_name')]
         )
         self.choices_away = dict(
-            [(elem['id'], elem['first_name'] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
              for elem in FootballPerson.objects.filter(teammeetingperson__meeting=parent_entity.teammeeting,
                                                        teammeetingperson__played_for=parent_entity.teammeeting.away_team).values(
                 'id', 'first_name', 'last_name', 'usual_name')]
