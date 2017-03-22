@@ -45,6 +45,8 @@ class BaseProcessor():
         scrapper = klass()
         if form.cleaned_data.get('mode') == 'URL':
             accessor = accessors.URLAccessor(scrapper.url_pattern, scrapper_data.url_pattern)
+        elif form.cleaned_data.get('mode') == 'SELENIUM':
+            accessor = accessors.BrowserWSAccessor(scrapper_data.url_pattern)
         else:
             accessor = accessors.CopyPasteAccessor()
         results = self.scrap_and_match(accessor, scrapper, form)

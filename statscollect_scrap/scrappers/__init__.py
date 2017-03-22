@@ -3,4 +3,4 @@ from .scrappers import LFPFootballStepScrapper, LEquipeFootballStepScrapper, LFP
     SportsFrRatingsScrapper, KickerRatingsScrapper, UEFAStepScrapper
 from .processors import FootballStepProcessor, FootballGamesheetProcessor, FootballStatsProcessor, \
     FootballRatingsProcessor
-from .accessors import URLAccessor, CopyPasteAccessor
+from .accessors import URLAccessor, CopyPasteAccessor, BrowserWSAccessor

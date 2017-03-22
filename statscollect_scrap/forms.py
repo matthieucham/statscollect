@@ -7,8 +7,10 @@ from statscollect_scrap import models
 
 
 class ScrapAccessModeMixin(forms.Form):
-    mode = forms.ChoiceField(choices=(('URL', 'Par adresse'), ('MANUAL', 'Copier-coller')), initial='URL',
-                             required=True, label="Mode d'accès")
+    mode = forms.ChoiceField(
+        choices=(('URL', 'Par adresse'), ('SELENIUM', 'Navigateur [WS only]'), ('MANUAL', 'Copier-coller')),
+        initial='URL',
+        required=True, label="Mode d'accès")
 
 
 class ScrapIdentifierForm(ScrapAccessModeMixin, forms.ModelForm):
