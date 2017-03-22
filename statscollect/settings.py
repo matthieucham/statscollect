@@ -15,6 +15,9 @@ from django.contrib import messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+ON_OPENSHIFT = False
+if 'OPENSHIFT_REPO_DIR' in os.environ:
+    ON_OPENSHIFT = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/

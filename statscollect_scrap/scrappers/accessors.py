@@ -4,6 +4,7 @@ import requests
 from selenium import webdriver
 import time
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from statscollect import settings
 
 
 class BaseContentAccessor():
@@ -54,7 +55,12 @@ class BrowserWSAccessor(BaseContentAccessor):
         dcap["phantomjs.page.settings.userAgent"] = (random.choice(
             [fake.firefox()])
         )
-        browser = webdriver.PhantomJS(desired_capabilities=dcap)
+        if settings.ON_OPENSHIFT:
+            print('Using phantomJS binary at %s', settings.PHANTOMJS_BIN_PATH)
+            browser = webdriver.PhantomJS(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH)
+        else:
+            print('Using phantomJS binary in PATH')
+            browser = webdriver.PhantomJS(desired_capabilities=dcap)
         browser.implicitly_wait(3)
 
         browser.get(self.entry_point)
