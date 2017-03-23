@@ -59,6 +59,7 @@ class BrowserWSAccessor(BaseContentAccessor):
             print('Using phantomJS binary at %s', settings.PHANTOMJS_BIN_PATH)
             # browser = webdriver.PhantomJS(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH)
             browser = MyPhantomWebDriver(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH,
+                                         service_log_path=settings.PHANTOMJS_LOG_PATH,
                                          ip=os.getenv('OPENSHIFT_PYTHON_IP'), port=15002)
         else:
             print('Using phantomJS binary in PATH')
@@ -74,7 +75,7 @@ class BrowserWSAccessor(BaseContentAccessor):
             # recherche de l'url visée dans le contenu de la page visible
             match_links = browser.find_element_by_id('tournament-fixture-wrapper').find_elements_by_class_name(
                 'result-1')
-            #browser.save_screenshot('1.png')
+            # browser.save_screenshot('1.png')
             for ml in match_links:
                 href = ml.get_attribute('href')
                 print(href)
@@ -89,7 +90,7 @@ class BrowserWSAccessor(BaseContentAccessor):
                 time.sleep(random.random())
                 depth_count += 1
                 previous.click()
-        #browser.save_screenshot('2.png')
+        # browser.save_screenshot('2.png')
         if my_url_in_page:
             # access content here
             html_source = browser.page_source
