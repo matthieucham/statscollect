@@ -5,6 +5,8 @@ from selenium import webdriver
 import time
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from statscollect import settings
+from .myphantomjs import MyPhantomWebDriver
+import os
 
 
 class BaseContentAccessor():
@@ -52,15 +54,15 @@ class BrowserWSAccessor(BaseContentAccessor):
             url_to_scrap = self.url_pattern % form.cleaned_data.get('identifier')
         fake = Faker()
         dcap = dict(DesiredCapabilities.PHANTOMJS)
-        dcap["phantomjs.page.settings.userAgent"] = (random.choice(
-            [fake.firefox()])
-        )
+        dcap["phantomjs.page.settings.userAgent"] = (fake.chrome())
         if settings.ON_OPENSHIFT:
             print('Using phantomJS binary at %s', settings.PHANTOMJS_BIN_PATH)
-            browser = webdriver.PhantomJS(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH)
+            # browser = webdriver.PhantomJS(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH)
+            browser = MyPhantomWebDriver(desired_capabilities=dcap, executable_path=settings.PHANTOMJS_BIN_PATH,
+                                         ip=os.getenv('OPENSHIFT_PYTHON_IP'), port=15002)
         else:
             print('Using phantomJS binary in PATH')
-            browser = webdriver.PhantomJS(desired_capabilities=dcap)
+            browser = MyPhantomWebDriver(desired_capabilities=dcap, ip='127.0.0.1', port=15002)
         browser.implicitly_wait(3)
 
         browser.get(self.entry_point)
@@ -72,7 +74,7 @@ class BrowserWSAccessor(BaseContentAccessor):
             # recherche de l'url visée dans le contenu de la page visible
             match_links = browser.find_element_by_id('tournament-fixture-wrapper').find_elements_by_class_name(
                 'result-1')
-            # browser.save_screenshot('1.png')
+            #browser.save_screenshot('1.png')
             for ml in match_links:
                 href = ml.get_attribute('href')
                 print(href)
@@ -87,7 +89,7 @@ class BrowserWSAccessor(BaseContentAccessor):
                 time.sleep(random.random())
                 depth_count += 1
                 previous.click()
-        # browser.save_screenshot('2.png')
+        #browser.save_screenshot('2.png')
         if my_url_in_page:
             # access content here
             html_source = browser.page_source
