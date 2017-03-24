@@ -1,10 +1,10 @@
 from selenium.webdriver import phantomjs
+from selenium.webdriver.common import utils
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class MyPhantomJSService(phantomjs.service.Service):
-
     def __init__(self, executable_path, port=0, service_args=None, log_path=None, ip=None):
         if ip is None:
             self.ip = '0.0.0.0'
@@ -14,6 +14,16 @@ class MyPhantomJSService(phantomjs.service.Service):
 
     def command_line_args(self):
         return self.service_args + ["--webdriver=%s:%d" % (self.ip, self.port)]
+
+    def is_connectable(self):
+        return utils.is_connectable(self.port, host=self.ip)
+
+    @property
+    def service_url(self):
+        """
+        Gets the url of the GhostDriver Service
+        """
+        return "http://%s:%d/wd/hub" % (self.ip, self.port)
 
 
 class MyPhantomWebDriver(RemoteWebDriver):
