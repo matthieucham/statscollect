@@ -237,3 +237,18 @@ class ScrappedPlayerRatings(models.Model):
 
     class Meta:
         verbose_name = 'note'
+
+# V2 models
+
+
+class ScrapedDataSheet(models.Model):
+    hash_url = models.CharField(max_length=255, primary_key=True)
+    created_at = models.DateTimeField(editable=False, default=timezone.now())
+    updated_at = models.DateTimeField(editable=False, default=timezone.now())
+
+    def save(self, *args, **kwargs):
+        """On save, update timestamps"""
+        if not self.hash_url:
+            self.created_at = timezone.now()
+        self.updated_at = timezone.now()
+        super(ScrapedDataSheet, self).save(*args, **kwargs)

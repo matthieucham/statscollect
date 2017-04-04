@@ -1,6 +1,5 @@
 from django.db import models
 from django_countries.fields import CountryField
-from django_extensions.db.fields import UUIDField
 from django.utils import timezone
 
 from .meeting_model import Meeting
@@ -15,7 +14,7 @@ class RatingSource(models.Model):
         ('10CLASSIC', 'Classical 0-10'),
         ('6GERMAN', 'German 1-6'),
     )
-    uuid = UUIDField(unique=True)
+    uuid = models.UUIDField(unique=True)
     created_at = models.DateTimeField(editable=False, default=timezone.now())
     updated_at = models.DateTimeField(editable=False, default=timezone.now())
     code = models.CharField(primary_key=True, max_length=8)

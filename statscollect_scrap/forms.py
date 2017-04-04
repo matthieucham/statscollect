@@ -70,6 +70,8 @@ class ParticipantAdminForm(forms.ModelForm):
         lookup_class=lookups.ParticipantLookup
     )
 
+    fields = ('actual_player', )
+
     class Meta(object):
         model = models.ScrappedGameSheetParticipant
 

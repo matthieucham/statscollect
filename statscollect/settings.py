@@ -45,13 +45,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     # contrib
-    'django_extensions',
     'django_countries',
     'crispy_forms',
     'honeypot',
     'envelope',
     'oauth2_provider',
-    #'corsheaders',
 
 
     # django-selectable
@@ -78,7 +76,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
 )
@@ -101,7 +98,7 @@ DATABASES = {
         'NAME': 'statscollect',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'postgres',
-        'PASSWORD': 'postgres'
+        'PASSWORD': 'root'
     }
 }
 

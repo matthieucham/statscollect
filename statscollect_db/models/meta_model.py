@@ -1,10 +1,9 @@
 from django.db import models
 from django.utils import timezone
-from django_extensions.db.fields import UUIDField
 
 
 class MetaModel(models.Model):
-    uuid = UUIDField(unique=True)
+    uuid = models.UUIDField(unique=True)
     created_at = models.DateTimeField(editable=False, default=timezone.now())
     updated_at = models.DateTimeField(editable=False, default=timezone.now())
 
