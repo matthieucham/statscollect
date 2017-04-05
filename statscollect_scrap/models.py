@@ -243,8 +243,8 @@ class ScrappedPlayerRatings(models.Model):
 
 class ScrapedDataSheet(models.Model):
     hash_url = models.CharField(max_length=255, primary_key=True)
-    created_at = models.DateTimeField(editable=False, default=timezone.now())
-    updated_at = models.DateTimeField(editable=False, default=timezone.now())
+    created_at = models.DateTimeField(editable=False, default=timezone.now)
+    updated_at = models.DateTimeField(editable=False, default=timezone.now)
 
     def save(self, *args, **kwargs):
         """On save, update timestamps"""

@@ -35,7 +35,7 @@ class TeamMeeting(Meeting):
     home_result = models.PositiveSmallIntegerField(blank=True, null=True)
     away_team = models.ForeignKey(Team, related_name='meetings_away')
     away_result = models.PositiveSmallIntegerField(blank=True, null=True)
-    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True, null=True)
+    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True)
 
     def __str__(self):
         if self.home_result is None or self.away_result is None:

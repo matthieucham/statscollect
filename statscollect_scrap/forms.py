@@ -70,10 +70,9 @@ class ParticipantAdminForm(forms.ModelForm):
         lookup_class=lookups.ParticipantLookup
     )
 
-    fields = ('actual_player', )
-
     class Meta(object):
         model = models.ScrappedGameSheetParticipant
+        fields = '__all__'
 
 
 class ScrappedGamesheetForm(ScrapIdentifierForm):
@@ -110,6 +109,7 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
 
     class Meta:
         model = models.ScrappedGameSheet
+        fields = '__all__'
 
 
 class TeamMeetingDataForm(ScrapIdentifierForm):

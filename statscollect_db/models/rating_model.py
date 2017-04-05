@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django_countries.fields import CountryField
 from django.utils import timezone
@@ -14,9 +15,9 @@ class RatingSource(models.Model):
         ('10CLASSIC', 'Classical 0-10'),
         ('6GERMAN', 'German 1-6'),
     )
-    uuid = models.UUIDField(unique=True)
-    created_at = models.DateTimeField(editable=False, default=timezone.now())
-    updated_at = models.DateTimeField(editable=False, default=timezone.now())
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(editable=False, default=timezone.now)
+    updated_at = models.DateTimeField(editable=False, default=timezone.now)
     code = models.CharField(primary_key=True, max_length=8)
     name = models.CharField(max_length=50)
     website = models.CharField(max_length=400, blank=True)
