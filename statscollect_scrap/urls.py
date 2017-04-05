@@ -1,12 +1,10 @@
 from django.conf.urls import url
 
-from statscollect_scrap import views
+from .views import ScrapedDataSheetViewSet
+
 
 urlpatterns = [
-    # ex: /scrap/
-    url(r'^$', views.IndexView.as_view(), name='index'),
-    # ex: /scrap/tournament/5/
-    url(r'^tournament/(?P<pk>\d+)/$', views.TournamentDetailView.as_view(), name='tournament_detail'),
-    # ex: /scrap/instance/1/
-    url(r'^instance/(?P<pk>\d+)/$', views.InstanceDetailView.as_view(),
-        name='instance_detail')]
+    url(r'^datasheets/$', ScrapedDataSheetViewSet.as_view({'get': 'list', }, suffix='List'), name='datasheet-list'),
+    url(r'^datasheets/(?P<hash_url>[a-f0-9]{8,})/$',
+        ScrapedDataSheetViewSet.as_view({'get': 'retrieve', 'post': 'create', }), name='datasheet-detail'),
+]

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.contrib.postgres.fields import JSONField
 
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
     TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
@@ -245,6 +246,8 @@ class ScrapedDataSheet(models.Model):
     hash_url = models.CharField(max_length=255, primary_key=True)
     created_at = models.DateTimeField(editable=False, default=timezone.now)
     updated_at = models.DateTimeField(editable=False, default=timezone.now)
+    source = models.ForeignKey(RatingSource, editable=False, null=True)
+    content = JSONField()
 
     def save(self, *args, **kwargs):
         """On save, update timestamps"""

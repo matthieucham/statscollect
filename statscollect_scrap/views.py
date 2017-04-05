@@ -1,33 +1,10 @@
-from django.shortcuts import render
-from django.views import generic
+from rest_framework import viewsets
 
-from statscollect_db import models
-
-
-class IndexView(generic.ListView):
-    template_name = 'statscollect_scrap/index.html'
-    context_object_name = 'tournament_list'
-
-    def get_queryset(self):
-        """Return the list of all tournaments"""
-        return models.Tournament.objects.all()
+from .models import ScrapedDataSheet
+from .serializers import ScrapedDataSheetSerializer
 
 
-class TournamentDetailView(generic.ListView):
-    template_name = 'statscollect_scrap/tournament_detail.html'
-    context_object_name = 'instance_list'
-
-    def get_queryset(self):
-        """Return the list of instances of the tournament"""
-        pk = self.kwargs.get('pk')
-        return models.TournamentInstance.objects.filter(tournament_id=pk).order_by('name')
-
-
-class InstanceDetailView(generic.ListView):
-    template_name = 'statscollect_scrap/instance_detail.html'
-    context_object_name = 'step_list'
-
-    def get_queryset(self):
-        """Return the list of steps of the instance"""
-        pk = self.kwargs.get('pk')
-        return models.TournamentInstanceStep.objects.filter(tournament_instance_id=pk).order_by('name')
+class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
+    queryset = ScrapedDataSheet.objects.all()
+    serializer_class = ScrapedDataSheetSerializer
+    lookup_field = 'hash_url'
