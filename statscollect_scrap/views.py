@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 
 from .models import ScrapedDataSheet
 from .serializers import ScrapedDataSheetSerializer
@@ -8,3 +8,4 @@ class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
     queryset = ScrapedDataSheet.objects.all()
     serializer_class = ScrapedDataSheetSerializer
     lookup_field = 'hash_url'
+    permission_classes = (permissions.AllowAny, )
