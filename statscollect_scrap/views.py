@@ -1,3 +1,4 @@
+import json
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import JSONParser
@@ -20,8 +21,10 @@ class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny, ))
 def scraped_datasheet_detail(request):
-    data = JSONParser().parse(request)
-    serializer = ScrapedDataSheetSerializer(data=data)
+    #data = JSONParser().parse(request)
+    print(request.data)
+
+    serializer = ScrapedDataSheetSerializer(data=json.loads(request.data))
     if serializer.is_valid():
         serializer.save()
         return JsonResponse(serializer.data)
