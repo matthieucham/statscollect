@@ -1,7 +1,7 @@
 import json
+
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.parsers import JSONParser
 from django.http import JsonResponse
 
 from .models import ScrapedDataSheet
@@ -20,11 +20,13 @@ class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny, ))
-def scraped_datasheet_detail(request):
-    #data = JSONParser().parse(request)
-    print(request.data)
-
-    serializer = ScrapedDataSheetSerializer(data=json.loads(request.data))
+def scraped_datasheet_detail(request, hash_url):
+    item_json = request.data
+    data = dict()
+    data['source'] = item_json.pop('source')
+    data['content'] = item_json
+    data['hash_url'] = hash_url
+    serializer = ScrapedDataSheetSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return JsonResponse(serializer.data)

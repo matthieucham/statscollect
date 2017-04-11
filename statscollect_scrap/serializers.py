@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from .models import ScrapedDataSheet
+from statscollect_db import models
 
 
 class ScrapedDataSheetSerializer(serializers.ModelSerializer):
-    source = serializers.SlugRelatedField(slug_field='code', read_only=True)
+    source = serializers.PrimaryKeyRelatedField(queryset=models.RatingSource.objects.all())
 
     class Meta:
         model = ScrapedDataSheet
