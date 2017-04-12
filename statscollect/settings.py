@@ -10,8 +10,9 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-from django.conf.global_settings import LOGIN_URL, AUTHENTICATION_BACKENDS
+
 from django.contrib import messages
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -69,7 +70,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,7 +90,7 @@ WSGI_APPLICATION = 'statscollect.wsgi.application'
 
 # DATABASES = {
 # 'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
+# 'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
@@ -148,7 +149,6 @@ TEMPLATES = [
     },
 ]
 
-
 COUNTRIES_FIRST = {
     'FR',
 }
@@ -166,7 +166,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'PAGINATE_BY': 20,
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
 }
 
 HONEYPOT_FIELD_NAME = 'topyenoh'

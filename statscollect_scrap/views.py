@@ -19,21 +19,20 @@ class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
-@permission_classes((permissions.AllowAny, ))
+@permission_classes((permissions.IsAuthenticated, ))
 def scraped_datasheet_detail(request, hash_url):
     item_json = request.data
     data = dict()
     data['source'] = item_json.pop('source')
     data['content'] = item_json
     data['hash_url'] = hash_url
-    serializer = ScrapedDataSheetSerializer(data=data)
+
+    try:
+        instance = ScrapedDataSheet.objects.get(pk=hash_url)
+    except ScrapedDataSheet.DoesNotExist:
+        instance = None
+    serializer = ScrapedDataSheetSerializer(data=data, instance=instance)
     if serializer.is_valid():
         serializer.save()
         return JsonResponse(serializer.data)
     return JsonResponse(serializer.errors, status=400)
-
-
-@api_view(['GET', 'POST'])
-@permission_classes((permissions.AllowAny, ))
-def ping_view(request):
-    return JsonResponse({'ping': request.data}, safe=False)
