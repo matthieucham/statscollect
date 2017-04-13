@@ -316,6 +316,27 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
             translators.ScrappedRatingsTranslator().translate(form.instance)
 
 
+# V2
+class ProcessedGameRatingSourceInline(admin.StackedInline):
+    model = models.ProcessedGameRatingSource
+    readonly_fields = ('rating_source', )
+    fields = ('rating_source', 'rating_ds', )
+
+
+class ProcessedGameAdmin(admin.ModelAdmin):
+    model = models.ProcessedGame
+    list_display = ('__str__', 'status', 'created_at', 'updated_at')
+    form = forms.ProcessedGameForm
+    inlines = [ProcessedGameRatingSourceInline, ]
+    fieldsets = (
+        ('Step', {
+            'fields': ('actual_tournament', 'actual_instance', 'actual_step',)
+        }),
+        ('Gamesheet', {
+            'fields': ('gamesheet_ds',)
+        }))
+
+
 # Register your models here.
 admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
 admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
@@ -324,3 +345,5 @@ admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
 admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)
 admin.site.register(models.ScrappedTeamMeetingData, ScrappedTeamMeetingAdmin)
 admin.site.register(models.ScrappedTeamMeetingRatings, ScrappedRatingsAdmin)
+# V2
+admin.site.register(models.ProcessedGame, ProcessedGameAdmin)

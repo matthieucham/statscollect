@@ -57,8 +57,8 @@ class ScrappedEntity(models.Model):
 
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField(editable=False)
-    #scrapped_url = models.URLField(max_length=300, blank=True, null=True,
-    #                               help_text='Adresse HTTP complète de la page à importer')
+    # scrapped_url = models.URLField(max_length=300, blank=True, null=True,
+    # help_text='Adresse HTTP complète de la page à importer')
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default='CREATED', editable=False)
 
     def save(self, *args, **kwargs):
@@ -77,8 +77,8 @@ class FootballScrappedEntity(ScrappedEntity):
 
     def clean(self):
         if self.status != 'CREATED' and self.scrapper.class_name != 'FakeScrapper':
-            #if not self.scrapped_url:
-            #    raise ValidationError('Scrapped URL is required')
+            # if not self.scrapped_url:
+            # raise ValidationError('Scrapped URL is required')
             if not self.scrapper:
                 raise ValidationError('A scrapper is required')
 
@@ -239,6 +239,7 @@ class ScrappedPlayerRatings(models.Model):
     class Meta:
         verbose_name = 'note'
 
+
 # V2 models
 
 
@@ -255,3 +256,72 @@ class ScrapedDataSheet(models.Model):
             self.created_at = timezone.now()
         self.updated_at = timezone.now()
         super(ScrapedDataSheet, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return "[%s] %s %s - %s %s (%s)" % (
+            self.source, self.content['home_team'], self.content['home_score'],
+            self.content['away_score'], self.content['away_team'],
+            self.content['match_date'])
+
+
+class ProcessedGame(ScrappedEntity):
+    actual_tournament = models.ForeignKey(Tournament, help_text='Championnat ou compétition')
+    actual_instance = models.ForeignKey(
+        TournamentInstance, help_text='Edition de cette compétition'
+    )
+    actual_step = models.ForeignKey(
+        TournamentInstanceStep, help_text='Journée de cette édition'
+    )
+    # Gamesheet
+    gamesheet_ds = models.ForeignKey(ScrapedDataSheet)
+
+    def __str__(self):
+        return "[J%s] %s" % (self.actual_step, self.gamesheet_ds)
+
+
+class ProcessedGameSummary(models.Model):
+    # link to ProcessedGame
+    processed_game = models.ForeignKey(ProcessedGame)
+    # Processed fields
+    game_date = models.DateTimeField(editable=False)
+    home_team = models.ForeignKey(Team, editable=False, related_name='processed_home_games')
+    away_team = models.ForeignKey(Team, editable=False, related_name='processed_away_games')
+    home_score = models.SmallIntegerField(editable=False)
+    away_score = models.SmallIntegerField(editable=False)
+
+
+class ProcessedGameSheetPlayer(models.Model):
+    # link to ProcessedGame
+    processed_game = models.ForeignKey(ProcessedGame)
+    # processed fields
+    scraped_name = models.CharField(max_length=255, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson)
+    playtime = models.SmallIntegerField(default=0, help_text='Temps de jeu')
+    goals_scored = models.SmallIntegerField(default=0, help_text='Nombre de buts marqués (hors pénaltys)')
+    penalties_scored = models.SmallIntegerField(default=0, help_text='Nombre de pénaltys marqués')
+    goals_assists = models.SmallIntegerField(default=0, help_text='Nombre de passes décisives')
+    penalties_assists = models.SmallIntegerField(default=0, help_text='Nombre de pénaltys obtenus')
+    goals_saves = models.SmallIntegerField(default=0, help_text='Nombre d\'arrêts')
+    goals_conceded = models.SmallIntegerField(default=0, help_text='Nombre de buts encaissés')
+    own_goals = models.SmallIntegerField(default=0, help_text='Nombre de buts contre son camp')
+
+
+class ProcessedGameRatingSource(models.Model):
+    # link to ProcessedGame
+    processed_game = models.ForeignKey(ProcessedGame, editable=False)
+    # link to RatingSource
+    rating_source = models.ForeignKey(RatingSource, editable=False)
+    # datasheet
+    rating_ds = models.ForeignKey(ScrapedDataSheet)
+
+    def __str__(self):
+        return '%s' % self.rating_source
+
+
+class ProcessedGameRating(models.Model):
+    # link to ProcessedGameRatingSource
+    processed_game_rating_source = models.ForeignKey(ProcessedGameRatingSource, editable=False)
+    # processed fields
+    scraped_name = models.CharField(max_length=255, editable=False)
+    teammeetingperson = models.ForeignKey(TeamMeetingPerson)
+    rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text='Note')

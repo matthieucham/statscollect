@@ -114,3 +114,26 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
 
 class TeamMeetingDataForm(ScrapIdentifierForm):
     pass
+
+
+class ProcessedGameForm(forms.ModelForm):
+    actual_instance = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentInstanceLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget,
+
+    )
+    actual_step = AutoCompleteSelectField(
+        lookup_class=lookups.TournamentStepLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+
+    class Media:
+        js = (
+            '/static/statscollect_scrap/js/instance_lookup.js',
+            '/static/statscollect_scrap/js/step_lookup.js',
+            '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
+        )
