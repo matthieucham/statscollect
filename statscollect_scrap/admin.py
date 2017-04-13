@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms.models import BaseInlineFormSet
 from functools import partial
 
 from statscollect_scrap import models
@@ -319,7 +320,7 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 # V2
 class ProcessedGameRatingSourceInline(admin.StackedInline):
     model = models.ProcessedGameRatingSource
-    readonly_fields = ('rating_source', )
+    form = forms.ProcessedGameRatingSourceForm
     fields = ('rating_source', 'rating_ds', )
 
 

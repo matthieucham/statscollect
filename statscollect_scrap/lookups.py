@@ -1,7 +1,7 @@
 from selectable.base import ModelLookup
 from selectable.registry import registry
 
-from statscollect_db.models import TournamentInstanceStep, Person, TournamentInstance, TeamMeeting
+from statscollect_db.models import TournamentInstanceStep, Person, TournamentInstance, TeamMeeting, RatingSource
 
 
 class TournamentInstanceLookup(ModelLookup):
@@ -53,7 +53,23 @@ class ParticipantLookup(ModelLookup):
     search_fields = ('first_name__icontains', 'last_name__icontains', 'usual_name__icontains',)
 
 
+class RatingSourceLookup(ModelLookup):
+    model = RatingSource
+    search_fields = ('name__icontains', 'code__icontains', )
+
+    def get_query(self, request, term):
+        instance = request.GET.get('instance', '')
+        if instance:
+            return super(RatingSourceLookup, self).get_query(request, term).filter(
+                expected_set__tournament_instance=instance)
+        return list([])
+
+    def get_item_label(self, item):
+        return "%s" % item.name
+
+
 registry.register(TournamentInstanceLookup)
 registry.register(TournamentStepLookup)
 registry.register(MeetingLookup)
 registry.register(ParticipantLookup)
+registry.register(RatingSourceLookup)

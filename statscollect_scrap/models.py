@@ -44,7 +44,7 @@ class ExpectedRatingSource(models.Model):
     tournament_instance = models.ForeignKey(
         TournamentInstance
     )
-    rating_source = models.ManyToManyField(RatingSource)
+    rating_source = models.ManyToManyField(RatingSource, related_name='expected_set')
 
 
 class ScrappedEntity(models.Model):
@@ -310,9 +310,9 @@ class ProcessedGameRatingSource(models.Model):
     # link to ProcessedGame
     processed_game = models.ForeignKey(ProcessedGame, editable=False)
     # link to RatingSource
-    rating_source = models.ForeignKey(RatingSource, editable=False)
+    rating_source = models.ForeignKey(RatingSource)
     # datasheet
-    rating_ds = models.ForeignKey(ScrapedDataSheet)
+    rating_ds = models.ForeignKey(ScrapedDataSheet, blank=True)
 
     def __str__(self):
         return '%s' % self.rating_source

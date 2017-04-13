@@ -136,4 +136,19 @@ class ProcessedGameForm(forms.ModelForm):
             '/static/statscollect_scrap/js/instance_lookup.js',
             '/static/statscollect_scrap/js/step_lookup.js',
             '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
+            '/static/statscollect_scrap/js/ratingsource_lookup.js',
+        )
+
+
+class ProcessedGameRatingSourceForm(forms.ModelForm):
+    rating_source = AutoCompleteSelectField(
+        lookup_class=lookups.RatingSourceLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+
+    class Media:
+        js = (
+            '/static/statscollect_scrap/js/ratingsource_lookup.js',
         )
