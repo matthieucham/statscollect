@@ -1,6 +1,9 @@
-from django.contrib import admin
-from django.forms.models import BaseInlineFormSet
 from functools import partial
+
+from django.contrib import admin
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from statscollect_scrap import models
 from statscollect_scrap import forms
@@ -337,6 +340,51 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             'fields': ('gamesheet_ds',)
         }))
 
+    def add_view(self, request, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['status'] = 'CREATED'
+        return super(ProcessedGameAdmin, self).add_view(request, extra_context=extra_context)
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['status'] = models.ProcessedGame.objects.get(pk=object_id).status
+        return super(ProcessedGameAdmin, self).add_view(request, extra_context=extra_context)
+
+    def response_add(self, request, obj, post_url_continue=None):
+        opts = self.model._meta
+        pk_value = obj._get_pk_val()
+        preserved_filters = self.get_preserved_filters(request)
+
+        if "_process" in request.POST:
+            # handle the action on your obj
+
+            redirect_url = reverse('admin:%s_%s_change' %
+                                   (opts.app_label, opts.model_name),
+                                   args=(pk_value,),
+                                   current_app=self.admin_site.name)
+            redirect_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts},
+                                                 redirect_url)
+            return HttpResponseRedirect(redirect_url)
+        else:
+            return super(ProcessedGameAdmin, self).response_add(request, obj)
+
+    def response_change(self, request, obj):
+        opts = self.model._meta
+        pk_value = obj._get_pk_val()
+        preserved_filters = self.get_preserved_filters(request)
+
+        if "_process" in request.POST:
+            # handle the action on your obj
+
+            redirect_url = reverse('admin:%s_%s_change' %
+                                   (opts.app_label, opts.model_name),
+                                   args=(pk_value,),
+                                   current_app=self.admin_site.name)
+            redirect_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts},
+                                                 redirect_url)
+            return HttpResponseRedirect(redirect_url)
+        else:
+            return super(ProcessedGameAdmin, self).response_change(request, obj)
 
 # Register your models here.
 admin.site.register(models.FootballScrapper, FootballScrapperAdmin)

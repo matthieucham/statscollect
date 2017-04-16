@@ -1,10 +1,6 @@
 {% extends "admin/change_form.html" %}
-{% load markdown_filter %}
+{% load statscollect_scrap_extra %}
 
-{% block submit_buttons_bottom %}
-    {% load i18n admin_urls %}
-<div class="submit-row">
-    {% if show_confirm %}<input type="submit" value="{% trans 'Save into model' %}" class="default" name="_save" />{% endif %}
-    {% if show_scrap %}<input type="submit" value="{% trans 'Scrap data' %}" name="_continue" />{% endif %}
-</div>
-{% endblock %}
+{% block submit_buttons_top %}{% process_submit_row %}{% endblock %}
+
+{% block submit_buttons_bottom %}{% process_submit_row %}{% endblock %}

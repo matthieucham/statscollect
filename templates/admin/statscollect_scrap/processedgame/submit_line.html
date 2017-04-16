@@ -1,0 +1,5 @@
+{% load i18n %}
+<div class="submit-row">
+{% if show_process %}<input type="submit" value="{% trans 'Process' %}" class="default" name="_process" />{% endif %}
+{% if show_store %}<input type="submit" value="{% trans 'Store' %}" name="_store" />{% endif %}
+</div>
