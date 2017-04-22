@@ -10,6 +10,7 @@ from statscollect_scrap import forms
 from statscollect_scrap import scrappers
 from statscollect_scrap import translators
 from statscollect_scrap import widgets
+from statscollect_scrap import processors
 
 
 class ScrappedEntityAdminMixin(object):
@@ -357,6 +358,8 @@ class ProcessedGameAdmin(admin.ModelAdmin):
 
         if "_process" in request.POST:
             # handle the action on your obj
+            processor = processors.GamesheetProcessor()
+            processor.process(obj)
 
             redirect_url = reverse('admin:%s_%s_change' %
                                    (opts.app_label, opts.model_name),
@@ -375,6 +378,8 @@ class ProcessedGameAdmin(admin.ModelAdmin):
 
         if "_process" in request.POST:
             # handle the action on your obj
+            processor = processors.GamesheetProcessor()
+            processor.process(obj.gamesheet_ds.content)
 
             redirect_url = reverse('admin:%s_%s_change' %
                                    (opts.app_label, opts.model_name),
