@@ -281,7 +281,7 @@ class ProcessedGame(ScrappedEntity):
 
 class ProcessedGameSummary(models.Model):
     # link to ProcessedGame
-    processed_game = models.ForeignKey(ProcessedGame)
+    processed_game = models.OneToOneField(ProcessedGame)
     # Processed fields
     game_date = models.DateTimeField(editable=False)
     home_team = models.ForeignKey(Team, editable=False, related_name='processed_home_games')

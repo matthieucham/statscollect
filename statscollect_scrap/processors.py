@@ -17,7 +17,11 @@ class GamesheetProcessor():
 
     def process(self, processedgame):
         summary = self.process_summary(processedgame.gamesheet_ds.content)
+        # delete previous if any:
+        models.ProcessedGameSummary.objects.filter(processed_game=processedgame).delete()
+        # set the new one
         summary.processed_game = processedgame
+        summary.save()
 
     def process_summary(self, data):
         home_team, away_team = self.find_teams(data)
@@ -25,7 +29,6 @@ class GamesheetProcessor():
         match_date = dateutil.parser.parse(data['match_date'])
         return models.ProcessedGameSummary(home_team=home_team, away_team=away_team, home_score=home_score,
                                            away_score=away_score, game_date=match_date)
-
 
     def find_teams(self, datasheet):
         ht, _ = self.search_team(datasheet['home_team'])
