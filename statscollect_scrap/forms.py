@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.widgets import Textarea
-from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget
+from selectable.forms import AutoCompleteSelectField, AutoComboboxSelectWidget, AutoCompleteSelectMultipleField, AutoComboboxSelectMultipleWidget
 
 from statscollect_scrap import lookups
 from statscollect_scrap import models
@@ -104,7 +104,7 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
             '/static/statscollect_scrap/js/instance_lookup.js',
             '/static/statscollect_scrap/js/step_lookup.js',
             '/static/statscollect_scrap/js/meeting_lookup.js',
-            '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
+            '/static/statscollect_scrap/js/inline_dynac.js',
         )
 
     class Meta:
@@ -130,25 +130,22 @@ class ProcessedGameForm(forms.ModelForm):
         required=True,
         widget=AutoComboboxSelectWidget
     )
+    gamesheet_ds = AutoCompleteSelectField(
+        lookup_class=lookups.GamesheetLookup,
+        allow_new=False,
+        required=True,
+        widget=AutoComboboxSelectWidget
+    )
+    rating_ds = AutoCompleteSelectMultipleField(
+        lookup_class=lookups.RatingsheetLookup,
+        required=False,
+        widget=AutoComboboxSelectMultipleWidget
+    )
 
     class Media:
         js = (
             '/static/statscollect_scrap/js/instance_lookup.js',
             '/static/statscollect_scrap/js/step_lookup.js',
-            '/static/statscollect_scrap/js/gamesheetparticipant_dynac.js',
-            '/static/statscollect_scrap/js/ratingsource_lookup.js',
-        )
-
-
-class ProcessedGameRatingSourceForm(forms.ModelForm):
-    rating_source = AutoCompleteSelectField(
-        lookup_class=lookups.RatingSourceLookup,
-        allow_new=False,
-        required=True,
-        widget=AutoComboboxSelectWidget
-    )
-
-    class Media:
-        js = (
-            '/static/statscollect_scrap/js/ratingsource_lookup.js',
+            '/static/statscollect_scrap/js/ratingsheet_lookup.js',
+            '/static/statscollect_scrap/js/inline_dynac.js',
         )

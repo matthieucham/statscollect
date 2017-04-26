@@ -1,5 +1,5 @@
 import json
-
+import dateutil.parser
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
@@ -26,6 +26,7 @@ def scraped_datasheet_detail(request, hash_url):
     data['source'] = item_json.pop('source')
     data['content'] = item_json
     data['hash_url'] = hash_url
+    data['match_date'] = dateutil.parser.parse(item_json['match_date'])
 
     try:
         instance = ScrapedDataSheet.objects.get(pk=hash_url)

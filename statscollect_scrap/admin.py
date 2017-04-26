@@ -318,24 +318,38 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 
 
 # V2
-class ProcessedGameRatingSourceInline(admin.StackedInline):
-    model = models.ProcessedGameRatingSource
-    form = forms.ProcessedGameRatingSourceForm
-    fields = ('rating_source', 'rating_ds', )
+# class ProcessedGameRatingSourceInline(admin.StackedInline):
+# model = models.ProcessedGameRatingSource
+#     form = forms.ProcessedGameRatingSourceForm
+#     fields = ('rating_source', 'rating_ds', )
+#     extra = 3
+#     can_delete = True
+#
+#     def get_extra(self, request, obj=None, **kwargs):
+#         """Dynamically sets the number of extra forms. 0 if the related object
+#         already exists or the extra configuration otherwise."""
+#         if obj:
+#             # Don't add any extra forms if the related object already exists.
+#             return 0
+#         return self.extra
 
 
 class ProcessedGameAdmin(admin.ModelAdmin):
     model = models.ProcessedGame
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
-    inlines = [ProcessedGameRatingSourceInline, ]
+    filter_horizontal = ('rating_ds', )
+    # inlines = [ProcessedGameRatingSourceInline, ]
     fieldsets = (
         ('Step', {
-            'fields': ('actual_tournament', 'actual_instance', 'actual_step',)
+            'fields': ('actual_tournament', 'actual_instance',
+                       'actual_step',
+            )
         }),
-        ('Gamesheet', {
-            'fields': ('gamesheet_ds',)
-        }))
+        ('Data sheets', {
+            'fields': ('gamesheet_ds', 'rating_ds',)
+        }),
+    )
 
 
 # Register your models here.

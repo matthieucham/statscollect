@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import JSONField
+from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField
 
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
     TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
@@ -249,6 +250,7 @@ class ScrapedDataSheet(models.Model):
     updated_at = models.DateTimeField(editable=False, default=timezone.now)
     source = models.ForeignKey(RatingSource, editable=False, null=True)
     content = JSONField()
+    match_date = models.DateTimeField(editable=False, null=True)
 
     def save(self, *args, **kwargs):
         """On save, update timestamps"""
@@ -263,17 +265,19 @@ class ScrapedDataSheet(models.Model):
             self.content['away_score'], self.content['away_team'],
             self.content['match_date'])
 
+    class Meta:
+        ordering = ['-match_date']
+
 
 class ProcessedGame(ScrappedEntity):
     actual_tournament = models.ForeignKey(Tournament, help_text='Championnat ou compétition')
-    actual_instance = models.ForeignKey(
-        TournamentInstance, help_text='Edition de cette compétition'
-    )
+    actual_instance = models.ForeignKey(TournamentInstance, help_text='Edition de cette compétition')
     actual_step = models.ForeignKey(
-        TournamentInstanceStep, help_text='Journée de cette édition'
-    )
+        TournamentInstanceStep, help_text='Journée de cette édition')
     # Gamesheet
-    gamesheet_ds = models.ForeignKey(ScrapedDataSheet)
+    gamesheet_ds = models.ForeignKey(ScrapedDataSheet, related_name='gamesheet_processedgame')
+    # rating sheets
+    rating_ds = models.ManyToManyField(ScrapedDataSheet, related_name='ratingsheet_processedgame')
 
     def __str__(self):
         return "[J%s] %s" % (self.actual_step, self.gamesheet_ds)
@@ -306,21 +310,11 @@ class ProcessedGameSheetPlayer(models.Model):
     own_goals = models.SmallIntegerField(default=0, help_text='Nombre de buts contre son camp')
 
 
-class ProcessedGameRatingSource(models.Model):
+class ProcessedGameRating(models.Model):
     # link to ProcessedGame
     processed_game = models.ForeignKey(ProcessedGame, editable=False)
     # link to RatingSource
     rating_source = models.ForeignKey(RatingSource)
-    # datasheet
-    rating_ds = models.ForeignKey(ScrapedDataSheet, blank=True)
-
-    def __str__(self):
-        return '%s' % self.rating_source
-
-
-class ProcessedGameRating(models.Model):
-    # link to ProcessedGameRatingSource
-    processed_game_rating_source = models.ForeignKey(ProcessedGameRatingSource, editable=False)
     # processed fields
     scraped_name = models.CharField(max_length=255, editable=False)
     teammeetingperson = models.ForeignKey(TeamMeetingPerson)
