@@ -324,10 +324,10 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 # V2
 # class ProcessedGameRatingSourceInline(admin.StackedInline):
 # model = models.ProcessedGameRatingSource
-#     form = forms.ProcessedGameRatingSourceForm
-#     fields = ('rating_source', 'rating_ds', )
-#     extra = 3
-#     can_delete = True
+# form = forms.ProcessedGameRatingSourceForm
+# fields = ('rating_source', 'rating_ds', )
+# extra = 3
+# can_delete = True
 #
 #     def get_extra(self, request, obj=None, **kwargs):
 #         """Dynamically sets the number of extra forms. 0 if the related object
@@ -363,7 +363,8 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['status'] = models.ProcessedGame.objects.get(pk=object_id).status
-        return super(ProcessedGameAdmin, self).add_view(request, extra_context=extra_context)
+        return super(ProcessedGameAdmin, self).change_view(request, object_id, form_url=form_url,
+                                                           extra_context=extra_context)
 
     def response_add(self, request, obj, post_url_continue=None):
         opts = self.model._meta
@@ -406,12 +407,12 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             return super(ProcessedGameAdmin, self).response_change(request, obj)
 
 # Register your models here.
-admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
-admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
+#admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
+#admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
 admin.site.register(models.ExpectedRatingSource, ExpectedRatingSourceAdmin)
-admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
-admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)
-admin.site.register(models.ScrappedTeamMeetingData, ScrappedTeamMeetingAdmin)
-admin.site.register(models.ScrappedTeamMeetingRatings, ScrappedRatingsAdmin)
+#admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
+#admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)
+#admin.site.register(models.ScrappedTeamMeetingData, ScrappedTeamMeetingAdmin)
+#admin.site.register(models.ScrappedTeamMeetingRatings, ScrappedRatingsAdmin)
 # V2
 admin.site.register(models.ProcessedGame, ProcessedGameAdmin)
