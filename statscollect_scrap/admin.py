@@ -322,20 +322,29 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 
 
 # V2
-# class ProcessedGameRatingSourceInline(admin.StackedInline):
-# model = models.ProcessedGameRatingSource
-# form = forms.ProcessedGameRatingSourceForm
-# fields = ('rating_source', 'rating_ds', )
-# extra = 3
-# can_delete = True
-#
-#     def get_extra(self, request, obj=None, **kwargs):
-#         """Dynamically sets the number of extra forms. 0 if the related object
-#         already exists or the extra configuration otherwise."""
-#         if obj:
-#             # Don't add any extra forms if the related object already exists.
-#             return 0
-#         return self.extra
+class ProcessedGamePlayerInline(admin.TabularInline):
+    model = models.ProcessedGameSheetPlayer
+    extra = 0
+    form = forms.ParticipantAdminForm
+    fields = (
+        'footballperson',
+        'playtime',
+        'goals_scored',
+        'penalties_scored',
+        'goals_assists',
+        'penalties_assists',
+        'goals_saves',
+        'goals_conceded',
+        'own_goals',
+    )
+    template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
+
+    class Media:
+        css = {
+            'all': (
+                '/static/statscollect_scrap/css/scrap.css',
+            )
+        }
 
 
 class ProcessedGameAdmin(admin.ModelAdmin):
@@ -343,7 +352,7 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
     filter_horizontal = ('rating_ds', )
-    # inlines = [ProcessedGameRatingSourceInline, ]
+    inlines = [ProcessedGamePlayerInline, ]
     fieldsets = (
         ('Step', {
             'fields': ('actual_tournament', 'actual_instance',
@@ -394,7 +403,7 @@ class ProcessedGameAdmin(admin.ModelAdmin):
         if "_process" in request.POST:
             # handle the action on your obj
             processor = processors.GamesheetProcessor()
-            processor.process(obj.gamesheet_ds.content)
+            processor.process(obj)
 
             redirect_url = reverse('admin:%s_%s_change' %
                                    (opts.app_label, opts.model_name),
@@ -405,6 +414,13 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(redirect_url)
         else:
             return super(ProcessedGameAdmin, self).response_change(request, obj)
+
+    class Media:
+        css = {
+            'all': (
+                '/static/statscollect_scrap/css/scrap.css',
+            )
+        }
 
 # Register your models here.
 #admin.site.register(models.FootballScrapper, FootballScrapperAdmin)

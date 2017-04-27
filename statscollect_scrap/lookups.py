@@ -1,7 +1,7 @@
 from selectable.base import ModelLookup
 from selectable.registry import registry
 
-from statscollect_db.models import TournamentInstanceStep, Person, TournamentInstance, TeamMeeting, RatingSource
+from statscollect_db.models import TournamentInstanceStep, FootballPerson, TournamentInstance, TeamMeeting
 from statscollect_scrap import models
 
 
@@ -50,7 +50,7 @@ class MeetingLookup(ModelLookup):
 
 
 class ParticipantLookup(ModelLookup):
-    model = Person
+    model = FootballPerson
     search_fields = ('first_name__icontains', 'last_name__icontains', 'usual_name__icontains',)
 
 

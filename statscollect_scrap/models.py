@@ -2,10 +2,9 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import JSONField
-from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField
 
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
-    TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson
+    TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson, FootballPerson
 
 
 class Scrapper(models.Model):
@@ -299,7 +298,9 @@ class ProcessedGameSheetPlayer(models.Model):
     processed_game = models.ForeignKey(ProcessedGame)
     # processed fields
     scraped_name = models.CharField(max_length=255, editable=False)
-    teammeetingperson = models.ForeignKey(TeamMeetingPerson)
+    scraped_ratio = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True,
+                                       help_text='Taux de correspondance entre nom lu et joueur préselectionné (%)')
+    footballperson = models.ForeignKey(FootballPerson, blank=True)
     playtime = models.SmallIntegerField(default=0, help_text='Temps de jeu')
     goals_scored = models.SmallIntegerField(default=0, help_text='Nombre de buts marqués (hors pénaltys)')
     penalties_scored = models.SmallIntegerField(default=0, help_text='Nombre de pénaltys marqués')
@@ -309,6 +310,9 @@ class ProcessedGameSheetPlayer(models.Model):
     goals_conceded = models.SmallIntegerField(default=0, help_text='Nombre de buts encaissés')
     own_goals = models.SmallIntegerField(default=0, help_text='Nombre de buts contre son camp')
 
+    def __str__(self):
+        return '%s [%d]' % (self.scraped_name, self.scraped_ratio)
+
 
 class ProcessedGameRating(models.Model):
     # link to ProcessedGame
@@ -317,5 +321,5 @@ class ProcessedGameRating(models.Model):
     rating_source = models.ForeignKey(RatingSource)
     # processed fields
     scraped_name = models.CharField(max_length=255, editable=False)
-    teammeetingperson = models.ForeignKey(TeamMeetingPerson)
+    footballperson = models.ForeignKey(FootballPerson, blank=True)
     rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text='Note')
