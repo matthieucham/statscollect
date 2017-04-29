@@ -1,6 +1,7 @@
 __author__ = 'Matt'
 import dateutil.parser
 from fuzzywuzzy import process, fuzz
+
 from statscollect_scrap import models
 from statscollect_scrap.scrappers import myfuzz
 from statscollect_db.models import FootballTeam, FootballPerson
@@ -23,28 +24,54 @@ class GamesheetProcessor():
         summary.processed_game = processedgame
         summary.save()
 
+        hchoices, achoices = self.get_choices(summary.home_team, summary.away_team)
+
         players = self.process_players(processedgame.gamesheet_ds.content,
-                                       teams={'home': summary.home_team, 'away': summary.away_team})
+                                       choices={'home': hchoices, 'away': achoices})
         # delete previous if any:
         models.ProcessedGameSheetPlayer.objects.filter(processed_game=processedgame).delete()
         # register scraped players
         for pl in players:
             pl.processed_game = processedgame
             pl.save()
-
+        for ds in processedgame.rating_ds.all():
+            ratings = self.process_ratings(ds.source, ds.content,
+                                           choices={'home': hchoices, 'away': achoices})
+            # delete previous if any:
+            models.ProcessedGameRating.objects.filter(processed_game=processedgame, rating_source=ds.source).delete()
+            # register scraped players
+            for pl in ratings:
+                pl.processed_game = processedgame
+                pl.save()
         processedgame.status = 'PENDING'
         processedgame.save()
 
-    def process_players(self, data, teams):
+    def get_choices(self, home_team, away_team):
+        return dict(
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in
+             FootballPerson.objects.filter(current_teams=home_team).values('id', 'first_name', 'last_name',
+                                                                           'usual_name')]
+        ), dict(
+            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+             for elem in
+             FootballPerson.objects.filter(current_teams=away_team).values('id', 'first_name', 'last_name',
+                                                                           'usual_name')]
+        )
+
+    def process_ratings(self, src, data, choices):
         for key in ['home', 'away']:
-            choices = dict(
-                [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
-                 for elem in
-                 FootballPerson.objects.filter(current_teams=teams[key]).values('id', 'first_name', 'last_name',
-                                                                                'usual_name')]
-            )
-            for pl in data['players_'+key]:
-                teammeetingperson, ratio = self.find_person(pl['name'], choices)
+            for pl in data['players_' + key]:
+                teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
+                yield models.ProcessedGameRating(scraped_name=pl['name'], scraped_ratio=ratio,
+                                                 footballperson=teammeetingperson,
+                                                 rating=float(pl['rating']) if pl['rating'] else None,
+                                                 rating_source=src)
+
+    def process_players(self, data, choices):
+        for key in ['home', 'away']:
+            for pl in data['players_' + key]:
+                teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
                 stats = pl.get('stats', {})
                 yield models.ProcessedGameSheetPlayer(scraped_name=pl['name'], scraped_ratio=ratio,
                                                       footballperson=teammeetingperson,
@@ -56,7 +83,7 @@ class GamesheetProcessor():
                                                       goals_saves=int(stats.get('goals_saves', 0)),
                                                       goals_conceded=int(stats.get('goals_conceded', 0)),
                                                       own_goals=int(stats.get('own_goals', 0)),
-                )
+                                                      )
 
     def process_summary(self, data):
         home_team, away_team = self.find_teams(data)

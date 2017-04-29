@@ -149,3 +149,13 @@ class ProcessedGameForm(forms.ModelForm):
             '/static/statscollect_scrap/js/ratingsheet_lookup.js',
             '/static/statscollect_scrap/js/inline_dynac.js',
         )
+
+
+class GamesheetPlayerAdminForm(forms.ModelForm):
+    footballperson = AutoCompleteSelectField(
+        lookup_class=lookups.ParticipantLookup
+    )
+
+    class Meta(object):
+        model = models.ProcessedGameSheetPlayer
+        fields = '__all__'

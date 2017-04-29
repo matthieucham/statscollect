@@ -298,9 +298,8 @@ class ProcessedGameSheetPlayer(models.Model):
     processed_game = models.ForeignKey(ProcessedGame)
     # processed fields
     scraped_name = models.CharField(max_length=255, editable=False)
-    scraped_ratio = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True,
-                                       help_text='Taux de correspondance entre nom lu et joueur préselectionné (%)')
-    footballperson = models.ForeignKey(FootballPerson, blank=True)
+    scraped_ratio = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    footballperson = models.ForeignKey(FootballPerson, blank=True, null=True)
     playtime = models.SmallIntegerField(default=0, help_text='Temps de jeu')
     goals_scored = models.SmallIntegerField(default=0, help_text='Nombre de buts marqués (hors pénaltys)')
     penalties_scored = models.SmallIntegerField(default=0, help_text='Nombre de pénaltys marqués')
@@ -318,8 +317,12 @@ class ProcessedGameRating(models.Model):
     # link to ProcessedGame
     processed_game = models.ForeignKey(ProcessedGame, editable=False)
     # link to RatingSource
-    rating_source = models.ForeignKey(RatingSource)
+    rating_source = models.ForeignKey(RatingSource, editable=False)
     # processed fields
     scraped_name = models.CharField(max_length=255, editable=False)
-    footballperson = models.ForeignKey(FootballPerson, blank=True)
+    scraped_ratio = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    footballperson = models.ForeignKey(FootballPerson, blank=True, null=True)
     rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text='Note')
+
+    def __str__(self):
+        return '%s [%d]' % (self.scraped_name, self.scraped_ratio)

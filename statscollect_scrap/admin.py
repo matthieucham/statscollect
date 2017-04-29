@@ -325,7 +325,7 @@ class ScrappedRatingsAdmin(ScrappedEntityAdminMixin, ScrappedModelAdmin):
 class ProcessedGamePlayerInline(admin.TabularInline):
     model = models.ProcessedGameSheetPlayer
     extra = 0
-    form = forms.ParticipantAdminForm
+    form = forms.GamesheetPlayerAdminForm
     fields = (
         'footballperson',
         'playtime',
@@ -347,12 +347,34 @@ class ProcessedGamePlayerInline(admin.TabularInline):
         }
 
 
+class ProcessedRatingInline(admin.TabularInline):
+    model = models.ProcessedGameRating
+    extra = 0
+    form = forms.GamesheetPlayerAdminForm
+    readonly_fields = (
+        'rating_source',
+    )
+    fields = (
+        'footballperson',
+        'rating_source',
+        'rating',
+    )
+    template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
+
+    class Media:
+        css = {
+            'all': (
+                '/static/statscollect_scrap/css/scrap.css',
+            )
+        }
+
+
 class ProcessedGameAdmin(admin.ModelAdmin):
     model = models.ProcessedGame
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
     filter_horizontal = ('rating_ds', )
-    inlines = [ProcessedGamePlayerInline, ]
+    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, ]
     fieldsets = (
         ('Step', {
             'fields': ('actual_tournament', 'actual_instance',
