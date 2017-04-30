@@ -104,7 +104,6 @@ class ScrappedGamesheetForm(ScrapIdentifierForm):
             '/static/statscollect_scrap/js/instance_lookup.js',
             '/static/statscollect_scrap/js/step_lookup.js',
             '/static/statscollect_scrap/js/meeting_lookup.js',
-            '/static/statscollect_scrap/js/inline_dynac.js',
         )
 
     class Meta:
@@ -147,7 +146,6 @@ class ProcessedGameForm(forms.ModelForm):
             '/static/statscollect_scrap/js/instance_lookup.js',
             '/static/statscollect_scrap/js/step_lookup.js',
             '/static/statscollect_scrap/js/ratingsheet_lookup.js',
-            '/static/statscollect_scrap/js/inline_dynac.js',
         )
 
 

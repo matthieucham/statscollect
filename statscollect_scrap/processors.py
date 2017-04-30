@@ -15,7 +15,7 @@ class GamesheetProcessor():
                                                                                                                   'short_name')])
 
     def process(self, processedgame):
-        summary = self.process_summary(processedgame.gamesheet_ds.content)
+        summary = self._process_summary(processedgame.gamesheet_ds.content)
         if not (summary.home_team and summary.away_team):
             raise ValueError("Could not scrap GameSummary: teams not matched")
         # delete previous if any:
@@ -24,10 +24,11 @@ class GamesheetProcessor():
         summary.processed_game = processedgame
         summary.save()
 
-        hchoices, achoices = self.get_choices(summary.home_team, summary.away_team)
+        hchoices, achoices = self._get_choices(summary.home_team, summary.away_team)
 
-        players = self.process_players(processedgame.gamesheet_ds.content,
-                                       choices={'home': hchoices, 'away': achoices})
+        players = self._process_players(processedgame.gamesheet_ds.content,
+                                        choices={'home': hchoices, 'away': achoices},
+                                        teams={'home': summary.home_team, 'away': summary.away_team})
         # delete previous if any:
         models.ProcessedGameSheetPlayer.objects.filter(processed_game=processedgame).delete()
         # register scraped players
@@ -35,8 +36,8 @@ class GamesheetProcessor():
             pl.processed_game = processedgame
             pl.save()
         for ds in processedgame.rating_ds.all():
-            ratings = self.process_ratings(ds.source, ds.content,
-                                           choices={'home': hchoices, 'away': achoices})
+            ratings = self._process_ratings(ds.source, ds.content,
+                                            choices={'home': hchoices, 'away': achoices})
             # delete previous if any:
             models.ProcessedGameRating.objects.filter(processed_game=processedgame, rating_source=ds.source).delete()
             # register scraped players
@@ -46,7 +47,7 @@ class GamesheetProcessor():
         processedgame.status = 'PENDING'
         processedgame.save()
 
-    def get_choices(self, home_team, away_team):
+    def _get_choices(self, home_team, away_team):
         return dict(
             [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
              for elem in
@@ -59,7 +60,7 @@ class GamesheetProcessor():
                                                                            'usual_name')]
         )
 
-    def process_ratings(self, src, data, choices):
+    def _process_ratings(self, src, data, choices):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
                 teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
@@ -68,13 +69,14 @@ class GamesheetProcessor():
                                                  rating=float(pl['rating']) if pl['rating'] else None,
                                                  rating_source=src)
 
-    def process_players(self, data, choices):
+    def _process_players(self, data, choices, teams):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
                 teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
                 stats = pl.get('stats', {})
                 yield models.ProcessedGameSheetPlayer(scraped_name=pl['name'], scraped_ratio=ratio,
                                                       footballperson=teammeetingperson,
+                                                      team=teams[key],
                                                       playtime=int(stats.get('playtime', 0)),
                                                       goals_scored=int(stats.get('goals_scored', 0)),
                                                       penalties_scored=int(stats.get('penalties_scored', 0)),
@@ -85,14 +87,14 @@ class GamesheetProcessor():
                                                       own_goals=int(stats.get('own_goals', 0)),
                                                       )
 
-    def process_summary(self, data):
+    def _process_summary(self, data):
         home_team, away_team = self.find_teams(data)
         home_score, away_score = int(data['home_score']), int(data['away_score'])
         match_date = dateutil.parser.parse(data['match_date'])
         return models.ProcessedGameSummary(home_team=home_team, away_team=away_team, home_score=home_score,
                                            away_score=away_score, game_date=match_date)
 
-    def find_person(self, player_name, choices):
+    def _find_person(self, player_name, choices):
         print('Searching %s' % player_name)
         matching_results = process.extractBests(player_name, choices,
                                                 scorer=fuzz.partial_token_set_ratio,
@@ -126,12 +128,12 @@ class GamesheetProcessor():
             print("Alert : no match for %s" % player_name)
             return None, 0.0
 
-    def find_teams(self, datasheet):
+    def _find_teams(self, datasheet):
         ht = self.search_team(datasheet['home_team'])
         at = self.search_team(datasheet['away_team'])
         return ht, at
 
-    def search_team(self, team_name):
+    def _search_team(self, team_name):
         ratio_limit = 80
         print('Searching %s' % team_name)
         matching_results = process.extractBests(team_name, self.team_choices_preferred,

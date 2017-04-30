@@ -328,6 +328,7 @@ class ProcessedGamePlayerInline(admin.TabularInline):
     form = forms.GamesheetPlayerAdminForm
     fields = (
         'footballperson',
+        'team',
         'playtime',
         'goals_scored',
         'penalties_scored',
@@ -361,6 +362,26 @@ class ProcessedRatingInline(admin.TabularInline):
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
 
+    def has_add_permission(self, request):
+        return False
+
+    class Media:
+        css = {
+            'all': (
+                '/static/statscollect_scrap/css/scrap.css',
+            )
+        }
+
+
+class AddProcessedRatingInline(ProcessedRatingInline):
+    readonly_fields = []
+
+    def has_add_permission(self, request):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     class Media:
         css = {
             'all': (
@@ -374,12 +395,12 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
     filter_horizontal = ('rating_ds', )
-    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, ]
+    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, AddProcessedRatingInline, ]
     fieldsets = (
         ('Step', {
             'fields': ('actual_tournament', 'actual_instance',
                        'actual_step',
-            )
+                       )
         }),
         ('Data sheets', {
             'fields': ('gamesheet_ds', 'rating_ds',)
@@ -434,6 +455,17 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             redirect_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts},
                                                  redirect_url)
             return HttpResponseRedirect(redirect_url)
+        elif "_store" in request.POST:
+            translator = translators.ProcessedGameTranslator()
+            translator.translate(obj)
+
+            post_url = reverse('admin:%s_%s_changelist' %
+                               (opts.app_label, opts.model_name),
+                               current_app=self.admin_site.name)
+            preserved_filters = self.get_preserved_filters(request)
+            post_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts}, post_url)
+            return HttpResponseRedirect(post_url)
+
         else:
             return super(ProcessedGameAdmin, self).response_change(request, obj)
 
@@ -445,8 +477,8 @@ class ProcessedGameAdmin(admin.ModelAdmin):
         }
 
 # Register your models here.
-#admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
-#admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
+# admin.site.register(models.FootballScrapper, FootballScrapperAdmin)
+# admin.site.register(models.FootballRatingScrapper, FootballRatingScrapperAdmin)
 admin.site.register(models.ExpectedRatingSource, ExpectedRatingSourceAdmin)
 #admin.site.register(models.ScrappedFootballStep, ScrappedFootballStepAdmin)
 #admin.site.register(models.ScrappedGameSheet, ScrappedGameSheetAdmin)
