@@ -63,7 +63,7 @@ class GamesheetProcessor():
     def _process_ratings(self, src, data, choices):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
-                teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
+                teammeetingperson, ratio = self._find_person(pl['name'], choices[key])
                 yield models.ProcessedGameRating(scraped_name=pl['name'], scraped_ratio=ratio,
                                                  footballperson=teammeetingperson,
                                                  rating=float(pl['rating']) if pl['rating'] else None,
@@ -72,7 +72,7 @@ class GamesheetProcessor():
     def _process_players(self, data, choices, teams):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
-                teammeetingperson, ratio = self.find_person(pl['name'], choices[key])
+                teammeetingperson, ratio = self._find_person(pl['name'], choices[key])
                 stats = pl.get('stats', {})
                 yield models.ProcessedGameSheetPlayer(scraped_name=pl['name'], scraped_ratio=ratio,
                                                       footballperson=teammeetingperson,
@@ -88,7 +88,7 @@ class GamesheetProcessor():
                                                       )
 
     def _process_summary(self, data):
-        home_team, away_team = self.find_teams(data)
+        home_team, away_team = self._find_teams(data)
         home_score, away_score = int(data['home_score']), int(data['away_score'])
         match_date = dateutil.parser.parse(data['match_date'])
         return models.ProcessedGameSummary(home_team=home_team, away_team=away_team, home_score=home_score,
@@ -98,7 +98,7 @@ class GamesheetProcessor():
         print('Searching %s' % player_name)
         matching_results = process.extractBests(player_name, choices,
                                                 scorer=fuzz.partial_token_set_ratio,
-                                                score_cutoff=0)
+                                                score_cutoff=75)
         if len(matching_results) > 0:
             # si les meilleurs matchs sont à egalité de score, chercher à nouveau avec méthode différente
             best_score = 0
@@ -129,8 +129,8 @@ class GamesheetProcessor():
             return None, 0.0
 
     def _find_teams(self, datasheet):
-        ht = self.search_team(datasheet['home_team'])
-        at = self.search_team(datasheet['away_team'])
+        ht = self._search_team(datasheet['home_team'])
+        at = self._search_team(datasheet['away_team'])
         return ht, at
 
     def _search_team(self, team_name):

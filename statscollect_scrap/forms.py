@@ -151,7 +151,8 @@ class ProcessedGameForm(forms.ModelForm):
 
 class GamesheetPlayerAdminForm(forms.ModelForm):
     footballperson = AutoCompleteSelectField(
-        lookup_class=lookups.ParticipantLookup
+        lookup_class=lookups.ParticipantLookup,
+        required=True
     )
 
     class Meta(object):
