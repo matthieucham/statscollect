@@ -1,33 +1,39 @@
-from django.shortcuts import render
-from django.views import generic
+import json
+import dateutil.parser
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import api_view, permission_classes
+from django.http import JsonResponse
 
-from statscollect_db import models
-
-
-class IndexView(generic.ListView):
-    template_name = 'statscollect_scrap/index.html'
-    context_object_name = 'tournament_list'
-
-    def get_queryset(self):
-        """Return the list of all tournaments"""
-        return models.Tournament.objects.all()
+from .models import ScrapedDataSheet
+from .serializers import ScrapedDataSheetSerializer
 
 
-class TournamentDetailView(generic.ListView):
-    template_name = 'statscollect_scrap/tournament_detail.html'
-    context_object_name = 'instance_list'
+class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
+    queryset = ScrapedDataSheet.objects.all()
+    serializer_class = ScrapedDataSheetSerializer
+    lookup_field = 'hash_url'
+    permission_classes = (permissions.AllowAny, )
 
-    def get_queryset(self):
-        """Return the list of instances of the tournament"""
-        pk = self.kwargs.get('pk')
-        return models.TournamentInstance.objects.filter(tournament_id=pk).order_by('name')
+    def perform_create(self, serializer):
+        serializer.save()
 
 
-class InstanceDetailView(generic.ListView):
-    template_name = 'statscollect_scrap/instance_detail.html'
-    context_object_name = 'step_list'
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, ))
+def scraped_datasheet_detail(request, hash_url):
+    item_json = request.data
+    data = dict()
+    data['source'] = item_json.pop('source')
+    data['content'] = item_json
+    data['hash_url'] = hash_url
+    data['match_date'] = dateutil.parser.parse(item_json['match_date'])
 
-    def get_queryset(self):
-        """Return the list of steps of the instance"""
-        pk = self.kwargs.get('pk')
-        return models.TournamentInstanceStep.objects.filter(tournament_instance_id=pk).order_by('name')
+    try:
+        instance = ScrapedDataSheet.objects.get(pk=hash_url)
+    except ScrapedDataSheet.DoesNotExist:
+        instance = None
+    serializer = ScrapedDataSheetSerializer(data=data, instance=instance)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data)
+    return JsonResponse(serializer.errors, status=400)
