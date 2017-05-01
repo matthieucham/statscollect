@@ -1,7 +1,8 @@
 from selectable.base import ModelLookup
 from selectable.registry import registry
 
-from statscollect_db.models import TournamentInstanceStep, Person, TournamentInstance, TeamMeeting
+from statscollect_db.models import TournamentInstanceStep, FootballPerson, TournamentInstance, TeamMeeting, RatingSource
+from statscollect_scrap import models
 
 
 class TournamentInstanceLookup(ModelLookup):
@@ -49,11 +50,36 @@ class MeetingLookup(ModelLookup):
 
 
 class ParticipantLookup(ModelLookup):
-    model = Person
-    search_fields = ('first_name__icontains', 'last_name__icontains', 'usual_name__icontains',)
+    model = FootballPerson
+    search_fields = ('last_name__icontains', 'usual_name__icontains',)
+
+
+class GamesheetLookup(ModelLookup):
+    model = models.ScrapedDataSheet
+
+    def get_query(self, request, term):
+        return super(GamesheetLookup, self).get_query(request, term).filter(
+            source__in=['WHOSC', 'LFP']).order_by('-match_date')
+
+
+class RatingsheetLookup(ModelLookup):
+    model = models.ScrapedDataSheet
+    search_fields = ('source__code__icontains',
+                     'source__name__icontains', 'content__home_team__contains', 'content__away_team__contains',)
+
+    def get_query(self, request, term):
+        instance = request.GET.get('instance', '')
+        gs = request.GET.get('gamesheet', '')
+        if gs and instance:
+            gamesheet = models.ScrapedDataSheet.objects.get(pk=gs)
+            return super(RatingsheetLookup, self).get_query(request, term).filter(
+                source__expected_set__tournament_instance=instance, match_date__date=gamesheet.match_date.date())
+        return list([])
 
 
 registry.register(TournamentInstanceLookup)
 registry.register(TournamentStepLookup)
 registry.register(MeetingLookup)
 registry.register(ParticipantLookup)
+registry.register(GamesheetLookup)
+registry.register(RatingsheetLookup)
