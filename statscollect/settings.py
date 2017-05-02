@@ -29,8 +29,6 @@ SECRET_KEY = '8joj76(fg$zh+v0rh5q--_+1ppqm6@@(vq=yh01)!h1*ynpcu4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -46,6 +44,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     # contrib
+    'django_extensions',
     'django_countries',
     'crispy_forms',
     'honeypot',
@@ -70,7 +69,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-MIDDLEWARE = (
+MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -99,7 +98,7 @@ DATABASES = {
         'NAME': 'statscollect',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'postgres',
-        'PASSWORD': 'root'
+        'PASSWORD': 'postgres'
     }
 }
 
