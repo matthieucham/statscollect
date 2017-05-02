@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load markdown_filter %}
+
+{% block extrahead %}{% endblock %}
+
+{% block content %}
+    <div class="md-content">
+        {{ '/templates/admin/statscollect_scrap/processedgame/help_list.md'|markdownify|safe }}
+    </div>
+
+{{ block.super }}
+
+{% endblock %}
+

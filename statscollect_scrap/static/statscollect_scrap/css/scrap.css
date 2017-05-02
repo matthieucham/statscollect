@@ -1,3 +1,11 @@
-.inline-related.warn fieldset {
-    background-color: #f3ad1e;
+.inline-related tr.warn {
+    background-color: #dab785;
+}
+
+.submit-row input.process {
+    background: #dab785 none repeat scroll 0 0;
+}
+
+.submit-row input.store {
+    background: #70a288 none repeat scroll 0 0;
 }

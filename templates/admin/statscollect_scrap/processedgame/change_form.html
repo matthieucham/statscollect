@@ -1,0 +1,20 @@
+{% extends "admin/change_form.html" %}
+{% load markdown_filter %}
+{% load statscollect_scrap_extra %}
+
+{% block content %}
+    <div class="md-content">
+        {{ '/templates/admin/statscollect_scrap/processedgame/help_form.md'|markdownify|safe }}
+    </div>
+{{ block.super }}
+{% endblock %}
+
+{% block after_field_sets %}
+    <div class="md-content">
+        {{ '/templates/admin/statscollect_scrap/processedgame/help_form2.md'|markdownify|safe }}
+    </div>
+{% endblock %}
+
+{% block submit_buttons_top %}{% process_submit_row %}{% endblock %}
+
+{% block submit_buttons_bottom %}{% process_submit_row %}{% endblock %}
