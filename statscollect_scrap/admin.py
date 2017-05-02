@@ -328,7 +328,6 @@ class ProcessedGamePlayerInline(admin.TabularInline):
     form = forms.GamesheetPlayerAdminForm
     fields = (
         'footballperson',
-        'team',
         'playtime',
         'goals_scored',
         'penalties_scored',
@@ -395,7 +394,7 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
     filter_horizontal = ('rating_ds', )
-    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, AddProcessedRatingInline, ]
+    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, ]
     fieldsets = (
         ('Step', {
             'fields': ('actual_tournament', 'actual_instance',

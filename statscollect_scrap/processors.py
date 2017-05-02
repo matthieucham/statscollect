@@ -85,7 +85,7 @@ class GamesheetProcessor():
                                                       goals_saves=int(stats.get('goals_saves', 0)),
                                                       goals_conceded=int(stats.get('goals_conceded', 0)),
                                                       own_goals=int(stats.get('own_goals', 0)),
-                                                      )
+                )
 
     def _process_summary(self, data):
         home_team, away_team = self._find_teams(data)
@@ -134,7 +134,6 @@ class GamesheetProcessor():
         return ht, at
 
     def _search_team(self, team_name):
-        ratio_limit = 80
         print('Searching %s' % team_name)
         matching_results = process.extractBests(team_name, self.team_choices_preferred,
                                                 scorer=fuzz.partial_ratio,
@@ -145,14 +144,13 @@ class GamesheetProcessor():
             matching_results = process.extractBests(team_name,
                                                     self.team_choices_secondary,
                                                     scorer=fuzz.partial_ratio,
-                                                    score_cutoff=80,
+                                                    score_cutoff=50,
                                                     limit=1)
         if len(matching_results) > 0:
             home_result, ratio, team_id = matching_results[0]
-            print('Found %s with ratio %d - limit is %d' % (home_result, ratio, ratio_limit))
-            if ratio >= ratio_limit:
-                matching_team = FootballTeam.objects.get(pk=team_id)
-                return matching_team
+            print('Found %s with ratio %d' % (home_result, ratio))
+            matching_team = FootballTeam.objects.get(pk=team_id)
+            return matching_team
         print("Alert : no valid match for %s" % team_name)
         return None
 
