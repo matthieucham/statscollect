@@ -19,9 +19,9 @@ class FootballPersonForm(forms.ModelForm):
         if self.instance.pk:
             teams_values_list = self.instance.current_teams.values_list('pk', flat=True)
             self.initial['current_teams'] = teams_values_list
-            rel = ManyToManyRel(Team)
-            self.fields['current_teams'].widget = RelatedFieldWidgetWrapper(self.fields['current_teams'].widget, rel,
-                                                                            admin.site)
+            # rel = ManyToManyRel('current_members', Team)
+            # self.fields['current_teams'].widget = RelatedFieldWidgetWrapper(self.fields['current_teams'].widget, rel,
+            #                                                                 admin.site)
             # Limits current_teams entries to those of the same field as the person
             # Needless for now.
             # self.fields['current_teams'].queryset = Team.objects.filter(field__contains=self.instance.field)
