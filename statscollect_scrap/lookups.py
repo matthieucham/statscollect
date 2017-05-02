@@ -73,7 +73,8 @@ class RatingsheetLookup(ModelLookup):
         if gs and instance:
             gamesheet = models.ScrapedDataSheet.objects.get(pk=gs)
             return super(RatingsheetLookup, self).get_query(request, term).filter(
-                source__expected_set__tournament_instance=instance, match_date__date=gamesheet.match_date.date())
+                source__expected_set__tournament_instance=instance, match_date__year=gamesheet.match_date.year,
+                match_date__month=gamesheet.match_date.month, match_date__day=gamesheet.match_date.day)
         return list([])
 
 
