@@ -12,7 +12,6 @@
 ### Section PROCESSED GAME RATINGS
 - Liste de toutes les notes du match
 - De la même manière, vérifier les lignes surlignées en orange
-- S'il manque des notes et qu'il vous faut les rajouter à la main, cliquer sur "Add another Processed game rating" tout en bas
 
 ### Quand c'est terminé, cliquer sur **STORE**
 - Le match est enregistré dans la base de données. Il sera toujours possible de le modifier ultérieurement en réitérant le processus d'import.
