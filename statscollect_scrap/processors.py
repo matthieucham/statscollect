@@ -86,7 +86,7 @@ class GamesheetProcessor():
                                                       penalties_scored=int(stats.get('penalties_scored', 0)),
                                                       goals_assists=int(stats.get('goals_assists', 0)),
                                                       penalties_assists=int(stats.get('penalties_assists', 0)),
-                                                      goals_saves=int(stats.get('goals_saves', 0)),
+                                                      goals_saves=int(stats.get('goals_saved', 0)),
                                                       goals_conceded=int(stats.get('goals_conceded', 0)),
                                                       own_goals=int(stats.get('own_goals', 0)),
                 )
