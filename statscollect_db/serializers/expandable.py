@@ -6,7 +6,7 @@ class ExpandableSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, context=None, **kwargs):
         super(ExpandableSerializer, self).__init__(*args, context=context, **kwargs)
-        expand = context.get('request').QUERY_PARAMS.get('expand') if context else None
+        expand = context.get('request').query_params.get('expand') if context else None
 
         if expand:
             expand_list = expand.split(',')
