@@ -64,9 +64,13 @@ class GamesheetProcessor():
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
                 teammeetingperson, ratio = self._find_person(pl['name'], choices[key])
+                try:
+                    rt = float(pl['rating']) if pl['rating'] else None
+                except ValueError:
+                    rt = None
                 yield models.ProcessedGameRating(scraped_name=pl['name'], scraped_ratio=ratio,
                                                  footballperson=teammeetingperson,
-                                                 rating=float(pl['rating']) if pl['rating'] else None,
+                                                 rating=rt,
                                                  rating_source=src)
 
     def _process_players(self, data, choices, teams):
@@ -136,15 +140,13 @@ class GamesheetProcessor():
     def _search_team(self, team_name):
         print('Searching %s' % team_name)
         matching_results = process.extractBests(team_name, self.team_choices_preferred,
-                                                scorer=fuzz.partial_ratio,
                                                 score_cutoff=80,
                                                 limit=1)
         if len(matching_results) == 0:
             # search again with secondary choices this time.
             matching_results = process.extractBests(team_name,
                                                     self.team_choices_secondary,
-                                                    scorer=fuzz.partial_ratio,
-                                                    score_cutoff=50,
+                                                    score_cutoff=80,
                                                     limit=1)
         if len(matching_results) > 0:
             home_result, ratio, team_id = matching_results[0]
