@@ -1,6 +1,7 @@
 __author__ = 'Matt'
 import dateutil.parser
 from fuzzywuzzy import process, fuzz
+from unidecode import unidecode
 
 from statscollect_scrap import models
 from statscollect_scrap.scrappers import myfuzz
@@ -10,9 +11,10 @@ from statscollect_db.models import FootballTeam, FootballPerson
 class GamesheetProcessor():
     # Ensemble de recherche.
     team_choices_preferred = dict(
-        [(elem['id'], elem['name']) for elem in FootballTeam.objects.all().values('id', 'name')])
-    team_choices_secondary = dict([(elem['id'], elem['short_name']) for elem in FootballTeam.objects.all().values('id',
-                                                                                                                  'short_name')])
+        [(elem['id'], unidecode(elem['name'])) for elem in FootballTeam.objects.all().values('id', 'name')])
+    team_choices_secondary = dict(
+        [(elem['id'], unidecode(elem['short_name'])) for elem in FootballTeam.objects.all().values('id',
+                                                                                                   'short_name')])
 
     def process(self, processedgame):
         summary = self._process_summary(processedgame.gamesheet_ds.content)
@@ -49,12 +51,12 @@ class GamesheetProcessor():
 
     def _get_choices(self, home_team, away_team):
         return dict(
-            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], unidecode(elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=home_team).values('id', 'first_name', 'last_name',
                                                                            'usual_name')]
         ), dict(
-            [(elem['id'], elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'])
+            [(elem['id'], unidecode(elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=away_team).values('id', 'first_name', 'last_name',
                                                                            'usual_name')]
@@ -89,7 +91,7 @@ class GamesheetProcessor():
                                                       goals_saves=int(stats.get('goals_saved', 0)),
                                                       goals_conceded=int(stats.get('goals_conceded', 0)),
                                                       own_goals=int(stats.get('own_goals', 0)),
-                )
+                                                      )
 
     def _process_summary(self, data):
         home_team, away_team = self._find_teams(data)
@@ -100,7 +102,7 @@ class GamesheetProcessor():
 
     def _find_person(self, player_name, choices):
         print('Searching %s' % player_name)
-        matching_results = process.extractBests(player_name, choices,
+        matching_results = process.extractBests(unidecode(player_name), choices,
                                                 scorer=fuzz.partial_token_set_ratio,
                                                 score_cutoff=75)
         if len(matching_results) > 0:
@@ -139,7 +141,7 @@ class GamesheetProcessor():
 
     def _search_team(self, team_name):
         print('Searching %s' % team_name)
-        matching_results = process.extractBests(team_name, self.team_choices_preferred,
+        matching_results = process.extractBests(unidecode(team_name), self.team_choices_preferred,
                                                 score_cutoff=80,
                                                 limit=1)
         if len(matching_results) == 0:
