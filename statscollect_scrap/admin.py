@@ -339,6 +339,9 @@ class ProcessedGamePlayerInline(admin.TabularInline):
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
 
+    def has_add_permission(self, request):
+        return False
+
     class Media:
         css = {
             'all': (
@@ -394,7 +397,7 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status', 'created_at', 'updated_at')
     form = forms.ProcessedGameForm
     filter_horizontal = ('rating_ds', )
-    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, ]
+    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, AddProcessedRatingInline]
     fieldsets = (
         ('Step', {
             'fields': ('actual_tournament', 'actual_instance',
