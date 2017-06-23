@@ -335,6 +335,7 @@ class ProcessedGamePlayerInline(admin.TabularInline):
         'penalties_assists',
         'goals_saves',
         'goals_conceded',
+        'penalties_saved',
         'own_goals',
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"

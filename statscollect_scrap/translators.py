@@ -222,6 +222,7 @@ class ProcessedGameTranslator():
             tmp_obj.penalties_awarded = sg.penalties_assists
             tmp_obj.penalties_scored = sg.penalties_scored
             tmp_obj.playtime = sg.playtime
+            tmp_obj.penalties_saved = sg.penalties_saved
             tmp_obj.save()
 
     def _process_ratings(self, processedgame, meeting):
