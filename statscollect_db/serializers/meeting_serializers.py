@@ -67,7 +67,8 @@ class FootballStatsSerializer(serializers.ModelSerializer):
             'penalties_awarded',
             'goals_saved',
             'goals_conceded',
-            'own_goals'
+            'own_goals',
+            'penalties_saved'
         )
 
 

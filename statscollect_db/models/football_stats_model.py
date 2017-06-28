@@ -15,6 +15,7 @@ class FootballPersonalStats(models.Model):
     goals_saved = models.SmallIntegerField(blank=True, null=True)
     goals_conceded = models.SmallIntegerField(blank=True, null=True)
     own_goals = models.SmallIntegerField(blank=True, null=True)
+    penalties_saved = models.SmallIntegerField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super(FootballPersonalStats, self).save(*args, **kwargs)

@@ -309,6 +309,7 @@ class ProcessedGameSheetPlayer(models.Model):
     goals_saves = models.SmallIntegerField(default=0, help_text='Nombre d\'arrêts')
     goals_conceded = models.SmallIntegerField(default=0, help_text='Nombre de buts encaissés')
     own_goals = models.SmallIntegerField(default=0, help_text='Nombre de buts contre son camp')
+    penalties_saved = models.SmallIntegerField(default=0, help_text='Nombre de pénaltys arrêtés')
 
     def __str__(self):
         return '%s [%s]' % (self.scraped_name, self.scraped_ratio)
