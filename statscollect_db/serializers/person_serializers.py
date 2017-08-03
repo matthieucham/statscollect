@@ -24,6 +24,14 @@ class FootballPlayerSerializer(serializers.ModelSerializer):
     rep_country = serializers.SerializerMethodField('get_country')
     href = serializers.HyperlinkedIdentityField(view_name='footballplayer-detail', lookup_field='uuid')
     links = serializers.SerializerMethodField()
+    position = serializers.SerializerMethodField()
+
+    def get_position(self, obj):
+        if isinstance(obj, models.FootballPerson):
+            return obj.position
+        elif obj.field == 'FOOTBALL':
+            return models.FootballPerson.objects.get(pk=obj.pk).position
+        return None
 
     def get_country(self, obj):
         if obj.rep_country:

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from statscollect_db.models import Team
+from statscollect_db.models import FootballTeam
 from .person_serializers import FootballPlayerSerializer
 from .expandable import ExpandableSerializer
 
@@ -11,6 +11,6 @@ class FootballTeamSerializer(ExpandableSerializer):
     expand = ['members', ]
 
     class Meta:
-        model = Team
+        model = FootballTeam
         lookup_field = 'uuid',
         fields = ('uuid', 'created_at', 'updated_at', 'href', 'name', 'short_name', 'members')
