@@ -1,7 +1,7 @@
 from django.db import models
 
 from .meta_model import MetaModel
-from .person_model import Person
+from .person_model import Person, FootballPerson
 from .managers import FootballTeamManager
 
 from django_countries.fields import CountryField
@@ -34,6 +34,10 @@ class FootballTeam(Team):
         verbose_name_plural = 'clubs (football)'
 
     objects = FootballTeamManager()
+
+    @property
+    def current_members(self):
+        return FootballPerson.objects.filter(current_teams=self)
 
     def save(self, *args, **kwargs):
         self.field = 'FOOTBALL'
