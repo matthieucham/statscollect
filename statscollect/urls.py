@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 
-from statscollect_db.frontend import HomePage, ContactPage
+from statscollect_db.frontend import HomePage
 
 urlpatterns = [
     # Examples:
@@ -14,5 +14,4 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^selectable/', include('selectable.urls')),
-    url(r'^contact/', ContactPage.as_view(), name='envelope-contact'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider'))]

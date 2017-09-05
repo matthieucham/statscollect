@@ -46,9 +46,6 @@ INSTALLED_APPS = (
     # contrib
     'django_extensions',
     'django_countries',
-    'crispy_forms',
-    'honeypot',
-    'envelope',
     'oauth2_provider',
 
 
@@ -98,7 +95,7 @@ DATABASES = {
         'NAME': 'statscollect',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'postgres',
-        'PASSWORD': 'postgres'
+        'PASSWORD': 'root'
     }
 }
 
@@ -175,26 +172,6 @@ REST_FRAMEWORK = {
     )
 }
 
-HONEYPOT_FIELD_NAME = 'topyenoh'
-
-EMAIL_HOST = 'smtp.gmail.com'
-
-EMAIL_PORT = 587
-
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = 'statnuts.kcup@gmail.com'
-
-EMAIL_HOST_PASSWORD = 'ev_lrZefR3156[t___iuh@po'
-
-EMAIL_SUBJECT_PREFIX = '[StatNuts] '
-
-DEFAULT_FROM_EMAIL = 'statnuts.kcup@gmail.com'
-
-ENVELOPE_EMAIL_RECIPIENTS = ['matthieu.cham@gmail.com']
-
-ENVELOPE_USE_HTML_EMAIL = False
-
 MESSAGE_TAGS = {
     messages.DEBUG: 'debug',
     messages.INFO: 'info',
@@ -203,11 +180,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger'  # 'error' by default
 }
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
 LOGIN_URL = '/api-auth/login'
-
-TEST_RUNNER = 'statscollect_scrap.testrunner.NoDbTestRunner'
 
 try:
     LOCAL_SETTINGS
