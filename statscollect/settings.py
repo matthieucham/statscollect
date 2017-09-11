@@ -79,7 +79,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'statscollect.urls'
 
-WSGI_APPLICATION = 'statscollect.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'statscollect.wsgi.application'
 # DATABASES = {
 # 'default': {
 # 'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
 DATABASES = {
@@ -181,6 +181,7 @@ MESSAGE_TAGS = {
 }
 
 LOGIN_URL = '/api-auth/login'
+
 
 try:
     LOCAL_SETTINGS

@@ -36,7 +36,7 @@ class FootballTeam(Team):
     objects = FootballTeamManager()
 
     @property
-    def current_members(self):
+    def staff(self):
         return FootballPerson.objects.filter(current_teams=self)
 
     def save(self, *args, **kwargs):
