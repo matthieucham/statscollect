@@ -1,10 +1,9 @@
 from django.db import models
 from django.utils import timezone
-from django.core.exceptions import ValidationError
-from django_extensions.db.fields.json import JSONField
+from django.contrib.postgres.fields import JSONField
 
 from statscollect_db.models import RatingSource, Team, Tournament, TournamentInstance, \
-    TournamentInstanceStep, TeamMeeting, Person, TeamMeetingPerson, FootballPerson
+    TournamentInstanceStep, FootballPerson
 
 
 class ExpectedRatingSource(models.Model):

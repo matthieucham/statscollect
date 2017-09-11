@@ -6,7 +6,7 @@ from .expandable import ExpandableSerializer
 
 class FootballTeamSerializer(ExpandableSerializer):
     href = serializers.HyperlinkedIdentityField(view_name='footballteam-detail', lookup_field='uuid')
-    members = FootballPlayerSerializer(source='current_members', many=True, required=False)
+    members = FootballPlayerSerializer(source='staff', many=True, required=False)
 
     expand = ['members', ]
 

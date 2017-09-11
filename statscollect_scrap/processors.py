@@ -145,10 +145,11 @@ class GamesheetProcessor():
                                                 score_cutoff=80,
                                                 limit=1)
         if len(matching_results) == 0:
+            print('No result in long names. Searching %s in short names...' % team_name)
             # search again with secondary choices this time.
             matching_results = process.extractBests(team_name,
                                                     self.team_choices_secondary,
-                                                    score_cutoff=80,
+                                                    score_cutoff=50,
                                                     limit=1)
         if len(matching_results) > 0:
             home_result, ratio, team_id = matching_results[0]

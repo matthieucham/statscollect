@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import django_countries.fields
 import django.utils.timezone
-import django_extensions.db.fields
 import uuid
 
 
@@ -36,7 +35,7 @@ class Migration(migrations.Migration):
             name='Meeting',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('date', models.DateTimeField()),
@@ -49,7 +48,7 @@ class Migration(migrations.Migration):
             name='Person',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('last_name', models.CharField(max_length=50)),
@@ -98,7 +97,7 @@ class Migration(migrations.Migration):
             name='Team',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('name', models.CharField(max_length=100)),
@@ -121,7 +120,7 @@ class Migration(migrations.Migration):
             name='Tournament',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('name', models.CharField(max_length=50)),
@@ -137,7 +136,7 @@ class Migration(migrations.Migration):
             name='TournamentInstance',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('name', models.CharField(max_length=100)),
@@ -153,7 +152,7 @@ class Migration(migrations.Migration):
             name='TournamentInstanceStep',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('uuid', django_extensions.db.fields.UUIDField(unique=True, blank=True, editable=False)),
+                ('uuid', models.UUIDField(unique=True, blank=True, editable=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
                 ('name', models.CharField(max_length=50)),

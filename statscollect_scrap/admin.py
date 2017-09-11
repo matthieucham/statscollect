@@ -2,7 +2,7 @@ from functools import partial
 
 from django.contrib import admin
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from statscollect_scrap import models

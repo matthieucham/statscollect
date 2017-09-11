@@ -44,7 +44,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     # contrib
-    'django_extensions',
     'django_countries',
     'oauth2_provider',
 
@@ -66,7 +65,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,7 +78,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'statscollect.urls'
 
-WSGI_APPLICATION = 'statscollect.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -87,7 +86,7 @@ WSGI_APPLICATION = 'statscollect.wsgi.application'
 # DATABASES = {
 # 'default': {
 # 'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
 DATABASES = {
@@ -161,7 +160,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
     'PAGINATE_BY': 20,
@@ -181,6 +180,7 @@ MESSAGE_TAGS = {
 }
 
 LOGIN_URL = '/api-auth/login'
+
 
 try:
     LOCAL_SETTINGS
