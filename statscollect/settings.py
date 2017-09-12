@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     # contrib
     'django_countries',
     'oauth2_provider',
-
+    'django_filters',
 
     # django-selectable
     'selectable',
