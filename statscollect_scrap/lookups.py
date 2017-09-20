@@ -1,7 +1,11 @@
+from django.db.models import Case, When
 from selectable.base import ModelLookup
-from selectable.registry import registry
 
-from statscollect_db.models import TournamentInstanceStep, FootballPerson, TournamentInstance, TeamMeeting, RatingSource
+from selectable.registry import registry
+from fuzzywuzzy import process
+
+from statscollect_db.models import TournamentInstanceStep, FootballPerson, TournamentInstance, TeamMeeting
+
 from statscollect_scrap import models
 
 
@@ -71,10 +75,22 @@ class RatingsheetLookup(ModelLookup):
         instance = request.GET.get('instance', '')
         gs = request.GET.get('gamesheet', '')
         if gs and instance:
+            # Ensemble de recherche.
+            sheet_choices = dict(
+                [(elem['hash_url'],
+                  '%s=%s' % (elem['content']['home_team'], elem['content']['away_team'])) for elem in
+                 models.ScrapedDataSheet.objects.filter(source__expected_set__tournament_instance=instance).values(
+                     'hash_url',
+                     'content')])
+
             gamesheet = models.ScrapedDataSheet.objects.get(pk=gs)
-            return super(RatingsheetLookup, self).get_query(request, term).filter(
-                source__expected_set__tournament_instance=instance, match_date__year=gamesheet.match_date.year,
-                match_date__month=gamesheet.match_date.month, match_date__day=gamesheet.match_date.day)
+            sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
+            print("Searching %s ..." % sheet_search_key)
+            found_ids = [sheet_id for _, _, sheet_id in
+                         process.extractBests(sheet_search_key, sheet_choices, score_cutoff=50, limit=10)]
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(found_ids)])
+            return super(RatingsheetLookup, self).get_query(request, term).filter(hash_url__in=found_ids).order_by(
+                preserved)
         return list([])
 
 
