@@ -75,15 +75,15 @@ class RatingsheetLookup(ModelLookup):
         instance = request.GET.get('instance', '')
         gs = request.GET.get('gamesheet', '')
         if gs and instance:
+            gamesheet = models.ScrapedDataSheet.objects.get(pk=gs)
             # Ensemble de recherche.
             sheet_choices = dict(
                 [(elem['hash_url'],
                   '%s=%s' % (elem['content']['home_team'], elem['content']['away_team'])) for elem in
-                 models.ScrapedDataSheet.objects.filter(source__expected_set__tournament_instance=instance).values(
+                 models.ScrapedDataSheet.objects.filter(content__home_score=gamesheet.content['home_score'],
+                                                        content__away_score=gamesheet.content['away_score']).values(
                      'hash_url',
                      'content')])
-
-            gamesheet = models.ScrapedDataSheet.objects.get(pk=gs)
             sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
             print("Searching %s ..." % sheet_search_key)
             found_ids = [sheet_id for _, _, sheet_id in
