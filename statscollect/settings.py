@@ -181,6 +181,8 @@ MESSAGE_TAGS = {
 
 LOGIN_URL = '/api-auth/login'
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
 
 try:
     LOCAL_SETTINGS
