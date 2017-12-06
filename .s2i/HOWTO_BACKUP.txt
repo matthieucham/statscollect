@@ -1,0 +1,11 @@
+-- se logger sur le projet
+> oc login https://ap.starter-ca-central-1.openshift.com --token=...
+-- rentrer sur le pod PGSQL
+> oc rsh dc/postgresql
+-- dumper la bdd
+sh-4.2$ pg_dump -F t -U $PGUSER statnuts | gzip > /var/lib/pgsql/data/backups/statnuts.backup.2017-12-06.tgz
+sh-4.2$ exit
+-- rsync avec sa machine locale
+> oc get pods
+> oc rsync dc/postgresql-2-s76cn:/var/lib/pgsql/data/backups/ D:/sandbox
+-- uploader les archives récupérées dans un endroit safe
