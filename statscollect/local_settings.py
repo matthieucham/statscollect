@@ -4,7 +4,6 @@ LOCAL_SETTINGS = True
 
 if ON_OPENSHIFT:
     DEBUG = False
-    ALLOWED_HOSTS = ['*']
     DATABASES = {
         'default': {
             'NAME': os.getenv('POSTGRESQL_DATABASE'),
@@ -38,7 +37,7 @@ else:
             'NAME': 'statscollect',
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'USER': 'postgres',
-            'PASSWORD': 'postgres'
+            'PASSWORD': 'root'
         }
     }
 
