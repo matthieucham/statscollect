@@ -29,7 +29,7 @@ SECRET_KEY = '8joj76(fg$zh+v0rh5q--_+1ppqm6@@(vq=yh01)!h1*ynpcu4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['statnuts-app-statnuts.193b.starter-ca-central-1.openshiftapps.com/']
 
 
 # Application definition
