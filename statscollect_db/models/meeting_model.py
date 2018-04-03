@@ -17,12 +17,6 @@ class Meeting(MetaModel):
     # concurrents : will be part of PersonalMeetingModel, when defined.
     # concurrents = models.ManyToManyField(Person, blank=True, null=True)
 
-    def __str__(self):
-        if self.teammeetingmodel:
-            return self.teammeetingmodel.__str__()
-        else:
-            return self.tournament_instance.__str__()
-
     def save(self, *args, **kwargs):
         super(Meeting, self).save(*args, **kwargs)
         self.tournament_instance.save()
