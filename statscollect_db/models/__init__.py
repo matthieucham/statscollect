@@ -1,4 +1,4 @@
-from .rating_model import RatingSource,Rating
+from .rating_model import RatingSource, Rating
 from .tournament_model import Tournament, TournamentInstance, TournamentInstanceStep
 from .person_model import Person, FootballPerson
 from .team_model import Team, FootballTeam

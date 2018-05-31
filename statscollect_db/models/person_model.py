@@ -1,7 +1,7 @@
 from django.db import models
 
 from .meta_model import MetaModel
-from .managers import FootballPersonManager
+from .managers import FootballPersonManager, PersonManager
 
 from django_countries.fields import CountryField
 
@@ -26,6 +26,8 @@ class Person(MetaModel):
     field = models.CharField(max_length=10, choices=FIELD_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
     migration_id = models.CharField(max_length=35, unique=True, null=True)
+
+    objects = PersonManager()
 
     def __str__(self):
         if self.usual_name:
