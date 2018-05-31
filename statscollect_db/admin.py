@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 from functools import partial
 
 from statscollect_db.forms import FootballPersonForm, FootballTeamForm, FootballMeetingForm, \
@@ -50,6 +53,10 @@ class FootballTeamAdmin(admin.ModelAdmin):
     filter_horizontal = ('current_members',)
     form = FootballTeamForm
     readonly_fields = ('uuid',)
+    list_display = (
+        'uuid',
+        'name',
+    )
     fields = ('uuid', 'name', 'short_name', 'current_members', 'country',)
 
     def get_queryset(self, request):
@@ -63,9 +70,10 @@ class FootballPersonAdmin(admin.ModelAdmin):
                                  'position')}),
         ('Status', {'fields': ('status', 'current_teams')}),
     )
-    search_fields = ['last_name', 'usual_name']
+    search_fields = ['last_name', 'usual_name', 'uuid']
     readonly_fields = ('uuid',)
     list_display = (
+        'uuid',
         'first_name',
         'last_name',
         'usual_name',
@@ -73,6 +81,21 @@ class FootballPersonAdmin(admin.ModelAdmin):
         'updated_at',
     )
     ordering = ('-updated_at',)
+    actions = ['merge_players_action', ]
+
+    def merge_players_action(self, request, queryset):
+        try:
+            assert queryset.count() == 2
+        except AssertionError:
+            self.message_user(request, 'Merci de sélectionner deux joueurs à fusionner', level=messages.WARNING)
+            return HttpResponseRedirect(reverse('admin:statscollect_db_footballperson_changelist'))
+        source, target = FootballPerson.objects.order_by_meeting_count(queryset[0], queryset[1])
+        FootballPerson.objects.merge(source, target)
+        self.message_user(request, "Joueur %s (%s) fusionné vers %s (%s)" % (source, source.uuid, target, target.uuid))
+        self.message_user(request, "Joueur %s (%s) peut maintenant être supprimé" % (source, source.uuid))
+        return HttpResponseRedirect(reverse('admin:statscollect_db_footballperson_changelist'))
+
+    merge_players_action.short_description = "Fusionner les données de deux joueurs"
 
     def get_queryset(self, request):
         return FootballPerson.objects.filter(field__contains='FOOTBALL').order_by('-updated_at')
@@ -109,6 +132,7 @@ class FootballMeetingAdmin(admin.ModelAdmin):
     # merged_inline_order = 'person_id'
     inlines = [TeamMeetingPersonInline, FootballStatsInline, RatingsInline]
     form = FootballMeetingForm
+
 
 # Register your models here.
 admin.site.register(RatingSource)
