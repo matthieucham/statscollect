@@ -66,7 +66,8 @@ class FootballTeamAdmin(admin.ModelAdmin):
 class FootballPersonAdmin(admin.ModelAdmin):
     form = FootballPersonForm
     fieldsets = (
-        ('Identity', {'fields': ('uuid', 'last_name', 'first_name', 'usual_name', 'birth', 'sex', 'rep_country',
+        ('Identity', {'fields': ('uuid', 'last_name', 'first_name', 'usual_name', 'native_name',
+                                 'birth', 'sex', 'rep_country',
                                  'position')}),
         ('Status', {'fields': ('status', 'current_teams')}),
     )

@@ -20,6 +20,7 @@ class Person(MetaModel):
     last_name = models.CharField(max_length=50)
     first_name = models.CharField(max_length=50, blank=True)
     usual_name = models.CharField(max_length=50, blank=True)
+    native_name = models.CharField(max_length=50, blank=True)
     birth = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default='M')
     rep_country = CountryField(blank=True)
