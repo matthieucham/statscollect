@@ -5,7 +5,7 @@ from unidecode import unidecode
 
 from statscollect_scrap import models
 from statscollect_scrap.scrappers import myfuzz
-from statscollect_db.models import FootballTeam, FootballPerson
+from statscollect_db.models import FootballTeam, FootballPerson, AlternativePersonName
 
 
 class GamesheetProcessor():
@@ -27,10 +27,12 @@ class GamesheetProcessor():
         summary.save()
 
         hchoices, achoices = self._get_choices(summary.home_team, summary.away_team)
+        haltchoices, aaltchoices = self._get_alternative_choices(summary.home_team, summary.away_team)
 
         players = self._process_players(processedgame.gamesheet_ds.content,
-                                        choices={'home': hchoices, 'away': achoices},
-                                        teams={'home': summary.home_team, 'away': summary.away_team})
+                                        {'home': hchoices, 'away': achoices},
+                                        {'home': haltchoices, 'away': aaltchoices},
+                                        {'home': summary.home_team, 'away': summary.away_team})
         # delete previous if any:
         models.ProcessedGameSheetPlayer.objects.filter(processed_game=processedgame).delete()
         # register scraped players
@@ -39,7 +41,8 @@ class GamesheetProcessor():
             pl.save()
         for ds in processedgame.rating_ds.all():
             ratings = self._process_ratings(ds.source, ds.content,
-                                            choices={'home': hchoices, 'away': achoices})
+                                            {'home': hchoices, 'away': achoices},
+                                            {'home': haltchoices, 'away': aaltchoices})
             # delete previous if any:
             models.ProcessedGameRating.objects.filter(processed_game=processedgame, rating_source=ds.source).delete()
             # register scraped players
@@ -52,22 +55,32 @@ class GamesheetProcessor():
     def _get_choices(self, home_team, away_team):
         return dict(
             [(elem['id'], unidecode(
-                elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'] + ' ' + elem[
-                    'native_name']))
+                elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=home_team).values('id', 'first_name', 'last_name',
-                                                                           'usual_name', 'native_name')]
+                                                                           'usual_name')]
         ), dict(
             [(elem['id'], unidecode(elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=away_team).values('id', 'first_name', 'last_name',
-                                                                           'usual_name', 'native_name')]
+                                                                           'usual_name')]
         )
 
-    def _process_ratings(self, src, data, choices):
+    def _get_alternative_choices(self, home_team, away_team):
+        return dict(
+            [(elem['person_id'], unidecode(elem['alt_name']))
+             for elem in
+             AlternativePersonName.objects.filter(person__current_teams=home_team).values('person_id', 'alt_name')]
+        ), dict(
+            [(elem['person_id'], unidecode(elem['alt_name']))
+             for elem in
+             AlternativePersonName.objects.filter(person__current_teams=away_team).values('person_id', 'alt_name')]
+        )
+
+    def _process_ratings(self, src, data, choices, alternative):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
-                teammeetingperson, ratio = self._find_person(pl['name'], choices[key])
+                teammeetingperson, ratio = self._find_person(pl['name'], choices[key], alternative[key])
                 try:
                     rt = float(pl['rating']) if pl['rating'] else None
                 except ValueError:
@@ -77,10 +90,10 @@ class GamesheetProcessor():
                                                  rating=rt,
                                                  rating_source=src)
 
-    def _process_players(self, data, choices, teams):
+    def _process_players(self, data, choices, altchoices, teams):
         for key in ['home', 'away']:
             for pl in data['players_' + key]:
-                teammeetingperson, ratio = self._find_person(pl['name'], choices[key])
+                teammeetingperson, ratio = self._find_person(pl['name'], choices[key], altchoices[key])
                 stats = pl.get('stats', {})
                 yield models.ProcessedGameSheetPlayer(scraped_name=pl['name'], scraped_ratio=ratio,
                                                       footballperson=teammeetingperson,
@@ -102,39 +115,51 @@ class GamesheetProcessor():
         return models.ProcessedGameSummary(home_team=home_team, away_team=away_team, home_score=home_score,
                                            away_score=away_score, game_date=match_date)
 
-    def _find_person(self, player_name, choices):
+    def _find_person(self, player_name, choices, alternative_choices):
         print('Searching %s' % player_name)
         matching_results = process.extractBests(unidecode(player_name), choices,
                                                 scorer=fuzz.partial_token_set_ratio,
                                                 score_cutoff=75)
-        if len(matching_results) > 0:
-            # si les meilleurs matchs sont à egalité de score, chercher à nouveau avec méthode différente
-            best_score = 0
-            creme = dict()
-            for name, score, plid in matching_results:
-                if score >= best_score:
-                    best_score = score
-                    creme.update({plid: name})
-                else:
-                    # la liste renvoyée par extractBests est triée donc on peut s'arreter dès que le niveau baisse.
-                    break
-            # combien de meilleurs scores ?
-            if len(creme) == 1:
-                plid, plname = creme.popitem()
-                print('Found %s at first round with ratio %s' % (plname, best_score))
-                matching_player = FootballPerson.objects.get(pk=plid)
-                return matching_player, best_score
-            else:
-                print('Multiple matches found with ratio %s, refining...' % best_score)
-                refine_results = process.extractBests(player_name, creme,
-                                                      scorer=myfuzz.partial_token_set_ratio_with_avg)
-                plname, ratio, plid = refine_results[0]
-                print('Found %s at second round with ratio %s then %s' % (plname, best_score, ratio))
-                matching_player = FootballPerson.objects.get(pk=plid)
-                return matching_player, best_score
-        else:
+        try:
+            return self._refine_matching_results(player_name, matching_results)
+        except AssertionError:
             print("Alert : no match for %s" % player_name)
+            print("Now searching with alternative names for %s" % player_name)
+            matching_results = process.extractBests(unidecode(player_name), alternative_choices,
+                                                    scorer=fuzz.partial_token_set_ratio,
+                                                    score_cutoff=90)
+            try:
+                return self._refine_matching_results(player_name, matching_results)
+            except AssertionError:
+                print("Alert : no match AT ALL for %s" % player_name)
             return None, 0.0
+
+    def _refine_matching_results(self, player_name, matching_results):
+        assert len(matching_results) > 0
+        # si les meilleurs matchs sont à egalité de score, chercher à nouveau avec méthode différente
+        best_score = 0
+        creme = dict()
+        for name, score, plid in matching_results:
+            if score >= best_score:
+                best_score = score
+                creme.update({plid: name})
+            else:
+                # la liste renvoyée par extractBests est triée donc on peut s'arreter dès que le niveau baisse.
+                break
+        # combien de meilleurs scores ?
+        if len(creme) == 1:
+            plid, plname = creme.popitem()
+            print('Found %s at first round with ratio %s' % (plname, best_score))
+            matching_player = FootballPerson.objects.get(pk=plid)
+            return matching_player, best_score
+        else:
+            print('Multiple matches found with ratio %s, refining...' % best_score)
+            refine_results = process.extractBests(unidecode(player_name), creme,
+                                                  scorer=myfuzz.partial_token_set_ratio_with_avg)
+            plname, ratio, plid = refine_results[0]
+            print('Found %s at second round with ratio %s then %s' % (plname, best_score, ratio))
+            matching_player = FootballPerson.objects.get(pk=plid)
+            return matching_player, best_score
 
     def _find_teams(self, datasheet):
         ht = self._search_team(datasheet['home_team'])
