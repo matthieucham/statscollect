@@ -20,7 +20,6 @@ class Person(MetaModel):
     last_name = models.CharField(max_length=50)
     first_name = models.CharField(max_length=50, blank=True)
     usual_name = models.CharField(max_length=50, blank=True)
-    native_name = models.CharField(max_length=50, blank=True)
     birth = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default='M')
     rep_country = CountryField(blank=True)
@@ -35,6 +34,14 @@ class Person(MetaModel):
             return "%s (%s %s)" % (self.usual_name, self.first_name, self.last_name)
         else:
             return "%s %s" % (self.first_name, self.last_name)
+
+
+class AlternativePersonName(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='alternative_names')
+    alt_name = models.CharField(max_length=127)
+
+    def __str__(self):
+        return self.alt_name
 
 
 class FootballPerson(Person):

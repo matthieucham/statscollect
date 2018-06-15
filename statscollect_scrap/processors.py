@@ -52,16 +52,15 @@ class GamesheetProcessor():
     def _get_choices(self, home_team, away_team):
         return dict(
             [(elem['id'], unidecode(
-                elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name'] + ' ' + elem[
-                    'native_name']))
+                elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=home_team).values('id', 'first_name', 'last_name',
-                                                                           'usual_name', 'native_name')]
+                                                                           'usual_name')]
         ), dict(
             [(elem['id'], unidecode(elem['first_name'][:3] + ' ' + elem['last_name'] + ' ' + elem['usual_name']))
              for elem in
              FootballPerson.objects.filter(current_teams=away_team).values('id', 'first_name', 'last_name',
-                                                                           'usual_name', 'native_name')]
+                                                                           'usual_name')]
         )
 
     def _process_ratings(self, src, data, choices):

@@ -7,7 +7,7 @@ from functools import partial
 from statscollect_db.forms import FootballPersonForm, FootballTeamForm, FootballMeetingForm, \
     FootballTeamMeetingPersonInlineForm
 
-from statscollect_db.models import FootballPerson, Person
+from statscollect_db.models import FootballPerson, Person, AlternativePersonName
 from statscollect_db.models.tournament_model import Tournament, TournamentInstance, \
     TournamentInstanceStep
 from statscollect_db.models.team_model import FootballTeam
@@ -63,15 +63,20 @@ class FootballTeamAdmin(admin.ModelAdmin):
         return FootballTeam.objects.filter(field__contains='FOOTBALL')
 
 
+class AlternativePersonNameInline(admin.StackedInline):
+    fields = ('alt_name', )
+    model = AlternativePersonName
+
+
 class FootballPersonAdmin(admin.ModelAdmin):
     form = FootballPersonForm
     fieldsets = (
-        ('Identity', {'fields': ('uuid', 'last_name', 'first_name', 'usual_name', 'native_name',
+        ('Identity', {'fields': ('uuid', 'last_name', 'first_name', 'usual_name',
                                  'birth', 'sex', 'rep_country',
                                  'position')}),
         ('Status', {'fields': ('status', 'current_teams')}),
     )
-    search_fields = ['last_name', 'usual_name', 'uuid']
+    search_fields = ['last_name', 'usual_name', 'uuid', 'alternative_names__alt_name']
     readonly_fields = ('uuid',)
     list_display = (
         'uuid',
@@ -82,6 +87,7 @@ class FootballPersonAdmin(admin.ModelAdmin):
         'updated_at',
     )
     ordering = ('-updated_at',)
+    inlines = [AlternativePersonNameInline, ]
     actions = ['merge_players_action', ]
 
     def merge_players_action(self, request, queryset):
