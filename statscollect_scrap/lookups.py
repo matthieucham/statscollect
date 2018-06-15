@@ -12,7 +12,7 @@ from statscollect_scrap import models
 
 class TournamentInstanceLookup(ModelLookup):
     model = TournamentInstance
-    search_fields = ('name__icontains', )
+    search_fields = ('name__icontains',)
 
     def get_query(self, request, term):
         tournament = request.GET.get('tournament', '')
@@ -26,7 +26,7 @@ class TournamentInstanceLookup(ModelLookup):
 
 class TournamentStepLookup(ModelLookup):
     model = TournamentInstanceStep
-    search_fields = ('name__icontains', )
+    search_fields = ('name__icontains',)
 
     def get_query(self, request, term):
         instance = request.GET.get('instance', '')
@@ -40,6 +40,7 @@ class TournamentStepLookup(ModelLookup):
 
 class MeetingLookup(ModelLookup):
     model = TeamMeeting
+
     # search_fields = ('home_team__name__icontains', 'away_team__name__icontains')
 
     def get_query(self, request, term):
@@ -83,14 +84,15 @@ class RatingsheetLookup(ModelLookup):
             sheet_choices = dict(
                 [(elem['hash_url'],
                   '%s=%s' % (elem['content']['home_team'], elem['content']['away_team'])) for elem in
-                 models.ScrapedDataSheet.objects.filter(content__home_score=gamesheet.content['home_score'],
-                                                        content__away_score=gamesheet.content['away_score'],
-                                                        match_date__range=(
-                                                            datetime.datetime.combine(gamesheet.match_date.date(),
-                                                                                      datetime.time.min),
-                                                            datetime.datetime.combine(gamesheet.match_date.date(),
-                                                                                      datetime.time.max),
-                                                            )).values(
+                 models.ScrapedDataSheet.objects.filter(
+                     # content__home_score=gamesheet.content['home_score'],
+                     # content__away_score=gamesheet.content['away_score'],
+                     match_date__range=(
+                         datetime.datetime.combine(gamesheet.match_date.date(),
+                                                   datetime.time.min),
+                         datetime.datetime.combine(gamesheet.match_date.date(),
+                                                   datetime.time.max),
+                     )).values(
                      'hash_url',
                      'content')])
             # sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
