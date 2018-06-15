@@ -1,5 +1,5 @@
 from statscollect_db.models import FootballMeeting, TeamMeetingPerson, \
-    FootballPersonalStats, Rating
+    FootballPersonalStats, Rating, AlternativePersonName
 
 
 class ProcessedGameTranslator():
@@ -39,6 +39,9 @@ class ProcessedGameTranslator():
             else:
                 tmp_obj = matching[0]
             tmp_obj.save()
+            # If person was not found by scraping, add his scraped name to his alternative names
+            if sg.scraped_ratio == 0 and sg.scraped_name:
+                AlternativePersonName.objects.create(person=sg.footballperson.person_ptr, alt_name=sg.scraped_name)
             # stats
             # Find existing entity
             matching = FootballPersonalStats.objects.filter(meeting=meeting).filter(person=sg.footballperson.person_ptr)
