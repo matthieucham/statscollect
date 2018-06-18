@@ -1,5 +1,6 @@
 __author__ = 'Matt'
 import dateutil.parser
+import logging
 from fuzzywuzzy import process, fuzz
 from unidecode import unidecode
 
@@ -9,6 +10,8 @@ from statscollect_db.models import FootballTeam, FootballPerson, AlternativePers
 
 
 class GamesheetProcessor():
+    logger = logging.getLogger('django')
+
     # Ensemble de recherche.
     team_choices_preferred = dict(
         [(elem['id'], unidecode(elem['name'])) for elem in FootballTeam.objects.all().values('id', 'name')])
@@ -116,22 +119,22 @@ class GamesheetProcessor():
                                            away_score=away_score, game_date=match_date)
 
     def _find_person(self, player_name, choices, alternative_choices):
-        print('Searching %s' % player_name)
+        self.logger.info('Searching %s' % player_name)
         matching_results = process.extractBests(unidecode(player_name), choices,
                                                 scorer=fuzz.partial_token_set_ratio,
                                                 score_cutoff=75)
         try:
             return self._refine_matching_results(player_name, matching_results)
         except AssertionError:
-            print("Alert : no match for %s" % player_name)
-            print("Now searching with alternative names for %s" % player_name)
+            self.logger.warning("Alert : no match for %s" % player_name)
+            self.logger.info("Now searching with alternative names for %s" % player_name)
             matching_results = process.extractBests(unidecode(player_name), alternative_choices,
                                                     scorer=fuzz.partial_token_set_ratio,
                                                     score_cutoff=90)
             try:
                 return self._refine_matching_results(player_name, matching_results)
             except AssertionError:
-                print("Alert : no match AT ALL for %s" % player_name)
+                self.logger.warning("Alert : no match AT ALL for %s" % player_name)
             return None, 0.0
 
     def _refine_matching_results(self, player_name, matching_results):
@@ -149,15 +152,15 @@ class GamesheetProcessor():
         # combien de meilleurs scores ?
         if len(creme) == 1:
             plid, plname = creme.popitem()
-            print('Found %s at first round with ratio %s' % (plname, best_score))
+            self.logger.info('Found %s at first round with ratio %s' % (plname, best_score))
             matching_player = FootballPerson.objects.get(pk=plid)
             return matching_player, best_score
         else:
-            print('Multiple matches found with ratio %s, refining...' % best_score)
+            self.logger.info('Multiple matches found with ratio %s, refining...' % best_score)
             refine_results = process.extractBests(unidecode(player_name), creme,
                                                   scorer=myfuzz.partial_token_set_ratio_with_avg)
             plname, ratio, plid = refine_results[0]
-            print('Found %s at second round with ratio %s then %s' % (plname, best_score, ratio))
+            self.logger.info('Found %s at second round with ratio %s then %s' % (plname, best_score, ratio))
             matching_player = FootballPerson.objects.get(pk=plid)
             return matching_player, best_score
 
@@ -167,12 +170,12 @@ class GamesheetProcessor():
         return ht, at
 
     def _search_team(self, team_name):
-        print('Searching %s' % team_name)
+        self.logger.info('Searching %s' % team_name)
         matching_results = process.extractBests(unidecode(team_name), self.team_choices_preferred,
                                                 score_cutoff=80,
                                                 limit=1)
         if len(matching_results) == 0:
-            print('No result in long names. Searching %s in short names...' % team_name)
+            self.logger.warning('No result in long names. Searching %s in short names...' % team_name)
             # search again with secondary choices this time.
             matching_results = process.extractBests(team_name,
                                                     self.team_choices_secondary,
@@ -180,8 +183,8 @@ class GamesheetProcessor():
                                                     limit=1)
         if len(matching_results) > 0:
             home_result, ratio, team_id = matching_results[0]
-            print('Found %s with ratio %d' % (home_result, ratio))
+            self.logger.info('Found %s with ratio %d' % (home_result, ratio))
             matching_team = FootballTeam.objects.get(pk=team_id)
             return matching_team
-        print("Alert : no valid match for %s" % team_name)
+            self.logger.warning("Alert : no valid match for %s" % team_name)
         return None
