@@ -84,7 +84,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django.request': {
+        'django': {
             'handlers': ['applogfile'],
             'level': 'INFO',
         },
