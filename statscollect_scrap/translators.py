@@ -29,9 +29,9 @@ class ProcessedGameTranslator():
         return meeting_obj
 
     def _store_alt_name(self, scraped):
-        if not scraped.scraped_ratio:
+        if scraped.scraped_ratio is None:
             return
-        if scraped.scraped_ratio < 90 and scraped.scraped_name:
+        if scraped.scraped_ratio < 75 and scraped.scraped_name:
             AlternativePersonName.objects.create(person=scraped.footballperson.person_ptr, alt_name=scraped.scraped_name)
 
     def _process_players(self, processedgame, meeting):
