@@ -40,7 +40,7 @@ class ProcessedGameTranslator():
                 tmp_obj = matching[0]
             tmp_obj.save()
             # If person was not found by scraping, add his scraped name to his alternative names
-            if sg.scraped_ratio == 0 and sg.scraped_name:
+            if sg.scraped_ratio < 90 and sg.scraped_name:
                 AlternativePersonName.objects.create(person=sg.footballperson.person_ptr, alt_name=sg.scraped_name)
             # stats
             # Find existing entity
@@ -73,3 +73,5 @@ class ProcessedGameTranslator():
                 tmp_obj = matching[0]
             tmp_obj.original_rating = sr.rating
             tmp_obj.save()
+            if sr.scraped_ratio < 90 and sr.scraped_name:
+                AlternativePersonName.objects.create(person=sr.footballperson.person_ptr, alt_name=sr.scraped_name)
