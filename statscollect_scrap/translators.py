@@ -28,6 +28,12 @@ class ProcessedGameTranslator():
         meeting_obj.save()
         return meeting_obj
 
+    def _store_alt_name(self, scraped):
+        if not scraped.scraped_ratio:
+            return
+        if scraped.scraped_ratio < 90 and scraped.scraped_name:
+            AlternativePersonName.objects.create(person=scraped.footballperson.person_ptr, alt_name=scraped.scraped_name)
+
     def _process_players(self, processedgame, meeting):
         for sg in processedgame.processedgamesheetplayer_set.all():
             # Find existing entity
@@ -39,9 +45,7 @@ class ProcessedGameTranslator():
             else:
                 tmp_obj = matching[0]
             tmp_obj.save()
-            # If person was not found by scraping, add his scraped name to his alternative names
-            if sg.scraped_ratio < 90 and sg.scraped_name:
-                AlternativePersonName.objects.create(person=sg.footballperson.person_ptr, alt_name=sg.scraped_name)
+            self._store_alt_name(sg)
             # stats
             # Find existing entity
             matching = FootballPersonalStats.objects.filter(meeting=meeting).filter(person=sg.footballperson.person_ptr)
@@ -73,5 +77,4 @@ class ProcessedGameTranslator():
                 tmp_obj = matching[0]
             tmp_obj.original_rating = sr.rating
             tmp_obj.save()
-            if sr.scraped_ratio < 90 and sr.scraped_name:
-                AlternativePersonName.objects.create(person=sr.footballperson.person_ptr, alt_name=sr.scraped_name)
+            self._store_alt_name(sr)
