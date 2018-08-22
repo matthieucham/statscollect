@@ -78,8 +78,6 @@ footballmeeting_urls = [
 urlpatterns = [
     url(r'^$', api_root),
     url(r'^rating_sources/$', ratingsource_list, name='ratingsource-list'),
-    url(r'^rating_sources/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
-        ratingsource_detail, name='ratingsource-detail'),
     url(r'^football_teams/$', footballteam_list, name='footballteam-list'),
     url(r'^football_teams/(?P<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/$',
         footballteam_detail, name='footballteam-detail'),
