@@ -7,8 +7,12 @@ class RatingSourceSerializer(serializers.ModelSerializer):
         view_name='ratingsource-detail',
         lookup_field='uuid'
     )
+    country = serializers.SerializerMethodField()
+
+    def get_country(self, obj):
+        return obj.country.code
 
     class Meta:
         model = RatingSource
-        fields = ('uuid', 'created_at', 'updated_at', 'name', 'website', 'field', 'type', 'country', 'url')
+        fields = ('code', 'name', 'website', 'field', 'type', 'country', 'url')
 
