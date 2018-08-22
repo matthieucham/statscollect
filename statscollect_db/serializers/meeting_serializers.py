@@ -73,16 +73,12 @@ class FootballStatsSerializer(serializers.ModelSerializer):
 
 
 class RatingSerializer(serializers.ModelSerializer):
-    source = serializers.SlugRelatedField(slug_field='uuid', read_only=True)
-    source_name = serializers.SlugRelatedField(source='source', slug_field='name', read_only=True)
     rating = serializers.DecimalField(decimal_places=1, max_digits=3, read_only=True, source='original_rating')
 
     class Meta:
         model = models.Rating
         fields = (
-            # 'code',
             'source',
-            'source_name',
             'rating',
         )
 
