@@ -3,10 +3,6 @@ from statscollect_db.models import RatingSource
 
 
 class RatingSourceSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name='ratingsource-detail',
-        lookup_field='uuid'
-    )
     country = serializers.SerializerMethodField()
 
     def get_country(self, obj):
@@ -14,5 +10,4 @@ class RatingSourceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RatingSource
-        fields = ('code', 'name', 'website', 'field', 'type', 'country', 'url')
-
+        fields = ('code', 'name', 'website', 'field', 'type', 'country',)
