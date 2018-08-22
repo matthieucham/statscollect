@@ -36,6 +36,14 @@ class Person(MetaModel):
             return "%s %s" % (self.first_name, self.last_name)
 
 
+class AlternativePersonName(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='alternative_names')
+    alt_name = models.CharField(max_length=127)
+
+    def __str__(self):
+        return self.alt_name
+
+
 class FootballPerson(Person):
     POSITION_CHOICES = (
         ('G', 'Gardien'),

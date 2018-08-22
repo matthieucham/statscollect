@@ -1,4 +1,5 @@
-from django.db.models import Case, When
+import datetime
+from django.db.models import Case, When, Q
 from selectable.base import ModelLookup
 
 from selectable.registry import registry
@@ -11,7 +12,7 @@ from statscollect_scrap import models
 
 class TournamentInstanceLookup(ModelLookup):
     model = TournamentInstance
-    search_fields = ('name__icontains', )
+    search_fields = ('name__icontains',)
 
     def get_query(self, request, term):
         tournament = request.GET.get('tournament', '')
@@ -25,7 +26,7 @@ class TournamentInstanceLookup(ModelLookup):
 
 class TournamentStepLookup(ModelLookup):
     model = TournamentInstanceStep
-    search_fields = ('name__icontains', )
+    search_fields = ('name__icontains',)
 
     def get_query(self, request, term):
         instance = request.GET.get('instance', '')
@@ -39,6 +40,7 @@ class TournamentStepLookup(ModelLookup):
 
 class MeetingLookup(ModelLookup):
     model = TeamMeeting
+
     # search_fields = ('home_team__name__icontains', 'away_team__name__icontains')
 
     def get_query(self, request, term):
@@ -69,7 +71,9 @@ class GamesheetLookup(ModelLookup):
 class RatingsheetLookup(ModelLookup):
     model = models.ScrapedDataSheet
     search_fields = ('source__code__icontains',
-                     'source__name__icontains', 'content__home_team__contains', 'content__away_team__contains',)
+                     'source__name__icontains',
+                     'content__home_team__contains',
+                     'content__away_team__contains',)
 
     def get_query(self, request, term):
         instance = request.GET.get('instance', '')
@@ -80,14 +84,18 @@ class RatingsheetLookup(ModelLookup):
             sheet_choices = dict(
                 [(elem['hash_url'],
                   '%s=%s' % (elem['content']['home_team'], elem['content']['away_team'])) for elem in
-                 models.ScrapedDataSheet.objects.filter(content__home_score=gamesheet.content['home_score'],
-                                                        content__away_score=gamesheet.content['away_score']).values(
+                 models.ScrapedDataSheet.objects.filter(Q(source__in=('HDM',)) | Q(match_date__range=(
+                 datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.min),
+                 datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.max)), )).filter(
+                     Q(source__in=('FF',)) | Q(content__home_score=gamesheet.content['home_score'],
+                                               content__away_score=gamesheet.content['away_score'], )).values(
                      'hash_url',
                      'content')])
-            sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
-            print("Searching %s ..." % sheet_search_key)
-            found_ids = [sheet_id for _, _, sheet_id in
-                         process.extractBests(sheet_search_key, sheet_choices, score_cutoff=50, limit=10)]
+            # sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
+            # print("Searching %s ..." % sheet_search_key)
+            # found_ids = [sheet_id for _, _, sheet_id in
+            #              process.extractBests(sheet_search_key, sheet_choices, score_cutoff=50, limit=10)]
+            found_ids = sheet_choices
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(found_ids)])
             return super(RatingsheetLookup, self).get_query(request, term).filter(hash_url__in=found_ids).order_by(
                 preserved)
