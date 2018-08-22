@@ -1,0 +1,13 @@
+# Pro-tip: Try not to put anything here. Avoid dependencies in
+#	production that aren't in development.
+-r base.txt
+
+
+
+# WSGI Handler
+# ------------------------------------------------
+gevent==1.2.2
+gunicorn==19.7.1
+
+# Optimization
+python-Levenshtein==0.12.0

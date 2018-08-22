@@ -1,5 +1,5 @@
 from statscollect_db.models import FootballMeeting, TeamMeetingPerson, \
-    FootballPersonalStats, Rating
+    FootballPersonalStats, Rating, AlternativePersonName
 
 
 class ProcessedGameTranslator():
@@ -28,6 +28,12 @@ class ProcessedGameTranslator():
         meeting_obj.save()
         return meeting_obj
 
+    def _store_alt_name(self, scraped):
+        if scraped.scraped_ratio is None:
+            return
+        if scraped.scraped_ratio < 75 and scraped.scraped_name:
+            AlternativePersonName.objects.create(person=scraped.footballperson.person_ptr, alt_name=scraped.scraped_name)
+
     def _process_players(self, processedgame, meeting):
         for sg in processedgame.processedgamesheetplayer_set.all():
             # Find existing entity
@@ -39,6 +45,7 @@ class ProcessedGameTranslator():
             else:
                 tmp_obj = matching[0]
             tmp_obj.save()
+            self._store_alt_name(sg)
             # stats
             # Find existing entity
             matching = FootballPersonalStats.objects.filter(meeting=meeting).filter(person=sg.footballperson.person_ptr)
@@ -70,3 +77,4 @@ class ProcessedGameTranslator():
                 tmp_obj = matching[0]
             tmp_obj.original_rating = sr.rating
             tmp_obj.save()
+            self._store_alt_name(sr)
