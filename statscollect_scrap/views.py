@@ -4,8 +4,8 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
 
-from .models import ScrapedDataSheet
-from .serializers import ScrapedDataSheetSerializer
+from .models import ScrapedDataSheet, ScrapedTeamWithPlayer
+from .serializers import ScrapedDataSheetSerializer, ScrapedTeamWithPlayerSerializer
 
 
 class ScrapedDataSheetViewSet(viewsets.ModelViewSet):
@@ -37,3 +37,23 @@ def scraped_datasheet_detail(request, hash_url):
         serializer.save()
         return JsonResponse(serializer.data)
     return JsonResponse(serializer.errors, status=400)
+
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, ))
+def scraped_team_with_players(request, team_name):
+    item_json = request.data
+    data = dict()
+    data['content'] = item_json
+    data['team_name'] = team_name
+
+    try:
+        instance = ScrapedTeamWithPlayer.objects.get(pk=team_name)
+    except ScrapedTeamWithPlayer.DoesNotExist:
+        instance = None
+    serializer = ScrapedTeamWithPlayerSerializer(data=data, instance=instance)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data)
+    return JsonResponse(serializer.errors, status=400)
+
