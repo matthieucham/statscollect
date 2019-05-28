@@ -11,13 +11,6 @@ from statscollect_scrap import translators
 from statscollect_scrap import processors
 
 
-class ExpectedRatingSourceAdmin(admin.ModelAdmin):
-    list_display = ('tournament_instance', 'expected_sources')
-
-    def expected_sources(self, obj):
-        return ", ".join([p.__str__() for p in obj.rating_source.all()])
-
-
 # V2
 class ProcessedGamePlayerInline(admin.TabularInline):
     model = models.ProcessedGameSheetPlayer
@@ -176,7 +169,6 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             )
         }
 
-# Register your models here.
-admin.site.register(models.ExpectedRatingSource, ExpectedRatingSourceAdmin)
+
 # V2
 admin.site.register(models.ProcessedGame, ProcessedGameAdmin)
