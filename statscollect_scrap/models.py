@@ -70,7 +70,8 @@ class ProcessedGame(ScrappedEntity):
     actual_step = models.ForeignKey(
         TournamentInstanceStep, help_text='Journée de cette édition')
     # Gamesheet
-    gamesheet_ds = models.ForeignKey(ScrapedDataSheet, related_name='gamesheet_processedgame')
+    gamesheet_ds = models.ForeignKey(ScrapedDataSheet, null=True, related_name='gamesheet_processedgame',
+                                     on_delete=models.SET_NULL)
     # rating sheets
     rating_ds = models.ManyToManyField(ScrapedDataSheet, related_name='ratingsheet_processedgame')
 
