@@ -85,10 +85,10 @@ class RatingsheetLookup(ModelLookup):
                 [(elem['hash_url'],
                   '%s=%s' % (elem['content']['home_team'], elem['content']['away_team'])) for elem in
                  models.ScrapedDataSheet.objects.filter(Q(source__in=('HDM',)) | Q(match_date__range=(
-                 datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.min),
-                 datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.max)), )).filter(
-                     Q(source__in=('FF',)) | Q(content__home_score=gamesheet.content['home_score'],
-                                               content__away_score=gamesheet.content['away_score'], )).values(
+                     datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.min),
+                     datetime.datetime.combine(gamesheet.match_date.date(), datetime.time.max)), )).filter(
+                     Q(source__in=('FF', 'FMERC',)) | Q(content__home_score=gamesheet.content['home_score'],
+                                                        content__away_score=gamesheet.content['away_score'], )).values(
                      'hash_url',
                      'content')])
             # sheet_search_key = '%s=%s' % (gamesheet.content['home_team'], gamesheet.content['away_team'])
