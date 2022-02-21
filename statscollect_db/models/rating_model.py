@@ -8,19 +8,19 @@ from .person_model import Person
 
 
 class RatingSource(models.Model):
-    FIELD_CHOICES = (
-        ('FOOTBALL', 'Football'),
-    )
+    FIELD_CHOICES = (("FOOTBALL", "Football"),)
     TYPE_CHOICES = (
-        ('10CLASSIC', 'Classical 0-10'),
-        ('6GERMAN', 'German 1-6'),
+        ("10CLASSIC", "Classical 0-10"),
+        ("6GERMAN", "German 1-6"),
     )
     code = models.CharField(primary_key=True, max_length=8)
     name = models.CharField(max_length=50)
     website = models.CharField(max_length=400, blank=True)
     field = models.CharField(max_length=10, choices=FIELD_CHOICES, blank=True)
     country = CountryField(blank=True)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES, blank=False, default='10CLASSIC')
+    type = models.CharField(
+        max_length=10, choices=TYPE_CHOICES, blank=False, default="10CLASSIC"
+    )
 
     def __str__(self):
         return self.name
@@ -33,14 +33,14 @@ class RatingSource(models.Model):
         super(RatingSource, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = 'source de notes'
-        verbose_name_plural = 'sources de notes'
+        verbose_name = "source de notes"
+        verbose_name_plural = "sources de notes"
 
 
 class Rating(models.Model):
-    person = models.ForeignKey(Person)
-    meeting = models.ForeignKey(Meeting)
-    source = models.ForeignKey(RatingSource)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    source = models.ForeignKey(RatingSource, on_delete=models.CASCADE)
     original_rating = models.DecimalField(null=True, max_digits=5, decimal_places=2)
 
     def save(self, *args, **kwargs):
@@ -48,4 +48,4 @@ class Rating(models.Model):
         self.meeting.save()
 
     class Meta:
-        verbose_name = 'note'
+        verbose_name = "note"

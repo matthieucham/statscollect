@@ -10,9 +10,16 @@ from .person_model import Person
 
 
 class Meeting(MetaModel):
-    tournament_instance = models.ForeignKey(TournamentInstance, related_name='meetings')
+    tournament_instance = models.ForeignKey(
+        TournamentInstance, related_name="meetings", on_delete=models.CASCADE
+    )
     # Some meetings are not linked to a step (cf single-step tournaments like a one-day race)
-    tournament_step = models.ForeignKey(TournamentInstanceStep, related_name='meetings', null=True)
+    tournament_step = models.ForeignKey(
+        TournamentInstanceStep,
+        related_name="meetings",
+        null=True,
+        on_delete=models.CASCADE,
+    )
     date = models.DateTimeField()
     # concurrents : will be part of PersonalMeetingModel, when defined.
     # concurrents = models.ManyToManyField(Person, blank=True, null=True)
@@ -25,33 +32,46 @@ class Meeting(MetaModel):
 
 
 class TeamMeeting(Meeting):
-    home_team = models.ForeignKey(Team, related_name='meetings_home')
+    home_team = models.ForeignKey(
+        Team, related_name="meetings_home", on_delete=models.CASCADE
+    )
     home_result = models.PositiveSmallIntegerField(blank=True, null=True)
-    away_team = models.ForeignKey(Team, related_name='meetings_away')
+    away_team = models.ForeignKey(
+        Team, related_name="meetings_away", on_delete=models.CASCADE
+    )
     away_result = models.PositiveSmallIntegerField(blank=True, null=True)
-    participants = models.ManyToManyField(Person, through='TeamMeetingPerson', blank=True)
+    participants = models.ManyToManyField(
+        Person, through="TeamMeetingPerson", blank=True
+    )
 
     def __str__(self):
         if self.home_result is None or self.away_result is None:
-            return "%s vs %s [%s]" % (self.home_team.__str__(), self.away_team.__str__(), self.date)
+            return "%s vs %s [%s]" % (
+                self.home_team.__str__(),
+                self.away_team.__str__(),
+                self.date,
+            )
         else:
-            return "%s %i-%i %s [%s]" % (self.home_team.__str__(), self.home_result,
-                                         self.away_result, self.away_team.__str__(),
-                                         self.date)
+            return "%s %i-%i %s [%s]" % (
+                self.home_team.__str__(),
+                self.home_result,
+                self.away_result,
+                self.away_team.__str__(),
+                self.date,
+            )
 
 
 class FootballMeeting(TeamMeeting):
-
     class Meta:
         proxy = True
-        verbose_name = 'rencontre (football)'
-        verbose_name_plural = 'rencontres (football)'
+        verbose_name = "rencontre (football)"
+        verbose_name_plural = "rencontres (football)"
 
 
 class TeamMeetingPerson(models.Model):
-    meeting = models.ForeignKey(TeamMeeting)
-    person = models.ForeignKey(Person)
-    played_for = models.ForeignKey(Team)
+    meeting = models.ForeignKey(TeamMeeting, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    played_for = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     # def save(self, force_insert=False, force_update=False, using=None,
     # update_fields=None):
