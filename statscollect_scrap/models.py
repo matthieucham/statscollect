@@ -67,11 +67,11 @@ class ScrapedDataSheet(models.Model):
     def __str__(self):
         return "[%s] %s %s - %s %s (%s)" % (
             self.source,
-            self.content["home_team"],
-            self.content["home_score"] if "home_score" in self.content else "?",
-            self.content["away_score"] if "away_score" in self.content else "?",
-            self.content["away_team"],
-            self.content["match_date"],
+            self.content.get("home_team"),
+            self.content.get("home_score", "?"),
+            self.content.get("away_score", "?"),
+            self.content.get("away_team"),
+            self.content.get("match_date"),
         )
 
     class Meta:

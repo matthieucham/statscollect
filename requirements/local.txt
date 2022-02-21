@@ -3,4 +3,4 @@
 -r base.txt
 
 
-django-sslserver==0.20
+django-sslserver>=0.20

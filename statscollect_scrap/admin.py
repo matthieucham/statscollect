@@ -17,16 +17,16 @@ class ProcessedGamePlayerInline(admin.TabularInline):
     extra = 0
     form = forms.GamesheetPlayerAdminForm
     fields = (
-        'footballperson',
-        'playtime',
-        'goals_scored',
-        'penalties_scored',
-        'goals_assists',
-        'penalties_assists',
-        'goals_saves',
-        'goals_conceded',
-        'penalties_saved',
-        'own_goals',
+        "footballperson",
+        "playtime",
+        "goals_scored",
+        "penalties_scored",
+        "goals_assists",
+        "penalties_assists",
+        "goals_saves",
+        "goals_conceded",
+        "penalties_saved",
+        "own_goals",
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
 
@@ -34,24 +34,18 @@ class ProcessedGamePlayerInline(admin.TabularInline):
         return False
 
     class Media:
-        css = {
-            'all': (
-                '/static/statscollect_scrap/css/scrap.css',
-            )
-        }
+        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 class ProcessedRatingInline(admin.TabularInline):
     model = models.ProcessedGameRating
     extra = 0
     form = forms.GamesheetPlayerAdminForm
-    readonly_fields = (
-        'rating_source',
-    )
+    readonly_fields = ("rating_source",)
     fields = (
-        'footballperson',
-        'rating_source',
-        'rating',
+        "footballperson",
+        "rating_source",
+        "rating",
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
 
@@ -59,11 +53,7 @@ class ProcessedRatingInline(admin.TabularInline):
         return False
 
     class Media:
-        css = {
-            'all': (
-                '/static/statscollect_scrap/css/scrap.css',
-            )
-        }
+        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 class AddProcessedRatingInline(ProcessedRatingInline):
@@ -76,40 +66,54 @@ class AddProcessedRatingInline(ProcessedRatingInline):
         return False
 
     class Media:
-        css = {
-            'all': (
-                '/static/statscollect_scrap/css/scrap.css',
-            )
-        }
+        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 class ProcessedGameAdmin(admin.ModelAdmin):
     model = models.ProcessedGame
-    list_display = ('__str__', 'status', 'created_at', 'updated_at')
+    list_display = ("__str__", "status", "created_at", "updated_at")
     form = forms.ProcessedGameForm
-    filter_horizontal = ('rating_ds', )
-    inlines = [ProcessedGamePlayerInline, ProcessedRatingInline, AddProcessedRatingInline]
+    filter_horizontal = ("rating_ds",)
+    inlines = [
+        ProcessedGamePlayerInline,
+        ProcessedRatingInline,
+        AddProcessedRatingInline,
+    ]
     fieldsets = (
-        ('Step', {
-            'fields': ('actual_tournament', 'actual_instance',
-                       'actual_step',
-                       )
-        }),
-        ('Data sheets', {
-            'fields': ('gamesheet_ds', 'rating_ds',)
-        }),
+        (
+            "Step",
+            {
+                "fields": (
+                    "actual_tournament",
+                    "actual_instance",
+                    "actual_step",
+                )
+            },
+        ),
+        (
+            "Data sheets",
+            {
+                "fields": (
+                    "gamesheet_ds",
+                    "rating_ds",
+                )
+            },
+        ),
     )
 
-    def add_view(self, request, form_url='', extra_context=None):
+    def add_view(self, request, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context['status'] = 'CREATED'
-        return super(ProcessedGameAdmin, self).add_view(request, extra_context=extra_context)
+        extra_context["status"] = "CREATED"
+        return super(ProcessedGameAdmin, self).add_view(
+            request, extra_context=extra_context
+        )
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context['status'] = models.ProcessedGame.objects.get(pk=object_id).status
-        return super(ProcessedGameAdmin, self).change_view(request, object_id, form_url=form_url,
-                                                           extra_context=extra_context)
+        extra_context["status"] = models.ProcessedGame.objects.get(pk=object_id).status
+        return super(ProcessedGameAdmin, self).change_view(
+            request, object_id, form_url=form_url, extra_context=extra_context
+        )
 
     def response_add(self, request, obj, post_url_continue=None):
         opts = self.model._meta
@@ -121,12 +125,14 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             processor = processors.GamesheetProcessor()
             processor.process(obj)
 
-            redirect_url = reverse('admin:%s_%s_change' %
-                                   (opts.app_label, opts.model_name),
-                                   args=(pk_value,),
-                                   current_app=self.admin_site.name)
-            redirect_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts},
-                                                 redirect_url)
+            redirect_url = reverse(
+                "admin:%s_%s_change" % (opts.app_label, opts.model_name),
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {"preserved_filters": preserved_filters, "opts": opts}, redirect_url
+            )
             return HttpResponseRedirect(redirect_url)
         else:
             return super(ProcessedGameAdmin, self).response_add(request, obj)
@@ -141,33 +147,34 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             processor = processors.GamesheetProcessor()
             processor.process(obj)
 
-            redirect_url = reverse('admin:%s_%s_change' %
-                                   (opts.app_label, opts.model_name),
-                                   args=(pk_value,),
-                                   current_app=self.admin_site.name)
-            redirect_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts},
-                                                 redirect_url)
+            redirect_url = reverse(
+                "admin:%s_%s_change" % (opts.app_label, opts.model_name),
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {"preserved_filters": preserved_filters, "opts": opts}, redirect_url
+            )
             return HttpResponseRedirect(redirect_url)
         elif "_store" in request.POST:
             translator = translators.ProcessedGameTranslator()
             translator.translate(obj)
 
-            post_url = reverse('admin:%s_%s_changelist' %
-                               (opts.app_label, opts.model_name),
-                               current_app=self.admin_site.name)
+            post_url = reverse(
+                "admin:%s_%s_changelist" % (opts.app_label, opts.model_name),
+                current_app=self.admin_site.name,
+            )
             preserved_filters = self.get_preserved_filters(request)
-            post_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts}, post_url)
+            post_url = add_preserved_filters(
+                {"preserved_filters": preserved_filters, "opts": opts}, post_url
+            )
             return HttpResponseRedirect(post_url)
 
         else:
             return super(ProcessedGameAdmin, self).response_change(request, obj)
 
     class Media:
-        css = {
-            'all': (
-                '/static/statscollect_scrap/css/scrap.css',
-            )
-        }
+        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 # V2

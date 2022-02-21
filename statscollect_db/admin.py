@@ -189,7 +189,6 @@ class TeamMeetingPersonInline(FootballMeetingParticipantRelatedInline):
 
 
 class FootballMeetingAdmin(admin.ModelAdmin):
-    # merged_inline_order = 'person_id'
     inlines = [TeamMeetingPersonInline, FootballStatsInline, RatingsInline]
     form = FootballMeetingForm
 
