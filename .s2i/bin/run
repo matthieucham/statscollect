@@ -1,9 +1,0 @@
-#!/bin/bash
-echo "Django collectstatic"
-python ${OPENSHIFT_REPO_DIR}/manage.py collectstatic --noinput
-
-echo "Migrate DB before run"
-python ${OPENSHIFT_REPO_DIR}/manage.py migrate --noinput
-
-echo "Running stock run:"
-${STI_SCRIPTS_PATH}/run
