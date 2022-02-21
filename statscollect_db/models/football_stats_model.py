@@ -5,8 +5,8 @@ from .meeting_model import TeamMeeting
 
 
 class FootballPersonalStats(models.Model):
-    person = models.ForeignKey(Person)
-    meeting = models.ForeignKey(TeamMeeting)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    meeting = models.ForeignKey(TeamMeeting, on_delete=models.CASCADE)
     playtime = models.SmallIntegerField(blank=True, null=True)
     goals_scored = models.SmallIntegerField(blank=True, null=True)
     goals_assists = models.SmallIntegerField(blank=True, null=True)
@@ -22,5 +22,5 @@ class FootballPersonalStats(models.Model):
         self.meeting.save()
 
     class Meta:
-        verbose_name = 'statistiques (football)'
-        verbose_name_plural = 'statistiques (football)'
+        verbose_name = "statistiques (football)"
+        verbose_name_plural = "statistiques (football)"

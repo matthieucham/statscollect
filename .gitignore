@@ -11,3 +11,4 @@ __pycache__
 .vscode
 *.log
 .python-version
+dproject/staticfiles/

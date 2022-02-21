@@ -1,6 +1,8 @@
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from statscollect_db.models import FootballTeam
 from statscollect_db.serializers import FootballTeamSerializer
@@ -8,22 +10,22 @@ from statscollect_db.serializers import FootballTeamSerializer
 
 class FootballTeamViewSet(viewsets.ModelViewSet):
     serializer_class = FootballTeamSerializer
-    lookup_field = 'uuid'
+    lookup_field = "uuid"
     filter_backends = (
         filters.OrderingFilter,
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
     )
     ordering_fields = (
-        'name',
-        'short_name',
+        "name",
+        "short_name",
     )
     filter_fields = (
-        'uuid',
-        'field',
+        "uuid",
+        "field",
     )
 
     def get_queryset(self):
-        person = self.kwargs.get('person', None)
+        person = self.kwargs.get("person", None)
         if person is not None:
             queryset = FootballTeam.objects.filter(
                 current_members__uuid__contains=person
