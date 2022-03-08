@@ -1,11 +1,9 @@
 {% extends "admin/base.html" %}
+{% load static %}
 
 {% block title %}{{ title }} | {{ site_title|default:_('StatNuts') }}{% endblock %}
 
 {% block extrahead %}
-    {% load selectable_tags %}
-    {% include_ui_theme %}
-    {% include_jquery_libs %}
 {% endblock %}
 
 {% block branding %}
@@ -13,3 +11,7 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% comment %} {% block footer %}<div id="footer"></div>
+{{ form.media.js }}
+{% endblock %} {% endcomment %}

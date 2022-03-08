@@ -2,6 +2,9 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
+from smart_selects.db_fields import ChainedForeignKey
+
+
 from statscollect_db.models import (
     RatingSource,
     Team,
@@ -80,18 +83,41 @@ class ScrapedDataSheet(models.Model):
 
 class ProcessedGame(ScrappedEntity):
     actual_tournament = models.ForeignKey(
-        Tournament, help_text="Championnat ou compétition", on_delete=models.CASCADE
+        Tournament,
+        help_text="Championnat ou compétition",
+        on_delete=models.CASCADE,
     )
-    actual_instance = models.ForeignKey(
+    # actual_instance = models.ForeignKey(
+    #     TournamentInstance,
+    #     help_text="Edition de cette compétition",
+    #     on_delete=models.CASCADE,
+    # )
+    actual_instance = ChainedForeignKey(
         TournamentInstance,
         help_text="Edition de cette compétition",
+        chained_field="actual_tournament",
+        chained_model_field="tournament",
+        show_all=False,
+        auto_choose=True,
+        sort=True,
         on_delete=models.CASCADE,
     )
-    actual_step = models.ForeignKey(
+    # actual_step = models.ForeignKey(
+    #     TournamentInstanceStep,
+    #     help_text="Journée de cette édition",
+    #     on_delete=models.CASCADE,
+    # )
+    actual_step = ChainedForeignKey(
         TournamentInstanceStep,
         help_text="Journée de cette édition",
+        chained_field="actual_instance",
+        chained_model_field="tournament_instance",
+        show_all=False,
+        auto_choose=True,
+        sort=True,
         on_delete=models.CASCADE,
     )
+
     # Gamesheet
     gamesheet_ds = models.ForeignKey(
         ScrapedDataSheet,
