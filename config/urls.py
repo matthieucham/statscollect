@@ -22,4 +22,6 @@ urlpatterns = [
     ),
     url(r"^selectable/", include("selectable.urls")),
     url(r"^o/", include("oauth2_provider.urls"), name="oauth2_provider"),
+    url(r"^chaining/", include("smart_selects.urls")),
+    # url(r"^ajax_select/", include("ajax_select.urls")),
 ]
