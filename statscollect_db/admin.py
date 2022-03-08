@@ -193,8 +193,14 @@ class FootballMeetingAdmin(admin.ModelAdmin):
     form = FootballMeetingForm
 
 
+class RatingSourceAdmin(admin.ModelAdmin):
+    model = RatingSource
+    search_fields = ["code", "name"]
+    ordering = ["name"]
+
+
 # Register your models here.
-admin.site.register(RatingSource)
+admin.site.register(RatingSource, RatingSourceAdmin)
 admin.site.register(FootballMeeting, FootballMeetingAdmin)
 admin.site.register(FootballTeam, FootballTeamAdmin)
 admin.site.register(FootballPerson, FootballPersonAdmin)

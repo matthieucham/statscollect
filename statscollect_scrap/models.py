@@ -87,6 +87,11 @@ class ProcessedGame(ScrappedEntity):
         help_text="Championnat ou compétition",
         on_delete=models.CASCADE,
     )
+    # actual_instance = models.ForeignKey(
+    #     TournamentInstance,
+    #     help_text="Edition de cette compétition",
+    #     on_delete=models.CASCADE,
+    # )
     actual_instance = ChainedForeignKey(
         TournamentInstance,
         help_text="Edition de cette compétition",
@@ -97,6 +102,11 @@ class ProcessedGame(ScrappedEntity):
         sort=True,
         on_delete=models.CASCADE,
     )
+    # actual_step = models.ForeignKey(
+    #     TournamentInstanceStep,
+    #     help_text="Journée de cette édition",
+    #     on_delete=models.CASCADE,
+    # )
     actual_step = ChainedForeignKey(
         TournamentInstanceStep,
         help_text="Journée de cette édition",

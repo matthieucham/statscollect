@@ -45,10 +45,8 @@ THIRD_PARTY_APPS = (
     "django_countries",
     "oauth2_provider",
     "django_filters",
-    "selectable",
     "rest_framework",
     "smart_selects",
-    # "ajax_select",
 )
 
 # Apps specific for this project go here.
@@ -335,5 +333,4 @@ LOGIN_URL = "/api-auth/login"
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # smart_selects
-# JQUERY_URL = True
 USE_DJANGO_JQUERY = True

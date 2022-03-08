@@ -15,7 +15,6 @@ from statscollect_scrap import processors
 class ProcessedGamePlayerInline(admin.TabularInline):
     model = models.ProcessedGameSheetPlayer
     extra = 0
-    form = forms.GamesheetPlayerAdminForm
     fields = (
         "footballperson",
         "playtime",
@@ -28,45 +27,46 @@ class ProcessedGamePlayerInline(admin.TabularInline):
         "penalties_saved",
         "own_goals",
     )
+    autocomplete_fields = ["footballperson"]
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
 
     def has_add_permission(self, request):
         return False
 
-    class Media:
-        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
+    # class Media:
+    #     css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 class ProcessedRatingInline(admin.TabularInline):
     model = models.ProcessedGameRating
     extra = 0
-    form = forms.GamesheetPlayerAdminForm
-    readonly_fields = ("rating_source",)
+    # readonly_fields = ("rating_source",)
     fields = (
         "footballperson",
         "rating_source",
         "rating",
     )
     template = "admin/statscollect_scrap/processedgame/edit_inline/tabular.html"
-
-    def has_add_permission(self, request):
-        return False
-
-    class Media:
-        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
-
-
-class AddProcessedRatingInline(ProcessedRatingInline):
-    readonly_fields = []
+    autocomplete_fields = ["footballperson", "rating_source"]
 
     def has_add_permission(self, request):
         return True
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # class Media:
+    #     css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
-    class Media:
-        css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
+
+# class AddProcessedRatingInline(ProcessedRatingInline):
+#     readonly_fields = []
+
+#     def has_add_permission(self, request):
+#         return True
+
+#     def has_change_permission(self, request, obj=None):
+#         return False
+
+#     # class Media:
+#     #     css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
 class ProcessedGameAdmin(admin.ModelAdmin):
@@ -77,7 +77,7 @@ class ProcessedGameAdmin(admin.ModelAdmin):
     inlines = [
         ProcessedGamePlayerInline,
         ProcessedRatingInline,
-        AddProcessedRatingInline,
+        # AddProcessedRatingInline,
     ]
     fieldsets = (
         (
@@ -100,6 +100,9 @@ class ProcessedGameAdmin(admin.ModelAdmin):
             },
         ),
     )
+    autocomplete_fields = [
+        "rating_ds",
+    ]
 
     def add_view(self, request, form_url="", extra_context=None):
         extra_context = extra_context or {}
@@ -177,5 +180,12 @@ class ProcessedGameAdmin(admin.ModelAdmin):
         css = {"all": ("/static/statscollect_scrap/css/scrap.css",)}
 
 
+class ScrapedDataSheetAdmin(admin.ModelAdmin):
+    model = models.ScrapedDataSheet
+    search_fields = ["content__home_team", "content__away_team"]
+    ordering = ["-match_date"]
+
+
 # V2
 admin.site.register(models.ProcessedGame, ProcessedGameAdmin)
+admin.site.register(models.ScrapedDataSheet, ScrapedDataSheetAdmin)
