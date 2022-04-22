@@ -1,4 +1,4 @@
-Django==2.2.27
+Django==2.2.28
 django-countries>=5.3.3
 django-environ>=0.6.0
 django-filter>=2.1.0
